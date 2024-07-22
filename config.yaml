@@ -1,0 +1,84 @@
+hook:
+  # 基础hook配置
+  # CHECK_NOTICE_INFO_CD: 群检测，个人权限检测等各种检测提示信息cd
+  # MALICIOUS_BAN_TIME: 恶意命令触发检测触发后ban的时长（分钟）
+  # MALICIOUS_CHECK_TIME: 恶意命令触发检测规定时间内（秒）
+  # MALICIOUS_BAN_COUNT: 恶意命令触发检测最大触发次数
+  # BAN_RESULT: 对被ban用户发送的消息
+  CHECK_NOTICE_INFO_CD: 300
+  MALICIOUS_BAN_TIME: 30
+  MALICIOUS_CHECK_TIME: 5
+  MALICIOUS_BAN_COUNT: 6
+  BAN_RESULT: 才不会给你发消息.
+group_manager:
+  # group_manager
+  # DEFAULT_GROUP_LEVEL: 默认群权限
+  # DEFAULT_GROUP_BOT_STATUS: 默认进群总开关状态
+  DEFAULT_GROUP_LEVEL: 5
+  DEFAULT_GROUP_BOT_STATUS: true
+_task:
+  # _task
+  # DEFAULT_BROADCAST: 被动 广播 进群默认开关状态
+  # DEFAULT_GROUP_WELCOME: 被动 进群欢迎 进群默认开关状态
+  # DEFAULT_REFUND_GROUP_REMIND: 被动 退群提醒 进群默认开关状态
+  # DEFAULT_ZWA: 被动 早晚安 进群默认开关状态
+  DEFAULT_BROADCAST: true
+  DEFAULT_GROUP_WELCOME: true
+  DEFAULT_REFUND_GROUP_REMIND: true
+  DEFAULT_ZWA: true
+invite_manager:
+  # 好友群聊处理请求
+  # MESSAGE: 强制拉群后进群回复的内容..
+  # FLAG: 被强制拉群后是否直接退出
+  # WELCOME_MSG_CD: 群欢迎消息cd
+  # AUTO_ADD_FRIEND: 是否自动同意好友添加
+  MESSAGE: 请不要未经同意就拉露露姆入群！告辞！
+  FLAG: true
+  WELCOME_MSG_CD: 5
+  AUTO_ADD_FRIEND: false
+_backup:
+  # 文件备份
+  # BACKUP_FLAG: 是否开启文件备份
+  # BACKUP_DIR_OR_FILE: 备份的文件夹或文件
+  BACKUP_FLAG: true
+  BACKUP_DIR_OR_FILE:
+  - data/black_word
+  - data/configs
+  - data/statistics
+  - data/word_bank
+  - data/manager
+  - configs
+admin_bot_manage:
+  # 群管理员操作
+  # SET_GROUP_WELCOME_MESSAGE_LEVEL: 设置群欢迎消息权限
+  # CHANGE_GROUP_SWITCH_LEVEL: 开关群功能权限
+  # ADMIN_DEFAULT_AUTH: 默认群管理员权限
+  SET_GROUP_WELCOME_MESSAGE_LEVEL: 2
+  CHANGE_GROUP_SWITCH_LEVEL: 2
+  ADMIN_DEFAULT_AUTH: 5
+alapi:
+  # alapi
+  # ALAPI_TOKEN: 在https://admin.alapi.cn/user/login登录后获取token
+  ALAPI_TOKEN:
+nickname:
+  # 昵称系统
+  # BLACK_WORD: 昵称所屏蔽的关键词，已设置的昵称会被替换为 *，未设置的昵称会在设置时提示
+  BLACK_WORD:
+  - 爸
+  - 爹
+  - 爷
+  - 父
+ban:
+  # 封禁Ban用户
+  # BAN_LEVEL [LEVEL]: ban/unban所需要的管理员权限等级
+  BAN_LEVEL [LEVEL]: 5
+reload_setting:
+  # 重载配置
+  # AUTO_RELOAD: 自动重载配置文件
+  # AUTO_RELOAD_TIME: 控制自动重载配置文件时长
+  AUTO_RELOAD: false
+  AUTO_RELOAD_TIME: 180
+help:
+  # 帮助
+  # TYPE: 帮助图片样式 ['normal', 'HTML']
+  TYPE: normal
