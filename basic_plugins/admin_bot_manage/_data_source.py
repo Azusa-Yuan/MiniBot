@@ -8,7 +8,7 @@ from typing import List, Union
 from nonebot.adapters.onebot.v11 import Bot, Message, MessageSegment
 
 from configs.config import config
-from configs.config_path import DATA_PATH, IMAGE_PATH
+from configs.path import DATA_PATH, IMAGE_PATH
 from services.log import logger
 from utils.image_utils import BuildImage
 from utils.manager import group_manager, plugins2settings_manager, plugins_manager

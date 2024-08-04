@@ -5,7 +5,7 @@ from utils.manager import (
     plugin_data_manager,
 )
 from utils.utils import get_matchers
-from configs.config_path import DATA_PATH
+from configs.path import DATA_PATH
 
 
 def init_plugins_cd_limit():

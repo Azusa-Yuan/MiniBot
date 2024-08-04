@@ -5,10 +5,11 @@ from nonebot.adapters.onebot.v11 import Bot, GroupMessageEvent, Message, Message
 from nonebot.params import CommandArg
 from nonebot.rule import to_me
 
-from configs.config_path import DATA_PATH, IMAGE_PATH
+from configs.path import DATA_PATH, IMAGE_PATH
 from services.log import logger
 from nonebot.plugin import PluginMetadata
 from ._data_source import get_plugin_help, get_admin_help
+from ._utils import HelpBuild
 
 
 __plugin_meta__ = PluginMetadata(
@@ -33,6 +34,8 @@ simple_help = on_command(
 )
 
 
+helper = HelpBuild()
+
 @simple_help.handle()
 async def _(bot: Bot, event: MessageEvent, arg: Message = CommandArg()):
     msg = arg.extract_plain_text().strip()
@@ -50,14 +53,6 @@ async def _(bot: Bot, event: MessageEvent, arg: Message = CommandArg()):
         logger.info(
             f"查看帮助详情: {msg}", "帮助", event.user_id, getattr(event, "group_id", None)
         )
-    # else:
-    #     if isinstance(event, GroupMessageEvent):
-    #         if not _image_path.exists():
-    #             await create_help_img(event.group_id)
-    #         await simple_help.send(image(_image_path))
-    #     else:
-    #         if not simple_help_image.exists():
-    #             if simple_help_image.exists():
-    #                 simple_help_image.unlink()
-    #             await create_help_img(None)
-    #         await simple_help.finish(image("simple_help.png"))
+    else:
+        msg = helper.build_normal_help()
+        await simple_help.send(msg)

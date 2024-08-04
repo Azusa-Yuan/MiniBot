@@ -12,7 +12,7 @@ from .resources_manager import ResourcesManager
 from .admin_manager import AdminManager
 from .none_plugin_count_manager import NonePluginCountManager
 from .requests_manager import RequestManager
-from configs.config_path import DATA_PATH
+from configs.path import DATA_PATH
 
 
 # 管理员命令管理器

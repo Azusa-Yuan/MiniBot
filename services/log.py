@@ -4,7 +4,7 @@ from typing import Any, Dict, Optional, Union
 from loguru import logger as logger_
 from nonebot.log import default_filter, default_format
 
-from configs.config_path import LOG_PATH
+from configs.path import LOG_PATH
 
 logger_.add(
     LOG_PATH / f"{datetime.now().date()}.log",

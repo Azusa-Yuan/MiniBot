@@ -1,7 +1,7 @@
 import nonebot
 from nonebot import Driver
 
-from configs.config_path import IMAGE_PATH
+from configs.path import IMAGE_PATH
 from services.log import logger
 from utils.image_template import help_template
 from utils.image_utils import BuildImage, build_sort_image, group_image, text2image

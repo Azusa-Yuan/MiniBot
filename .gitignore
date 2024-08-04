@@ -1,8 +1,8 @@
 # Config Files
 config.json
-hoshino/config/
 local_coolq_config/
 .env.prod
+
 # Database
 db.json
 database.json
@@ -11,8 +11,6 @@ database.json
 res/
 image/
 images/
-
-hoshino/modules/umamusume
 _git/
 data/configs/*
 data/manager/*
@@ -33,6 +31,10 @@ __pycache__/
 
 # C extensions
 *.so
+
+# plugins
+nonebot_plugin_stockhelper/
+pcrjjc3/
 
 # Distribution / packaging
 .Python
@@ -103,12 +105,6 @@ target/
 
 # pyenv
 .python-version
-
-# celery beat schedule file
-celerybeat-schedule
-
-# SageMath parsed files
-*.sage.py
 
 # Environments
 .env

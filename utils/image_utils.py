@@ -17,7 +17,7 @@ from nonebot.utils import is_coroutine_callable
 from PIL import Image, ImageDraw, ImageFile, ImageFilter, ImageFont
 from PIL.ImageFont import FreeTypeFont
 
-from configs.config_path import FONT_PATH, IMAGE_PATH
+from configs.path import FONT_PATH, IMAGE_PATH
 from services import logger
 
 ImageFile.LOAD_TRUNCATED_IMAGES = True

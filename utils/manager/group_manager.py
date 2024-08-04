@@ -124,6 +124,19 @@ class GroupManager(StaticData[BaseData]):
             :param group_id: 群组
         """
         return module not in self._data.group_manager[str(group_id)].close_plugins
+    
+    
+    @init_group
+    def is_close(self, module: str, group_id: Union[str, int]) -> bool:
+        """
+        说明:
+            获取插件状态
+        参数:
+            :param module: 功能模块名
+            :param group_id: 群组
+        """
+        return module in self._data.group_manager[str(group_id)].close_plugins
+    
 
     def get_plugin_super_status(self, module: str, group_id: Union[str, int]) -> bool:
         """

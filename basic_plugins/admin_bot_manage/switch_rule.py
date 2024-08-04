@@ -3,6 +3,8 @@ import time
 from nonebot import on_command, on_message, on_regex
 from nonebot.adapters.onebot.v11 import (
     GROUP,
+    GROUP_ADMIN,
+    GROUP_OWNER,
     Bot,
     GroupMessageEvent,
     Message,
@@ -14,7 +16,7 @@ from nonebot.params import CommandArg, RegexGroup
 from nonebot.permission import SUPERUSER
 from nonebot.plugin import PluginMetadata
 
-from utils.manager import group_manager, plugins2settings_manager
+from utils.manager import group_manager, plugins2settings_manager, plugin_data_manager
 from configs.config import NICKNAME, config
 from services.log import logger
 from utils.message_builder import image
@@ -82,7 +84,7 @@ cmd = []
 v = time.time()
 
 
-
+## 重构未完成 
 def switch_rule(event: Event) -> bool:
     """
     说明:
@@ -92,17 +94,10 @@ def switch_rule(event: Event) -> bool:
     """
     global cmd, v
     try:
-        # cmd为空？   或者时间过了一小时
+        # cmd为空？   或者时间过了一小时 重新加载？有必要？ 需要重构
         if not cmd or time.time() - v > 60 * 60:
             cmd = ["关闭全部被动", "开启全部被动", "开启全部功能", "关闭全部功能"]
-            _data = group_manager.get_task_data()
-            for key in _data:
-                cmd.append(f"开启{_data[key]}")
-                cmd.append(f"关闭{_data[key]}")
-                cmd.append(f"开启被动{_data[key]}")
-                cmd.append(f"关闭被动{_data[key]}")
-                cmd.append(f"开启 {_data[key]}")
-                cmd.append(f"关闭 {_data[key]}")
+        
             _data = plugins2settings_manager.get_data()
             for key in _data.keys():
                 try:
@@ -120,28 +115,49 @@ def switch_rule(event: Event) -> bool:
                 except KeyError:
                     pass
             v = time.time()
-        msg = get_message_text(event.json()).split()
+        msg = get_message_text(event.model_dump_json()).split()
         msg = msg[0] if msg else ""
         return msg in cmd
     except Exception as e:
         logger.error(f"检测是否为功能开关命令发生错误", e=e)
     return False
 
+groupAdmin = GROUP_ADMIN | GROUP_OWNER | SUPERUSER
 
-switch_rule_matcher = on_message(rule=switch_rule, priority=4, block=True, permission=SUPERUSER)
+switch_rule_matcher = on_regex("^(开启|关闭)\s*(\S+)\s*(\S*)\s*(\S*)$", priority=4, block=True, permission=SUPERUSER)
 
-plugins_status = on_command("功能状态", permission=SUPERUSER, priority=5, block=True)
+plugins_status = on_command("功能状态", permission=groupAdmin, priority=5, block=True)
 
-group_task_status = on_command("群被动状态", permission=GROUP, priority=5, block=True)
-
-group_status = on_regex("^(休息吧|醒来)$", permission=GROUP, priority=5, block=True)
+group_status = on_regex("^(休息吧|醒来)$", permission=groupAdmin, priority=5, block=True)
 
 
 @switch_rule_matcher.handle()
 async def _(
     bot: Bot,
     event: MessageEvent,
+    reg_group: Tuple[Any, ...] = RegexGroup()
 ):
+    on = True if reg_group[0] == "开启" else False
+    plugin_name = reg_group[1]
+    # 插件不存在
+    if plugin_data_manager.get(plugin_name):
+        return
+    block_type = reg_group[2]
+    block_type = "all" if block_type == "a" else block_type
+    block_type = "private" if block_type == "p" else block_type
+    block_type = "group" if block_type == "g" else block_type
+    
+    arg = reg_group[3]
+    
+    if block_type:
+        # 不是超级用户 没有指定的权利
+        if str(event.user_id) not in bot.config.superusers:
+            return 
+    else:
+        if isinstance(event, GroupMessageEvent):
+            block_type = "group"
+            arg = event.group_id
+    
     msg = get_message_text(event.message).strip()
     msg_split = msg.split()
     _cmd = msg_split[0]
@@ -189,9 +205,7 @@ async def _():
     await plugins_status.send(await get_plugin_status())
 
 
-@group_task_status.handle()
-async def _(event: GroupMessageEvent):
-    await group_task_status.send(image(b64=await group_current_status(str(event.group_id))))
+
 
 
 @group_status.handle()

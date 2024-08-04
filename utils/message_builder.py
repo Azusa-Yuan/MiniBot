@@ -5,7 +5,7 @@ from typing import List, Optional, Union
 from nonebot.adapters.onebot.v11.message import Message, MessageSegment
 
 from configs.config import NICKNAME
-from configs.config_path import IMAGE_PATH, RECORD_PATH
+from configs.path import IMAGE_PATH, RECORD_PATH
 from services.log import logger
 from utils.image_utils import BuildImage, BuildMat
 

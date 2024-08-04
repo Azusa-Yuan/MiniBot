@@ -1,6 +1,6 @@
 from typing import Union, List, Optional
 
-from configs.config_path import IMAGE_PATH, DATA_PATH, RECORD_PATH, TEXT_PATH, FONT_PATH, LOG_PATH
+from configs.path import IMAGE_PATH, DATA_PATH, RECORD_PATH, TEXT_PATH, FONT_PATH, LOG_PATH
 from utils.manager.data_class import StaticData
 from pathlib import Path
 from ruamel.yaml import YAML

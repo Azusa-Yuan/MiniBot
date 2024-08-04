@@ -2,13 +2,7 @@ from typing import Optional
 
 
 from utils.manager.models import PluginType
-from configs.config_path import IMAGE_PATH
 from utils.manager import admin_manager, plugin_data_manager, plugins2settings_manager
-
-
-random_bk_path = IMAGE_PATH / "background" / "help" / "simple_help"
-
-background = IMAGE_PATH / "background" / "0.png"
 
 
 def get_admin_help():
@@ -37,9 +31,7 @@ def get_plugin_help(msg: str, is_super: bool = False) -> Optional[str]:
         :param msg: 功能cmd
         :param is_super: 是否为超级用户
     """
-    module = plugins2settings_manager.get_plugin_module(
-        msg
-    ) or admin_manager.get_plugin_module(msg)
+    module = plugins2settings_manager.get_plugin_module(msg) or admin_manager.get_plugin_module(msg)
     if module and (plugin_data := plugin_data_manager.get(module)):
         plugin_data.superuser_usage
         if is_super:

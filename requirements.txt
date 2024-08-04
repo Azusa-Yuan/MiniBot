@@ -4,6 +4,10 @@ nonebot-adapter-console==0.6.0
 setuptools>=20.6.8
 nonebot_plugin_apscheduler==0.5.0
 pypinyin
-matplotlib=="3.5.1"
-ImageHash=="4.2.1" 
-opencv-python=="4.5.2.52"
+matplotlib==3.5.1
+ImageHash==4.2.1 
+opencv-python==4.10.0.84
+playwright>=1.18.2,<2.0.0
+retrying
+pytest
+pil-utils

@@ -3,14 +3,14 @@ from nonebot.plugin import PluginMetadata
 from nonebot.adapters.onebot.v11 import (
     Bot,
     MessageEvent,
+    PrivateMessageEvent,
     Event,
 )
 from nonebot.matcher import Matcher
-from nonebot.message import run_preprocessor, run_postprocessor
+from nonebot.message import run_preprocessor, run_postprocessor, IgnoredException
 from nonebot.typing import T_State
 
 from ._utils import (
-    set_block_limit_false,
     AuthChecker,
 )
 
@@ -21,23 +21,14 @@ __plugin_meta__ = PluginMetadata(
 )
 
 
-
-# # 权限检测
+# 权限检测
 @run_preprocessor
 async def _(matcher: Matcher, bot: Bot, event: Event):
     await AuthChecker().auth(matcher, bot, event)
 
 
-# 解除命令block阻塞
-@run_postprocessor
-async def _(
-        matcher: Matcher,
-        exception: Optional[Exception],
-        bot: Bot,
-        event: Event,
-        state: T_State,
-):
-    if not isinstance(event, MessageEvent) and matcher.plugin_name != "poke":
-        return
-    module = matcher.plugin_name
-    set_block_limit_false(event, module)
+# 私聊处理
+@run_preprocessor
+async def _(matcher: Matcher, bot: Bot, event: PrivateMessageEvent, state: T_State):
+    if event.sub_type != "friend":
+        raise IgnoredException("只允许好友触发")
