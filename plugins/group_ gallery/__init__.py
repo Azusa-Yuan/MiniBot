@@ -1,5 +1,5 @@
 from nonebot import on_command
-from nonebot.rule import to_me
+from nonebot.permission import SUPERUSER
 from nonebot.typing import T_State
 from nonebot.plugin import PluginMetadata
 from nonebot.adapters.onebot.v11 import Bot, MessageEvent, GroupMessageEvent, Message, MessageSegment
@@ -10,7 +10,7 @@ from .data_source import *
 
 from nonebot.params import CommandArg, Arg, ArgStr
 from typing import List
-from nonebot.permission import SUPERUSER
+
 
 from nonebot.adapters.onebot.v11.permission import (
     GROUP_ADMIN,

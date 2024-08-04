@@ -2,6 +2,7 @@ from nonebot.adapters.onebot.v11 import Bot, GroupMessageEvent, Message, Message
 from nonebot import require, on_command, on_message, on_fullmatch, get_bot
 from nonebot.params import CommandArg
 from utils.message_builder import image
+from nonebot.plugin import PluginMetadata
 require("nonebot_plugin_apscheduler")
 
 from nonebot_plugin_apscheduler import scheduler
@@ -16,21 +17,19 @@ from nonebot.adapters.onebot.v11.permission import (
     GROUP_OWNER,
 )
 
-__zx_plugin_name__ = "DNF"
+
 __plugin_usage__ = """
-usage：
+usage:
     比例趋势 跨2
 """.strip()
-__plugin_version__ = 0.1
-__plugin_des__ = "DNF"
-__plugin_cmd__ = ["比例趋势"]
-__plugin_type__ = ("一些工具",)
-__plugin_settings__ = {
-    "level": 5,
-    "default_status": True,
-    "limit_superuser": False,
-    'cmd': __plugin_cmd__
-}
+
+__plugin_meta__ = PluginMetadata(
+    name="DNF",
+    description="无",
+    usage= __plugin_usage__
+)
+
+
 
 PERM_EDIT = GROUP_ADMIN | GROUP_OWNER | SUPERUSER
 

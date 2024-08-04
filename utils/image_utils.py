@@ -1442,7 +1442,7 @@ async def text2image(
     auto_parse: bool = True,
     font_size: int = 20,
     color: Union[str, Tuple[int, int, int], Tuple[int, int, int, int]] = "white",
-    font: str = "CJGaoDeGuo.otf",
+    font: str = "Source Han Serif.otf",
     font_color: Union[str, Tuple[int, int, int]] = "black",
     padding: Union[int, Tuple[int, int, int, int]] = 0,
     _add_height: float = 0,

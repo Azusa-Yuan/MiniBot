@@ -13,3 +13,4 @@ MiniBot只专注于管理与QQ相关的东西（群权限校验，QQ账号权限
 * 插件独立化运行，更有利于debug与调整
 * 当发生故障或者问题时，开发者不需要对MiniBot有深入的了解
 
+playwright install chromium

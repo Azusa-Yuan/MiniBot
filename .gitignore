@@ -35,6 +35,7 @@ __pycache__/
 # plugins
 nonebot_plugin_stockhelper/
 pcrjjc3/
+DNF/
 
 # Distribution / packaging
 .Python

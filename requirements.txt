@@ -11,3 +11,4 @@ playwright>=1.18.2,<2.0.0
 retrying
 pytest
 pil-utils
+aiofiles
