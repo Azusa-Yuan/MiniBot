@@ -394,7 +394,6 @@ class GroupManager(StaticData[BaseData]):
             path = Path(path)
         if path:
             dict_data = self._data.dict()
-            del dict_data["task"]
             with open(path, "w", encoding="utf8") as f:
                 json.dump(dict_data, f, ensure_ascii=False, indent=4)
 

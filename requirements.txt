@@ -10,5 +10,6 @@ opencv-python==4.10.0.84
 playwright>=1.18.2,<2.0.0
 retrying
 pytest
+pytest-asyncio
 pil-utils
 aiofiles

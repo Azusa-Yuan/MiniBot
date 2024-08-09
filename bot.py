@@ -9,7 +9,7 @@ config = driver.config
 nonebot.load_plugin("nonebot_plugin_apscheduler")
 nonebot.load_plugins("basic_plugins")
 nonebot.load_plugins("plugins")
-# 最后加载权限控制
+# 加载权限控制
 nonebot.load_plugins("basic_plugins/hooks")
 
 

@@ -10,7 +10,6 @@ from .plugins2settings_manager import Plugins2settingsManager
 from .plugins_manager import PluginsManager
 from .resources_manager import ResourcesManager
 from .admin_manager import AdminManager
-from .none_plugin_count_manager import NonePluginCountManager
 from .requests_manager import RequestManager
 from configs.path import DATA_PATH
 
@@ -56,10 +55,6 @@ resources_manager: ResourcesManager = ResourcesManager(
     DATA_PATH / "manager" / "resources_manager.json"
 )
 
-# 插件加载容忍管理
-none_plugin_count_manager: NonePluginCountManager = NonePluginCountManager(
-    DATA_PATH / "manager" / "none_plugin_count_manager.json"
-)
 
 # 好友请求/群聊邀请 管理
 requests_manager: RequestManager = RequestManager(
