@@ -33,7 +33,7 @@ func (ctx *Ctx) GetMatcherMetadata() MatcherMetadata {
 	if ctx.ma.Engine.MetaData == nil {
 		meta.PluginName = "default"
 	} else {
-		meta.MatcherName = ctx.ma.Engine.MetaData.Name
+		meta.PluginName = ctx.ma.Engine.MetaData.Name
 	}
 	return meta
 }

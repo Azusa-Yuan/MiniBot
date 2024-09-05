@@ -14,7 +14,7 @@ var (
 	ResponseTime = prometheus.NewHistogramVec(
 		prometheus.HistogramOpts{
 			Name:    "response_time_seconds",
-			Help:    "Histogram of processing time for consumers.",
+			Help:    "Histogram of processing time",
 			Buckets: []float64{0.5, 1.0, 2.0, 5.0, 10.0}, // 自定义桶
 		},
 		[]string{"plugin", "controller", "success"},
@@ -22,10 +22,10 @@ var (
 
 	RequestsTotal = prometheus.NewCounterVec(
 		prometheus.CounterOpts{
-			Name: "http_requests_total",
-			Help: "Total number of HTTP requests",
+			Name: "requests_total",
+			Help: "Total number of requests",
 		},
-		[]string{"plugin", "controller", "success"},
+		[]string{"plugin", "matcher", "success"},
 	)
 )
 
@@ -52,7 +52,7 @@ func init() {
 			}
 			matcherMetadata := ctx.GetMatcherMetadata()
 			RequestsTotal.WithLabelValues(matcherMetadata.PluginName, matcherMetadata.MatcherName, status).Inc()
-			ResponseTime.WithLabelValues(matcherMetadata.PluginName, matcherMetadata.MatcherName, status).Observe(float64(time.Since(startTime).Microseconds()) / 1000)
+			ResponseTime.WithLabelValues(matcherMetadata.PluginName, matcherMetadata.MatcherName, status).Observe(float64(time.Since(startTime).Milliseconds()) / 1000)
 		},
 	)
 }
