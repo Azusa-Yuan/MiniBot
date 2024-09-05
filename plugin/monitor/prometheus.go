@@ -50,12 +50,9 @@ func init() {
 				status = "err"
 				ctx.Err = nil
 			}
-			pluginName := ctx.GetMatcherMetadata().PluginName
-			if pluginName == "" {
-				pluginName = "default"
-			}
-			RequestsTotal.WithLabelValues(pluginName, "", status).Inc()
-			ResponseTime.WithLabelValues(pluginName, "", status).Observe(float64(time.Since(startTime).Microseconds()) / 1000)
+			matcherMetadata := ctx.GetMatcherMetadata()
+			RequestsTotal.WithLabelValues(matcherMetadata.PluginName, matcherMetadata.MatcherName, status).Inc()
+			ResponseTime.WithLabelValues(matcherMetadata.PluginName, matcherMetadata.MatcherName, status).Observe(float64(time.Since(startTime).Microseconds()) / 1000)
 		},
 	)
 }

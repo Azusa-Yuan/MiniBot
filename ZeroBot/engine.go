@@ -1,7 +1,9 @@
 package zero
 
-// New 生成空引擎
-func New() *Engine {
+import "github.com/sirupsen/logrus"
+
+// New 生成空引擎  只允许默认引擎使用
+func unew() *Engine {
 	return &Engine{
 		PreHandler:  []Rule{},
 		MidHandler:  []Rule{},
@@ -16,6 +18,9 @@ type MetaData struct {
 }
 
 func NewTemplate(metaData *MetaData) (e *Engine) {
+	if metaData.Name == "" {
+		logrus.Fatalln("禁止有命名的插件")
+	}
 	e = &Engine{
 		MetaData:    metaData,
 		PreHandler:  []Rule{},
@@ -31,7 +36,7 @@ func NewTemplate(metaData *MetaData) (e *Engine) {
 	return
 }
 
-var defaultEngine = New()
+var defaultEngine = unew()
 
 // Engine is the pre_handler, post_handler manager
 type Engine struct {
@@ -99,6 +104,7 @@ func (e *Engine) On(typ string, rules ...Rule) *Matcher {
 		Type:   Type(typ),
 		Rules:  rules,
 		Engine: e,
+		Mark:   typ,
 	}
 	e.Matchers = append(e.Matchers, matcher)
 	return StoreMatcher(matcher)
@@ -137,6 +143,7 @@ func (e *Engine) OnPrefix(prefix string, rules ...Rule) *Matcher {
 		Type:   Type("message"),
 		Rules:  append([]Rule{PrefixRule(prefix)}, rules...),
 		Engine: e,
+		Mark:   prefix,
 	}
 	e.Matchers = append(e.Matchers, matcher)
 	return StoreMatcher(matcher)
@@ -151,6 +158,7 @@ func (e *Engine) OnSuffix(suffix string, rules ...Rule) *Matcher {
 		Type:   Type("message"),
 		Rules:  append([]Rule{SuffixRule(suffix)}, rules...),
 		Engine: e,
+		Mark:   suffix,
 	}
 	e.Matchers = append(e.Matchers, matcher)
 	return StoreMatcher(matcher)
@@ -167,6 +175,7 @@ func (e *Engine) OnCommand(commands string, rules ...Rule) *Matcher {
 		Type:   Type("message"),
 		Rules:  append([]Rule{CommandRule(commands)}, rules...),
 		Engine: e,
+		Mark:   commands,
 	}
 	e.Matchers = append(e.Matchers, matcher)
 	return StoreMatcher(matcher)
@@ -183,6 +192,7 @@ func (e *Engine) OnRegex(regexPattern string, rules ...Rule) *Matcher {
 		Type:   Type("message"),
 		Rules:  append([]Rule{RegexRule(regexPattern)}, rules...),
 		Engine: e,
+		Mark:   regexPattern,
 	}
 	e.Matchers = append(e.Matchers, matcher)
 	return StoreMatcher(matcher)
@@ -199,6 +209,7 @@ func (e *Engine) OnKeyword(keyword string, rules ...Rule) *Matcher {
 		Type:   Type("message"),
 		Rules:  append([]Rule{KeywordRule(keyword)}, rules...),
 		Engine: e,
+		Mark:   keyword,
 	}
 	e.Matchers = append(e.Matchers, matcher)
 	return StoreMatcher(matcher)
@@ -215,6 +226,7 @@ func (e *Engine) OnFullMatch(src string, rules ...Rule) *Matcher {
 		Type:   Type("message"),
 		Rules:  append([]Rule{FullMatchRule(src)}, rules...),
 		Engine: e,
+		Mark:   src,
 	}
 	e.Matchers = append(e.Matchers, matcher)
 	return StoreMatcher(matcher)
@@ -231,6 +243,7 @@ func (e *Engine) OnFullMatchGroup(src []string, rules ...Rule) *Matcher {
 		Type:   Type("message"),
 		Rules:  append([]Rule{FullMatchRule(src...)}, rules...),
 		Engine: e,
+		Mark:   src[0],
 	}
 	e.Matchers = append(e.Matchers, matcher)
 	return StoreMatcher(matcher)
@@ -247,6 +260,7 @@ func (e *Engine) OnKeywordGroup(keywords []string, rules ...Rule) *Matcher {
 		Type:   Type("message"),
 		Rules:  append([]Rule{KeywordRule(keywords...)}, rules...),
 		Engine: e,
+		Mark:   keywords[0],
 	}
 	e.Matchers = append(e.Matchers, matcher)
 	return StoreMatcher(matcher)
@@ -273,6 +287,7 @@ func (e *Engine) OnPrefixGroup(prefix []string, rules ...Rule) *Matcher {
 		Type:   Type("message"),
 		Rules:  append([]Rule{PrefixRule(prefix...)}, rules...),
 		Engine: e,
+		Mark:   prefix[0],
 	}
 	e.Matchers = append(e.Matchers, matcher)
 	return StoreMatcher(matcher)
@@ -289,6 +304,7 @@ func (e *Engine) OnSuffixGroup(suffix []string, rules ...Rule) *Matcher {
 		Type:   Type("message"),
 		Rules:  append([]Rule{SuffixRule(suffix...)}, rules...),
 		Engine: e,
+		Mark:   suffix[0],
 	}
 	e.Matchers = append(e.Matchers, matcher)
 	return StoreMatcher(matcher)

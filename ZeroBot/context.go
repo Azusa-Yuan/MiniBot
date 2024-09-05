@@ -27,9 +27,15 @@ type Ctx struct {
 
 // func (ctx )
 func (ctx *Ctx) GetMatcherMetadata() MatcherMetadata {
-	return MatcherMetadata{
-		PluginName: ctx.ma.Engine.MetaData.Name,
+	meta := MatcherMetadata{
+		MatcherName: ctx.ma.Mark,
 	}
+	if ctx.ma.Engine.MetaData == nil {
+		meta.PluginName = "default"
+	} else {
+		meta.MatcherName = ctx.ma.Engine.MetaData.Name
+	}
+	return meta
 }
 
 // GetMatcher ...

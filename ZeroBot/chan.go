@@ -54,8 +54,6 @@ func (evc *eventChan) loop(latency, maxwait time.Duration, process func([]byte, 
 		for range timer.C {
 			item := <-evc.c
 			process(item.response, item.caller, maxwait)
-			// 每次处理都GC是不是太频繁了？
-			// runtime.GC()
 		}
 	}()
 }
