@@ -150,6 +150,7 @@ func (m *Matcher) copy() *Matcher {
 		Handler:  m.Handler,
 		Temp:     m.Temp,
 		Engine:   m.Engine,
+		Mark:     m.Mark,
 	}
 }
 

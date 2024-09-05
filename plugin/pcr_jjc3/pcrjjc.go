@@ -126,7 +126,7 @@ func init() {
 			if gid == "0" {
 				gid = ""
 			}
-			msg, err := userInfoManage.bind(cx+oldId, uid, bid, gid, false)
+			msg, err := userInfoManage.bind(cx+oldId, uid, gid, bid, false)
 			if err != nil {
 				logrus.Infoln("[pcr] 绑定账号", err)
 				msg = err.Error()
@@ -147,7 +147,7 @@ func init() {
 			if gid == "0" {
 				gid = ""
 			}
-			msg, err := userInfoManage.bind(cx+oldId, uid, bid, gid, true)
+			msg, err := userInfoManage.bind(cx+oldId, uid, gid, bid, true)
 			if err != nil {
 				logrus.Infoln("[pcr] 关注账号", err)
 				msg = err.Error()
