@@ -1,0 +1,22 @@
+zero:
+  nickname:
+    - 露露姆
+  command_prefix: "/"
+  super_users:
+    - 123456
+  ring_len: 4096
+  latency: 100000000
+  max_process_time: 240000000000
+  # 是否进行消息已读，调试时可以false更方便
+  mark_message: true 
+
+# 正向websocket，可以理解为Minibot作为websocket客户端
+ws:
+  # - url: "ws://127.0.0.1:6700"
+  #   access_token: ""
+
+# 反向websocket，可以理解为Minibot作为websocket服务端，一个服务端可以接多个客户端，不建议设置多个wss
+# 0.0.0.0 是调试环境所用，生产环境不建议这么配置
+wss:
+  - url: "ws://0.0.0.0:8099"
+    access_token: ""

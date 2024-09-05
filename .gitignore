@@ -1,0 +1,13 @@
+.idea/
+.vscode
+*.db
+*.txt
+*.mp4
+*.log
+__debug*
+*.copy
+binds.json
+critical
+log/
+tmp.json
+data/*
