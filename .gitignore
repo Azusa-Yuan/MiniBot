@@ -8,6 +8,7 @@ __debug*
 *.copy
 binds.json
 critical
-log/
+./log/
 tmp.json
 data/*
+*.gz

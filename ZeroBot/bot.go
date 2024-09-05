@@ -95,7 +95,7 @@ func Run(op *Config) {
 
 // RunAndBlock 主函数初始化并阻塞
 //
-//	preblock 在所有 Driver 连接后，调用最后一个 Driver 的 Listen 阻塞前执行本函数
+// 除最后一个Driver都用go实现非阻塞
 func RunAndBlock(op *Config, preblock func()) {
 	if !atomic.CompareAndSwapUintptr(&isrunning, 0, 1) {
 		log.Warnln("[bot] 已忽略重复调用的 RunAndBlock")
@@ -125,6 +125,7 @@ func RunAndBlock(op *Config, preblock func()) {
 		if preblock != nil {
 			preblock()
 		}
+		// listen是for死循环  会阻塞
 		op.Driver[i].Listen(listenCallback)
 	}
 }

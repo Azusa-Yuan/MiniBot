@@ -12,6 +12,11 @@ type (
 	Handler func(ctx *Ctx)
 )
 
+type MatcherMetadata struct {
+	PluginName  string
+	MatcherName string
+}
+
 // Matcher 是 ZeroBot 匹配和处理事件的最小单元
 type Matcher struct {
 	// Temp 是否为临时Matcher，临时 Matcher 匹配一次后就会删除当前 Matcher
@@ -31,7 +36,8 @@ type Matcher struct {
 	// Handler 处理事件的函数
 	Handler Handler
 	// Engine 注册 Matcher 的 Engine，Engine可为一系列 Matcher 添加通用 Rule 和 其他钩子
-	Engine *Engine
+	Engine          *Engine
+	matcherMetadata *MatcherMetadata
 }
 
 var (

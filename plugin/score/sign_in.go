@@ -11,8 +11,9 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"io/fs"
 	"math"
-	"math/rand"
+	"math/rand/v2"
 	"net/http"
 	"os"
 	"path/filepath"
@@ -42,6 +43,7 @@ const (
 )
 
 var (
+	cachePath string
 	rankArray = [...]int{0, 10, 20, 50, 100, 200, 350, 550, 750, 1000, 1200}
 
 	metaData = &zero.MetaData{
@@ -58,7 +60,7 @@ var (
 )
 
 func init() {
-	cachePath := filepath.Join(path.GetDataPath(), "cache")
+	cachePath = filepath.Join(path.GetDataPath(), "cache")
 	sdb = initialize()
 	file.CreateIfNotExist(cachePath)
 
@@ -122,7 +124,7 @@ func init() {
 		}
 		// 更新钱包
 		rank := getrank(level)
-		add := 1 + rand.Intn(10) + rank*5 // 等级越高获得的钱越高
+		add := 1 + rand.IntN(10) + rank*5 // 等级越高获得的钱越高
 		go func() {
 			err = wallet.UpdateWalletByCtx(ctx, add)
 			if err != nil {
@@ -320,19 +322,33 @@ func initPic(picFile string, uid int64) (avatar []byte, err error) {
 	request, _ := http.NewRequest("GET", url, nil)
 	request.Header.Add("referer", referer)
 	response, err = http.DefaultClient.Do(request)
-	data := []byte{}
-	if err == nil {
-		if response.StatusCode != http.StatusOK {
-			s := fmt.Sprintf("status code: %d", response.StatusCode)
-			err = errors.New(s)
+
+	if response.StatusCode != http.StatusOK {
+
+		s := fmt.Sprintf("status code: %d", response.StatusCode)
+		err = errors.New(s)
+	}
+
+	var data []byte
+	if err != nil {
+		var files []fs.DirEntry
+		files, err = os.ReadDir(cachePath)
+		if err != nil {
 			return
 		}
+		randomIndex := rand.IntN(len(files))
+		selectedFile := files[randomIndex]
+
+		data, err = os.ReadFile(filepath.Join(cachePath, selectedFile.Name()))
+	} else {
 		data, err = io.ReadAll(response.Body)
-		response.Body.Close()
 	}
+
 	if err != nil {
 		return
 	}
+	response.Body.Close()
+
 	return avatar, os.WriteFile(picFile, data, 0644)
 }
 

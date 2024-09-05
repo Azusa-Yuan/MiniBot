@@ -22,10 +22,15 @@ type Ctx struct {
 	// lazy message
 	once    sync.Once
 	message string
-	err     error
+	Err     error
 }
 
 // func (ctx )
+func (ctx *Ctx) GetMatcherMetadata() MatcherMetadata {
+	return MatcherMetadata{
+		PluginName: ctx.ma.Engine.MetaData.Name,
+	}
+}
 
 // GetMatcher ...
 func (ctx *Ctx) GetMatcher() *Matcher {
@@ -117,7 +122,7 @@ func (ctx *Ctx) SendChain(msg ...message.MessageSegment) message.MessageID {
 }
 
 func (ctx *Ctx) SendError(text string, err error) message.MessageID {
-	ctx.err = err
+	ctx.Err = err
 	name := ctx.ma.Engine.MetaData.Name
 	if name == "" {
 		name = "default"
