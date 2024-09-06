@@ -76,13 +76,13 @@ func checkSingleDog(gid int64, uid int64, fiancee int64) (res bool, msg string) 
 	case userInfo != (UserInfo{}) && (userInfo.Target == 0 || userInfo.UID == 0): // 如果是单身贵族
 		msg = "今天的你是单身贵族噢"
 		return
-	case userInfo.Target == fiancee || userInfo.UID == fiancee:
+	case userInfo.Target == fiancee:
 		msg = "笨蛋！你们已经在一起了！"
 		return
-	case userInfo.UID == uid: // 如果如为攻
+	case userInfo.Mode == 1: // 如果如为攻
 		msg = "笨蛋~你家里还有个吃白饭的w"
 		return
-	case userInfo.Target == uid: // 如果为受
+	case userInfo != (UserInfo{}) && userInfo.Mode == 0: // 如果为受
 		msg = "该是0就是0,当0有什么不好"
 		return
 	}

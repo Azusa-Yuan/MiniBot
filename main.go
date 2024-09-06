@@ -48,7 +48,7 @@ func main() {
 	if web.On {
 		go func() {
 			r := web.GetWebEngine()
-			r.Run(":8888")
+			r.Run("127.0.0.1:8888")
 		}()
 	}
 	zero.RunAndBlock(&config.Config.Z, utils.GlobalInitMutex.Unlock)

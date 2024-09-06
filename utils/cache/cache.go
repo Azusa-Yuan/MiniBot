@@ -1,6 +1,7 @@
 package cache
 
 import (
+	"MiniBot/utils"
 	"MiniBot/utils/net_tools"
 	"MiniBot/utils/path"
 	"MiniBot/utils/text"
@@ -75,7 +76,7 @@ func GetAvatar(uid int64) ([]byte, error) {
 		return nil, err
 	}
 	if res != "" {
-		return []byte(res), nil
+		return utils.StringToBytes(res), nil
 	}
 	url := "http://q4.qlogo.cn/g?b=qq&nk=" + uidStr + "&s=640"
 	respBytes, err := net_tools.Download(url)

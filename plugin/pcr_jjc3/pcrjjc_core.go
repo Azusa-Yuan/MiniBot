@@ -37,6 +37,7 @@ func userQuery(id string) (res string, err error) {
 	knight_exp := userInfo.Get("princess_knight_rank_total_exp").Int()
 
 	res = fmt.Sprintf(`
+名字: %s
 区服：%s
 jjc排名: %v
 pjjc排名: %v
@@ -46,7 +47,7 @@ pjjc排名: %v
 公主骑士Rank: %v
 火: %v   水: %v
 风: %v    光: %v
-暗: %v `, cxMap[id[:1]], userInfo.Get("arena_rank"), userInfo.Get("grand_arena_rank"), timeStr,
+暗: %v `, userInfo.Get("user_name").Str, cxMap[id[:1]], userInfo.Get("arena_rank"), userInfo.Get("grand_arena_rank"), timeStr,
 		userInfo.Get("arena_group"), userInfo.Get("grand_arena_group"), calKnightRank(int(knight_exp)),
 		calculateDomain(int(deepDomain.Get("0").Get("clear_count").Int())), calculateDomain(int(deepDomain.Get("1").Get("clear_count").Int())),
 		calculateDomain(int(deepDomain.Get("2").Get("clear_count").Int())), calculateDomain(int(deepDomain.Get("3").Get("clear_count").Int())),
@@ -147,13 +148,7 @@ func judgeMode(mode string, modeStr string) bool {
 }
 
 func getChange(id string, num int, mode string) string {
-	msg := ""
-	var preMsg string
-	if num == 0 {
-		preMsg = "您"
-	} else {
-		preMsg = fmt.Sprintf("您的关注%d", num)
-	}
+
 	gamerInfoManage.RLock()
 	defer gamerInfoManage.RUnlock()
 	if _, ok := gamerInfoManage.GamerInfoMap[id]; !ok {
@@ -166,6 +161,13 @@ func getChange(id string, num int, mode string) string {
 	old := gamerInfoManage.GamerInfoMap[id]
 	new := gamerInfoManage.TmpGamerInfoMap[id]
 
+	msg := ""
+	var preMsg string
+	if num == 0 {
+		preMsg = "您"
+	} else {
+		preMsg = fmt.Sprintf("您的关注%d %s", num, new.GamerName)
+	}
 	// 上线信息处理
 	if new.TimeStamp-old.TimeStamp > 1800 && judgeMode("login_remind", mode) {
 		msg += "已上线"
