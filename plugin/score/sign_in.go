@@ -164,14 +164,12 @@ func init() {
 
 	engine.OnPrefix("获得签到背景", zero.OnlyGroup).SetBlock(true).
 		Handle(func(ctx *zero.Ctx) {
-			param := ctx.State["args"].(string)
-			var uidStr string
+			uid := ctx.Event.UserID
 			if len(ctx.Event.Message) > 1 && ctx.Event.Message[1].Type == "at" {
-				uidStr = ctx.Event.Message[1].Data["qq"]
-			} else if param == "" {
-				uidStr = strconv.FormatInt(ctx.Event.UserID, 10)
+				uid, _ = strconv.ParseInt(ctx.Event.Message[1].Data["qq"], 10, 64)
 			}
-			picFile := cachePath + uidStr + time.Now().Format("20060102") + ".png"
+			uid = transform.BidWithidInt64Custom(ctx.Event.SelfID, uid)
+			picFile := filepath.Join(cachePath, strconv.FormatInt(uid, 10)+time.Now().Format("20060102")+".png")
 			if file.IsNotExist(picFile) {
 				ctx.SendChain(message.Reply(ctx.Event.MessageID), message.Text("请先签到！"))
 				return
@@ -334,6 +332,9 @@ func initPic(picFile string, uid int64) (avatar []byte, err error) {
 		var files []fs.DirEntry
 		files, err = os.ReadDir(cachePath)
 		if err != nil {
+			return
+		}
+		if len(files) <= 0 {
 			return
 		}
 		randomIndex := rand.IntN(len(files))
