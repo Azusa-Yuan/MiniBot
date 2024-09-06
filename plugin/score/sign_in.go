@@ -84,7 +84,7 @@ func init() {
 		today := time.Now().Format("20060102")
 		// 签到图片
 		drawedFile := strconv.FormatInt(uid, 10) + today + "signin.png"
-		picFile := cachePath + strconv.FormatInt(uid, 10) + today + ".png"
+		picFile := filepath.Join(cachePath, strconv.FormatInt(uid, 10)+today+".png")
 		// 获取签到时间
 		si := sdb.GetSignInByUID(uid)
 		siUpdateTimeStr := si.UpdatedAt.Format("20060102")
