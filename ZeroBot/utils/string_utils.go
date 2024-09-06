@@ -6,7 +6,7 @@ import (
 
 // BytesToString 没有内存开销的转换
 func BytesToString(b []byte) string {
-	return *(*string)(unsafe.Pointer(&b))
+	return unsafe.String(unsafe.SliceData(b), len(b))
 }
 
 // StringToBytes 没有内存开销的转换

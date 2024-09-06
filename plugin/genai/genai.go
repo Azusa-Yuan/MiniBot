@@ -22,11 +22,16 @@ func init() {
 			if ctx.Event.GroupID != 0 {
 				key = transform.BidWithgidInt64(ctx)
 			}
-			resp, err := ai.AIBot.SendMsgWithSession(key, ctx.ExtractPlainText())
+			msg := ctx.ExtractPlainText()
+			msg = strings.TrimSpace(msg)
+			if msg == "" {
+				return
+			}
+			resp, err := ai.AIBot.SendMsgWithSession(key, msg)
 			if err != nil {
 				if err.Error() == "not session" {
 					ai.AIBot.CreateSession(key, ai.IM.IntroduceMap["露露姆"])
-					resp, err = ai.AIBot.SendMsgWithSession(key, ctx.ExtractPlainText())
+					resp, err = ai.AIBot.SendMsgWithSession(key, msg)
 				}
 				if err != nil {
 					ctx.SendChain(message.Text(fmt.Sprint("[ai] ", err)))

@@ -56,7 +56,7 @@ func GetHelp() ([]byte, error) {
 	/***********绘制标题***********/
 	canvas.DrawString("表情包列表", (1500-sl)/2, 140-1.2*h) // 放置在中间位置
 	/***********设置字体大小,并获取字体高度用来定位***********/
-	if err = canvas.ParseFontFace(data, 1.5*fontSize); err != nil {
+	if err = canvas.ParseFontFace(data, 1.4*fontSize); err != nil {
 		return nil, err
 	}
 

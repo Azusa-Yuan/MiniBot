@@ -13,7 +13,7 @@ import (
 )
 
 func init() {
-	logLevel := logrus.InfoLevel
+	logLevel := logrus.DebugLevel
 
 	logrus.SetLevel(logLevel)
 

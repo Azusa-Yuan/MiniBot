@@ -47,7 +47,7 @@ func (ws *WSClient) Connect() {
 	log.Infof("[ws] 开始尝试连接到Websocket服务器: %v", ws.Url)
 	header := http.Header{
 		"X-Client-Role": []string{"Universal"},
-		"User-Agent":    []string{"ZeroBot/1.6.3"},
+		"User-Agent":    []string{"MiniBot/1.3.3"},
 	}
 	if ws.AccessToken != "" {
 		header["Authorization"] = []string{"Bearer " + ws.AccessToken}
