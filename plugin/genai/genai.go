@@ -49,6 +49,7 @@ func init() {
 			imgBytes, err := dealImgStr(imgStrs...)
 			if err != nil {
 				ctx.SendError(err)
+				return
 			}
 
 			for i := 0; i < len(imgTypes); i++ {

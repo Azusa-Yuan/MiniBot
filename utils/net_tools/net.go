@@ -14,8 +14,7 @@ var (
 	clientWithoutTLSVerify = &http.Client{
 		Transport: &http.Transport{
 			TLSClientConfig: &tls.Config{
-				MinVersion:         tls.VersionTLS13,
-				InsecureSkipVerify: true, // 禁用证书验证（仅用于测试）
+				MinVersion: tls.VersionTLS13,
 			},
 		},
 		Timeout: 30 * time.Second,
