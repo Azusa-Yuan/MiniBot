@@ -13,7 +13,7 @@ import (
 
 func init() {
 
-	zerolog.SetGlobalLevel(zerolog.DebugLevel)
+	zerolog.SetGlobalLevel(zerolog.InfoLevel)
 
 	// 创建日志文件夹
 	logFolder := "./log"
