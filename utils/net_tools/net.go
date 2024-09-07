@@ -2,7 +2,6 @@ package net_tools
 
 import (
 	"MiniBot/utils"
-	"crypto/tls"
 	"fmt"
 	"io"
 	"net/http"
@@ -12,11 +11,6 @@ import (
 var (
 	defaultClient          = &http.Client{}
 	clientWithoutTLSVerify = &http.Client{
-		Transport: &http.Transport{
-			TLSClientConfig: &tls.Config{
-				MinVersion: tls.VersionTLS13,
-			},
-		},
 		Timeout: 30 * time.Second,
 	}
 )
