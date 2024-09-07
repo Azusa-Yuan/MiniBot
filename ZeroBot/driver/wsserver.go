@@ -14,11 +14,12 @@ import (
 	"unsafe"
 
 	"github.com/RomiChan/websocket"
-	log "github.com/sirupsen/logrus"
 	"github.com/tidwall/gjson"
 
 	zero "ZeroBot"
 	"ZeroBot/utils"
+
+	"github.com/rs/zerolog/log"
 )
 
 // WSServer ...
@@ -97,14 +98,14 @@ func checkAuth(req *http.Request, token string) int {
 func (wss *WSServer) any(w http.ResponseWriter, r *http.Request) {
 	status := checkAuth(r, wss.AccessToken)
 	if status != http.StatusOK {
-		log.Warnf("[wss] 已拒绝 %v 的 WebSocket 请求: Token鉴权失败(code:%d)", r.RemoteAddr, status)
+		log.Warn().Str("name", "wss").Msgf("已拒绝 %v 的 WebSocket 请求: Token鉴权失败(code:%d)", r.RemoteAddr, status)
 		w.WriteHeader(status)
 		return
 	}
 
 	conn, err := upgrader.Upgrade(w, r, nil)
 	if err != nil {
-		log.Warnf("[wss] 处理 WebSocket 请求时出现错误: %v", err)
+		log.Warn().Str("name", "wss").Msgf("处理 WebSocket 请求时出现错误: %v", err)
 		return
 	}
 
@@ -113,7 +114,7 @@ func (wss *WSServer) any(w http.ResponseWriter, r *http.Request) {
 	}
 	err = conn.ReadJSON(&rsp)
 	if err != nil {
-		log.Warnf("[wss] 与Websocket服务器 %v 握手时出现错误: %v", wss.Url, err)
+		log.Warn().Str("name", "wss").Msgf("与Websocket服务器 %v 握手时出现错误: %v", wss.Url, err)
 		return
 	}
 
@@ -122,7 +123,7 @@ func (wss *WSServer) any(w http.ResponseWriter, r *http.Request) {
 		selfID: rsp.SelfID,
 	}
 	zero.APICallers.Store(rsp.SelfID, c) // 添加Caller到 APICaller list...
-	log.Infof("[wss] 连接Websocket服务器: %s 成功, 账号: %d", wss.Url, rsp.SelfID)
+	log.Info().Str("name", "wss").Msgf("连接Websocket服务器: %s 成功, 账号: %d", wss.Url, rsp.SelfID)
 	wss.caller <- c
 }
 
@@ -136,13 +137,14 @@ func (wss *WSServer) Connect() {
 
 	listener, err := net.Listen(network, address)
 	if err != nil {
-		log.Warn("[wss] Websocket服务器监听失败:", err)
+		log.Warn().Str("name", "wss").Msgf("Websocket服务器监听失败:%v", err)
+
 		wss.lstn = nil
 		return
 	}
 
 	wss.lstn = listener
-	log.Infoln("[wss] Websocket服务器开始监听:", listener.Addr())
+	log.Info().Str("name", "wss").Msgf("Websocket服务器开始监听:%v", listener.Addr())
 }
 
 // Listen 开始监听事件
@@ -156,10 +158,10 @@ func (wss *WSServer) Listen(handler func([]byte, zero.APICaller)) {
 				wss.Connect()
 				continue
 			}
-			log.Infof("[wss] WebSocket 服务器开始处理: %v", wss.lstn.Addr())
+			log.Info().Str("name", "wss").Msgf("WebSocket 服务器开始处理: %v", wss.lstn.Addr())
 			err := http.Serve(wss.lstn, &mux)
 			if err != nil {
-				log.Warn("[wss] Websocket服务器在端点", wss.lstn.Addr(), "失败:", err)
+				log.Warn().Str("name", "wss").Msgf("Websocket服务器在端点%v 失败:%v", wss.lstn.Addr(), err)
 				wss.lstn = nil
 			}
 		}
@@ -176,7 +178,7 @@ func (wssc *WSSCaller) listen(handler func([]byte, zero.APICaller)) {
 		t, payload, err := wssc.conn.ReadMessage()
 		if err != nil { // reconnect
 			zero.APICallers.Delete(wssc.selfID) // 断开从apicaller中删除
-			log.Warn("[wss] Websocket服务器连接断开...")
+			log.Warn().Str("name", "wss").Msg("Websocket服务器连接断开...")
 			return
 		}
 		if t != websocket.TextMessage {
@@ -184,7 +186,7 @@ func (wssc *WSSCaller) listen(handler func([]byte, zero.APICaller)) {
 		}
 		rsp := gjson.Parse(utils.BytesToString(payload))
 		if rsp.Get("echo").Exists() { // 存在echo字段，是api调用的返回
-			log.Debug("[wss] 接收到API调用返回: ", strings.TrimSpace(utils.BytesToString(payload)))
+			log.Debug().Str("name", "wss").Msgf("接收到API调用返回: %v", strings.TrimSpace(utils.BytesToString(payload)))
 			if c, ok := wssc.seqMap.LoadAndDelete(rsp.Get("echo").Uint()); ok {
 				c <- zero.APIResponse{ // 发送api调用响应
 					Status:  rsp.Get("status").String(),
@@ -201,7 +203,7 @@ func (wssc *WSSCaller) listen(handler func([]byte, zero.APICaller)) {
 		if rsp.Get("meta_event_type").Str == "heartbeat" { // 忽略心跳事件
 			continue
 		}
-		log.Debug("[wss] 接收到事件: ", utils.BytesToString(payload))
+		log.Debug().Str("name", "wss").Msgf("接收到事件:  %v", utils.BytesToString(payload))
 		handler(payload, wssc)
 	}
 }
@@ -221,10 +223,10 @@ func (wssc *WSSCaller) CallApi(req zero.APIRequest) (zero.APIResponse, error) {
 	err := wssc.conn.WriteJSON(&req)
 	wssc.mu.Unlock()
 	if err != nil {
-		log.Warn("[wss] 向WebsocketServer发送API请求失败: ", err.Error())
+		log.Warn().Str("name", "wss").Err(err).Msg("向WebsocketServer发送API请求失败")
 		return nullResponse, err
 	}
-	log.Debug("[wss] 向服务器发送请求: ", &req)
+	log.Debug().Str("name", "wss").Msgf("向服务器发送请求: %v", &req)
 
 	select { // 等待数据返回
 	case rsp, ok := <-ch:

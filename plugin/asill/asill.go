@@ -11,7 +11,7 @@ import (
 
 	"ZeroBot/message"
 
-	"github.com/sirupsen/logrus"
+	"github.com/rs/zerolog/log"
 )
 
 var (
@@ -35,13 +35,13 @@ func init() {
 
 	rawdata, err := os.ReadFile(dataPath)
 	if err != nil {
-		logrus.Errorf("[asill] Error reading file: %v, not load this plugin", err)
+		log.Error().Msgf("[asill] Error reading file: %v, not load this plugin", err)
 		return
 	}
 
 	err = json.Unmarshal(rawdata, &data)
 	if err != nil {
-		logrus.Errorf("[asill] Error umarshal json: %v, not load this plugin", err)
+		log.Error().Msgf("[asill] Error umarshal json: %v, not load this plugin", err)
 		return
 	}
 

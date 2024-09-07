@@ -6,7 +6,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/sirupsen/logrus"
+	"github.com/rs/zerolog/log"
 	"github.com/tidwall/gjson"
 )
 
@@ -52,7 +52,6 @@ pjjc排名: %v
 		calculateDomain(int(deepDomain.Get("0").Get("clear_count").Int())), calculateDomain(int(deepDomain.Get("1").Get("clear_count").Int())),
 		calculateDomain(int(deepDomain.Get("2").Get("clear_count").Int())), calculateDomain(int(deepDomain.Get("3").Get("clear_count").Int())),
 		calculateDomain(int(deepDomain.Get("4").Get("clear_count").Int())))
-	logrus.Debugln(res)
 	return
 }
 
@@ -99,8 +98,8 @@ func query(id string, save bool) (gjson.Result, error) {
 		gamerInfo.TimeStamp = userInfo.Get("last_login_time").Int()
 		gamerInfo.ArenaRank = userInfo.Get("arena_rank").Int()
 		if gamerInfo.ArenaRank == 0 {
-			logrus.Errorln(resp)
-			return resp, err
+			log.Error().Str("name", pluginName).Msgf("%v", resp)
+			return resp, nil
 		}
 		gamerInfo.GrandArenaRank = userInfo.Get("grand_arena_rank").Int()
 		gamerInfo.GamerName = userInfo.Get("user_name").Str

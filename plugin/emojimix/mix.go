@@ -20,12 +20,10 @@ func init() {
 	}).OnMessage(match).SetBlock(true).
 		Handle(func(ctx *zero.Ctx) {
 			r := ctx.State["emojimix"].([]rune)
-			// logrus.Debugln("[emojimix] match:", r)
 			r1, r2 := r[0], r[1]
 			u1 := fmt.Sprintf(bed, emojis[r1], r1, r1, r2)
 			u2 := fmt.Sprintf(bed, emojis[r2], r2, r2, r1)
-			// logrus.Debugln("[emojimix] u1:", u1)
-			// logrus.Debugln("[emojimix] u2:", u2)
+
 			resp1, err := http.Head(u1)
 			if err == nil {
 				resp1.Body.Close()
@@ -46,7 +44,6 @@ func init() {
 }
 
 func match(ctx *zero.Ctx) bool {
-	// logrus.Debugln("[emojimix] msg:", ctx.Event.Message)
 	if len(ctx.Event.Message) == 2 {
 		r1 := face2emoji(ctx.Event.Message[0])
 		if _, ok := emojis[r1]; !ok {
@@ -61,7 +58,6 @@ func match(ctx *zero.Ctx) bool {
 	}
 
 	r := []rune(ctx.Event.RawMessage)
-	// logrus.Debugln("[emojimix] raw msg:", ctx.Event.RawMessage)
 	if len(r) == 2 {
 		if _, ok := emojis[r[0]]; !ok {
 			return false

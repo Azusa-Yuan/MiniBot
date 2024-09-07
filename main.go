@@ -2,19 +2,19 @@
 package main
 
 import (
+	_ "MiniBot/utils/log"
+
 	"MiniBot/cmd"
 	"MiniBot/config"
 	"MiniBot/service/web"
 	"MiniBot/utils"
 	_ "MiniBot/utils/db"
-	_ "MiniBot/utils/log"
 
 	// ---------以下插件均可通过前面加 // 注释，注释后停用并不加载插件--------- //
 	_ "MiniBot/plugin/asill"
 	_ "MiniBot/plugin/atri"
 	_ "MiniBot/plugin/dnf"
 	_ "MiniBot/plugin/emojimix"
-	_ "MiniBot/plugin/event"
 	_ "MiniBot/plugin/genai"
 	_ "MiniBot/plugin/meme"
 	_ "MiniBot/plugin/monitor"

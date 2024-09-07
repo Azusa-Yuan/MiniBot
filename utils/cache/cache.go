@@ -14,8 +14,9 @@ import (
 	"strings"
 	"time"
 
+	"github.com/rs/zerolog/log"
+
 	"github.com/redis/go-redis/v9"
-	"github.com/sirupsen/logrus"
 	"gopkg.in/yaml.v2"
 )
 
@@ -33,6 +34,7 @@ type Config struct {
 var (
 	redisClient     *redis.Client
 	defalutFontPath = text.MaokenFontFile
+	utilsName       = "redis"
 	// 以下不需要填，由init完成
 )
 
@@ -45,12 +47,12 @@ func init() {
 
 	yamlFile, err := os.ReadFile(yamlPath)
 	if err != nil {
-		logrus.Fatalf("Error reading YAML file: %v", err)
+		log.Fatal().Str("name", utilsName).Err(err).Msg("")
 	}
 
 	err = yaml.Unmarshal(yamlFile, &config)
 	if err != nil {
-		logrus.Fatalf("Error parsing YAML: %v", err)
+		log.Fatal().Str("name", utilsName).Err(err).Msg("")
 	}
 
 	redisClientTmp := redis.NewClient(&redis.Options{
@@ -62,9 +64,9 @@ func init() {
 	// Ping Redis server
 	_, err = redisClientTmp.Ping(ctx).Result()
 	if err != nil {
-		logrus.Fatalf("Failed to connect to Redis: %v", err)
+		log.Fatal().Str("name", utilsName).Err(err).Msg("")
 	}
-	logrus.Infoln("connect redis success!")
+	log.Info().Str("name", utilsName).Msg("connect redis success!")
 	redisClient = redisClientTmp
 }
 
@@ -78,10 +80,10 @@ func GetAvatar(uid int64) ([]byte, error) {
 	if res != "" {
 		return utils.StringToBytes(res), nil
 	}
-	url := "http://q4.qlogo.cn/g?b=qq&nk=" + uidStr + "&s=640"
+	url := "https://q4.qlogo.cn/g?b=qq&nk=" + uidStr + "&s=640"
 	respBytes, err := net_tools.Download(url)
 	if err != nil {
-		url = "http://q4.qlogo.cn/g?b=qq&nk=" + uidStr + "&s=100"
+		url = "https://q4.qlogo.cn/g?b=qq&nk=" + uidStr + "&s=100"
 		respBytes, err = net_tools.Download(url)
 		if err != nil {
 			return nil, err

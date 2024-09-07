@@ -6,27 +6,12 @@ import (
 	"os"
 	"path/filepath"
 	"testing"
-
-	"github.com/sirupsen/logrus"
-	"gopkg.in/yaml.v2"
 )
 
 func TestSend(t *testing.T) {
-	logrus.Infoln("test")
+	fmt.Println("test")
 	res, _ := AIBot.SendMsg("您好，你是谁")
-	logrus.Infoln(res)
-}
-
-func TestConfig(t *testing.T) {
-	config := Config{
-		Key: "AIzaSyBp0rHzc4ixeKHY8T4XswXmkKnMKXs4buM",
-	}
-	configBytes, _ := yaml.Marshal(config)
-	os.WriteFile(filepath.Join(dataPath, "ai.yaml"), configBytes, 0755)
-	configBytes, _ = os.ReadFile(filepath.Join(dataPath, "ai.yaml"))
-	newConfig := Config{}
-	yaml.Unmarshal(configBytes, &newConfig)
-	fmt.Println(newConfig)
+	fmt.Println(res)
 }
 
 func TestInfo(t *testing.T) {

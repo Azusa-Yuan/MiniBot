@@ -10,7 +10,7 @@ import (
 	zero "ZeroBot"
 	"ZeroBot/message"
 
-	"github.com/sirupsen/logrus"
+	"github.com/rs/zerolog/log"
 )
 
 func init() {
@@ -33,7 +33,8 @@ func init() {
 			username := ctx.CardOrNickName(userid)
 			groupname := ctx.GetThisGroupInfo(true).Name
 			groupid := ctx.Event.GroupID
-			logrus.Info("[event]收到来自[", username, "](", userid, ")的群聊邀请，群:[", groupname, "](", groupid, ")")
+			log.Info().Str("name", pluginName).Msgf("收到来自[%s](%d)的群聊邀请，群:[%s](%d)", username, userid, groupname, groupid)
+
 			if zero.SuperUserPermission(ctx) {
 				ctx.SetGroupAddRequest(ctx.Event.Flag, "invite", true, "")
 				ctx.SendPrivateForwardMessage(su, message.Message{message.CustomNode(username, userid,
@@ -59,7 +60,7 @@ func init() {
 			comment := ctx.Event.Comment
 			userid := ctx.Event.UserID
 			username := ctx.CardOrNickName(userid)
-			logrus.Info("[event]收到来自[", username, "](", userid, ")的好友申请")
+			log.Info().Str("name", pluginName).Msgf("收到来自[%s](%d)的好友申请", username, userid)
 			if zero.SuperUserPermission(ctx) {
 				ctx.SetFriendAddRequest(ctx.Event.Flag, true, "")
 				ctx.SendPrivateMessage(su, message.Text("已自动同意在"+now+"收到来自"+

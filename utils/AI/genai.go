@@ -5,22 +5,22 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"log"
 	"os"
 	"path/filepath"
 	"sync"
 	"time"
 
 	"github.com/google/generative-ai-go/genai"
-	"github.com/sirupsen/logrus"
+	"github.com/rs/zerolog/log"
 	"google.golang.org/api/option"
 	"gopkg.in/yaml.v2"
 )
 
 var (
-	config   Config
-	dataPath = path.GetDataPath()
-	IM       = IntroduceManger{}
+	config    Config
+	dataPath  = path.GetDataPath()
+	IM        = IntroduceManger{}
+	utilsName = "AI"
 )
 
 type session struct {
@@ -39,20 +39,20 @@ var AIBot *aiBot
 func init() {
 	configBytes, err := os.ReadFile(filepath.Join(dataPath, "ai.yaml"))
 	if err != nil {
-		logrus.Fatalln("[ai]", err)
+		log.Fatal().Str("name", utilsName).Err(err).Msg("")
 	}
 	err = yaml.Unmarshal(configBytes, &config)
 	if err != nil {
-		logrus.Fatalln("[ai]", err)
+		log.Fatal().Str("name", utilsName).Err(err).Msg("")
 	}
 
 	IMBytes, err := os.ReadFile(filepath.Join(dataPath, "introduce.json"))
 	if err != nil {
-		logrus.Fatalln("[ai]", err)
+		log.Fatal().Str("name", utilsName).Err(err).Msg("")
 	}
 	err = json.Unmarshal(IMBytes, &IM)
 	if err != nil {
-		logrus.Fatalln("[ai]", err)
+		log.Fatal().Str("name", utilsName).Err(err).Msg("")
 	}
 
 	ctx := context.Background()
@@ -67,7 +67,7 @@ func init() {
 	// }
 	client, err := genai.NewClient(ctx, option.WithAPIKey(key))
 	if err != nil {
-		log.Fatal(err)
+		log.Fatal().Str("name", utilsName).Err(err).Msg("")
 	}
 
 	model := client.GenerativeModel("gemini-1.5-flash")
@@ -103,7 +103,7 @@ func (a *aiBot) SendMsg(msg string) (string, error) {
 	ctx := context.Background()
 	resp, err := a.model.GenerateContent(ctx, genai.Text(msg))
 	if err != nil {
-		logrus.Errorln(err)
+		log.Error().Str("name", utilsName).Err(err).Msg("")
 		return "", err
 	}
 	return getResponseString(resp), nil
@@ -146,7 +146,7 @@ func (a *aiBot) SendMsgWithSession(key int64, msg string) (string, error) {
 
 	resp, err := session.chatSession.SendMessage(ctx, genai.Text(msg))
 	if err != nil {
-		logrus.Errorln(err)
+		log.Error().Str("name", utilsName).Err(err).Msg("")
 		if err.Error() == "blocked: candidate: FinishReasonSafety" {
 			return "不可以说这种事情，达咩！", nil
 		}

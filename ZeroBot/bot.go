@@ -12,7 +12,7 @@ import (
 	"time"
 
 	"github.com/FloatTech/ttl"
-	log "github.com/sirupsen/logrus"
+	"github.com/rs/zerolog/log"
 	"github.com/tidwall/gjson"
 
 	"ZeroBot/message"
@@ -77,7 +77,7 @@ func (op *Config) directlink(b []byte, c APICaller) {
 // Run 主函数初始化
 func Run(op *Config) {
 	if !atomic.CompareAndSwapUintptr(&isrunning, 0, 1) {
-		log.Warnln("[bot] 已忽略重复调用的 Run")
+		log.Warn().Str("name", "bot").Msg("已忽略重复调用的 Run")
 	}
 	runinit(op)
 	// linkf 两种不同的处理消息策略，linkf就是ws收到消息进行处理的方式
@@ -98,7 +98,7 @@ func Run(op *Config) {
 // 除最后一个Driver都用go实现非阻塞
 func RunAndBlock(op *Config, preblock func()) {
 	if !atomic.CompareAndSwapUintptr(&isrunning, 0, 1) {
-		log.Warnln("[bot] 已忽略重复调用的 RunAndBlock")
+		log.Warn().Str("name", "bot").Msg("已忽略重复调用的 RunAndBlock")
 	}
 	// 初始化消息处理机制
 	runinit(op)
@@ -249,7 +249,7 @@ func match(ctx *Ctx, matchers []*Matcher, maxwait time.Duration) {
 			defer func() {
 				close(ch)
 				if pa := recover(); pa != nil {
-					log.Errorf("[bot] execute rule err: %v\n%v", pa, utils.BytesToString(debug.Stack()))
+					log.Error().Str("name", "bot").Msgf("execute rule err: %v\n%v", pa, utils.BytesToString(debug.Stack()))
 				}
 			}()
 			ch <- rule(ctx)
@@ -262,7 +262,7 @@ func match(ctx *Ctx, matchers []*Matcher, maxwait time.Duration) {
 			defer func() {
 				close(ch)
 				if pa := recover(); pa != nil {
-					log.Errorf("[bot] execute handler err: %v\n%v", pa, utils.BytesToString(debug.Stack()))
+					log.Error().Str("name", "bot").Msgf("execute handler err: %v\n%v", pa, utils.BytesToString(debug.Stack()))
 				}
 			}()
 			h(ctx)
@@ -303,7 +303,7 @@ loop:
 							waitTimer.Reset(maxwait)
 							continue
 						}
-						log.Warnln("[bot] PreHandler 处理达到最大时延, 退出")
+						log.Warn().Str("name", "bot").Msg("PreHandler 处理达到最大时延, 退出")
 						break loop
 					}
 					break
@@ -327,7 +327,7 @@ loop:
 						waitTimer.Reset(maxwait)
 						continue
 					}
-					log.Warnln("[bot] rule 处理达到最大时延, 退出")
+					log.Warn().Str("name", "bot").Msg("rule 处理达到最大时延, 退出")
 					break loop
 				}
 				break
@@ -352,7 +352,7 @@ loop:
 							waitTimer.Reset(maxwait)
 							continue
 						}
-						log.Warnln("[bot] midHandler 处理达到最大时延, 退出")
+						log.Warn().Str("name", "bot").Msg("midHandler 处理达到最大时延, 退出")
 						break loop
 					}
 					break
@@ -373,7 +373,7 @@ loop:
 						waitTimer.Reset(maxwait)
 						continue
 					}
-					log.Warnln("[bot] Handler 处理达到最大时延, 退出")
+					log.Warn().Str("name", "bot").Msg("Handler 处理达到最大时延, 退出")
 					break loop
 				}
 				break
@@ -398,7 +398,7 @@ loop:
 							waitTimer.Reset(maxwait)
 							continue
 						}
-						log.Warnln("[bot] postHandler 处理达到最大时延, 退出")
+						log.Warn().Str("name", "bot").Msg("postHandler 处理达到最大时延, 退出")
 						break loop
 					}
 					break
@@ -451,14 +451,14 @@ func preprocessMessageEvent(e *Event) {
 
 	switch {
 	case e.DetailType == "group":
-		log.Infof("[bot] 收到群(%v)消息 %v : %v", e.GroupID, e.Sender.String(), e.RawMessage)
+		log.Info().Str("name", "bot").Msgf("收到群(%v)消息 %v : %v", e.GroupID, e.Sender.String(), e.RawMessage)
 		processAt()
 	case e.DetailType == "guild" && e.SubType == "channel":
-		log.Infof("[bot] 收到频道(%v)(%v-%v)消息 %v : %v", e.GroupID, e.GuildID, e.ChannelID, e.Sender.String(), e.Message)
+		log.Info().Str("name", "bot").Msgf("收到频道(%v)(%v-%v)消息 %v : %v", e.GroupID, e.GuildID, e.ChannelID, e.Sender.String(), e.Message)
 		processAt()
 	default:
 		e.IsToMe = true // 私聊也判断为at
-		log.Infof("[bot] 收到私聊消息 %v : %v", e.Sender.String(), e.RawMessage)
+		log.Info().Str("name", "bot").Msgf("收到私聊消息 %v : %v", e.Sender.String(), e.RawMessage)
 	}
 	if len(e.Message) > 0 && e.Message[0].Type == "text" { // Trim Again!
 		e.Message[0].Data["text"] = strings.TrimLeft(e.Message[0].Data["text"], " ")

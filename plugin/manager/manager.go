@@ -5,7 +5,7 @@ import (
 	database "MiniBot/utils/db"
 	"sync"
 
-	"github.com/sirupsen/logrus"
+	"github.com/rs/zerolog/log"
 )
 
 // Manager 管理
@@ -15,6 +15,7 @@ type Manager struct {
 
 // 针对全部插件的
 var (
+	pluginName = "default"
 	// 封禁uid的set
 	blockCache = make(map[string]bool)
 	// 沉默的gid的set
@@ -37,11 +38,11 @@ func NewManager() (m Manager) {
 
 	permissionLevels := []PermissionLevel{}
 	db.Select("key", "level").Find(&permissionLevels)
-	logrus.Debug("权限查询结构", permissionLevels)
+	log.Debug().Str("name", pluginName).Msgf("权限查询结构%v", permissionLevels)
 	for _, permissionLevel := range permissionLevels {
 		LevelCache[permissionLevel.Key] = permissionLevel.Level
 	}
-	logrus.Debug("权限等级缓存", LevelCache)
+	log.Debug().Str("name", pluginName).Msgf("权限等级缓存%v", LevelCache)
 	return
 }
 

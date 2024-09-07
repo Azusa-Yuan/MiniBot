@@ -1,11 +1,10 @@
 package web
 
 import (
-	"net/http"
 	"time"
 
 	"github.com/gin-gonic/gin"
-	"github.com/sirupsen/logrus"
+	"github.com/rs/zerolog/log"
 )
 
 var (
@@ -13,32 +12,86 @@ var (
 	On     = false
 )
 
-func LogrusLoggerMiddleware() gin.HandlerFunc {
-	return func(c *gin.Context) {
-		// 记录请求开始时间
-		start := time.Now()
-
-		// 处理请求
-		c.Next()
-
-		// 计算请求耗时
-		duration := time.Since(start)
-
-		// 获取日志信息
-		statusCode := c.Writer.Status()
-		method := c.Request.Method
-		path := c.Request.URL.Path
-
-		// 记录日志到 Logrus
-		logrus.Infof("Request completed:  %s %s - %d %s (%v ms)", method, path, statusCode, http.StatusText(statusCode), duration.Milliseconds())
-	}
-}
-
 func init() {
-	router.Use(LogrusLoggerMiddleware())
+	router.Use(Logger("MiniBot_gin"))
 }
 
 func GetWebEngine() *gin.Engine {
 	On = true
 	return router
+}
+
+type ginHands struct {
+	SerName    string
+	Path       string
+	Latency    time.Duration
+	Method     string
+	StatusCode int
+	ClientIP   string
+	MsgStr     string
+}
+
+func ErrorLogger() gin.HandlerFunc {
+	return ErrorLoggerT(gin.ErrorTypeAny)
+}
+
+func ErrorLoggerT(typ gin.ErrorType) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		c.Next()
+
+		if !c.Writer.Written() {
+			json := c.Errors.ByType(typ).JSON()
+			if json != nil {
+				c.JSON(-1, json)
+			}
+		}
+	}
+}
+
+func Logger(serName string) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		t := time.Now()
+		// before request
+		path := c.Request.URL.Path
+		raw := c.Request.URL.RawQuery
+		c.Next()
+		// after request
+		// latency := time.Since(t)
+		// clientIP := c.ClientIP()
+		// method := c.Request.Method
+		// statusCode := c.Writer.Status()
+		if raw != "" {
+			path = path + "?" + raw
+		}
+		msg := c.Errors.String()
+		if msg == "" {
+			msg = "Request"
+		}
+		cData := &ginHands{
+			SerName:    serName,
+			Path:       path,
+			Latency:    time.Since(t),
+			Method:     c.Request.Method,
+			StatusCode: c.Writer.Status(),
+			ClientIP:   c.ClientIP(),
+			MsgStr:     msg,
+		}
+
+		logSwitch(cData)
+	}
+}
+
+func logSwitch(data *ginHands) {
+	switch {
+	case data.StatusCode >= 400 && data.StatusCode < 500:
+		{
+			log.Warn().Str("name", data.SerName).Str("method", data.Method).Str("path", data.Path).Dur("resp_time", data.Latency).Int("status", data.StatusCode).Str("client_ip", data.ClientIP).Msg(data.MsgStr)
+		}
+	case data.StatusCode >= 500:
+		{
+			log.Error().Str("name", data.SerName).Str("method", data.Method).Str("path", data.Path).Dur("resp_time", data.Latency).Int("status", data.StatusCode).Str("client_ip", data.ClientIP).Msg(data.MsgStr)
+		}
+	default:
+		log.Info().Str("name", data.SerName).Str("method", data.Method).Str("path", data.Path).Dur("resp_time", data.Latency).Int("status", data.StatusCode).Str("client_ip", data.ClientIP).Msg(data.MsgStr)
+	}
 }

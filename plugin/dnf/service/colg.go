@@ -10,7 +10,7 @@ import (
 	"strings"
 
 	"github.com/PuerkitoBio/goquery"
-	"github.com/sirupsen/logrus"
+	"github.com/rs/zerolog/log"
 	"github.com/xrash/smetrics"
 )
 
@@ -25,6 +25,7 @@ var (
 	// 缓存不同作者的同一个消息
 	preHead     []string
 	defaultUser *user
+	userPath    = filepath.Join(path.GetPluginDataPath(), "user.json")
 )
 
 type user struct {
@@ -38,8 +39,6 @@ func GetColgUser() (*user, error) {
 		return defaultUser, nil
 	}
 
-	userPath := filepath.Join(path.GetPluginDataPath(), "user.json")
-
 	users := user{
 		[]string{},
 		[]string{},
@@ -50,14 +49,14 @@ func GetColgUser() (*user, error) {
 		// 读取文件内容
 		data, err := os.ReadFile(userPath)
 		if err != nil {
-			logrus.Errorln("读取文件错误:", err)
+			log.Error().Str("name", "colg").Err(err).Msg("")
 			return nil, err
 		}
 
 		// 解析 JSON 数据
 		err = json.Unmarshal(data, &users)
 		if err != nil {
-			logrus.Errorln("解析 JSON 数据错误:", err)
+			log.Error().Str("name", "colg").Err(err).Msg("")
 			return nil, err
 		}
 	}
@@ -66,20 +65,19 @@ func GetColgUser() (*user, error) {
 	return &users, nil
 }
 
-func (user) saveBinds(user *user, userPath string) {
+func (user *user) SaveBinds() error {
 	// 序列化 JSON 数据
 	data, err := json.MarshalIndent(user, "", "  ")
 	if err != nil {
-		logrus.Infoln("序列化 JSON 数据错误:", err)
-		return
+		return err
 	}
 
 	// 写入文件
 	err = os.WriteFile(userPath, data, 0644)
 	if err != nil {
-		logrus.Infoln("写入文件错误:", err)
-		return
+		return err
 	}
+	return nil
 }
 
 func fetchContent(url string) (string, string, error) {

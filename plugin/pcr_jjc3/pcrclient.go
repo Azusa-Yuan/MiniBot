@@ -19,7 +19,7 @@ import (
 
 	// MessagePack 是一个轻量级的、速度快的二进制序列化格式
 
-	"github.com/sirupsen/logrus"
+	"github.com/rs/zerolog/log"
 	"github.com/tidwall/gjson"
 	"github.com/vmihailenco/msgpack/v5"
 )
@@ -49,7 +49,7 @@ func CreatePcrclient(udid, short_udid, viewer_id, platform, proxy string, header
 	if proxy != "" {
 		proxyURL, err = url.Parse(proxy)
 		if err != nil {
-			logrus.Errorln("proxy error", err)
+			log.Error().Str("name", pluginName).Err(err).Msg("")
 			return
 		}
 		transport := &http.Transport{
@@ -189,12 +189,12 @@ func (p *pcrclient) unpack(rawdata []byte) (gjson.Result, []byte, error) {
 	// msgpack可能有问题
 	err := msgpack.Unmarshal(dec, &response)
 	if err != nil {
-		logrus.Errorln("解析 MessagePack 失败:", err)
+		log.Error().Str("name", pluginName).Err(err).Msg("")
 	}
 
 	jsonData, err := json.Marshal(response)
 	if err != nil {
-		logrus.Errorln("转化json失败:", err)
+		log.Error().Str("name", pluginName).Err(err).Msg("")
 	}
 
 	res := gjson.ParseBytes(jsonData)
@@ -229,7 +229,7 @@ func (p *pcrclient) CallApi(apiUrl string, request map[string]interface{}) (res 
 	if p.viewer_id != "" {
 		encryptViewerId, err := p.encrypt([]byte(p.viewer_id), key)
 		if err != nil {
-			logrus.Error("encrypt fail", err)
+			log.Error().Str("name", pluginName).Err(err).Msg("")
 		}
 		base64ViewerId := make([]byte, base64.StdEncoding.EncodedLen(len(encryptViewerId)))
 		base64.StdEncoding.Encode(base64ViewerId, encryptViewerId)
@@ -238,7 +238,7 @@ func (p *pcrclient) CallApi(apiUrl string, request map[string]interface{}) (res 
 
 	packed, crypted, err := p.pack(request, key)
 	if err != nil {
-		logrus.Error("pack fail", err)
+		log.Error().Str("name", pluginName).Err(err).Msg("")
 	}
 
 	header := p.createHeader(packed, apiUrl)
@@ -247,7 +247,7 @@ func (p *pcrclient) CallApi(apiUrl string, request map[string]interface{}) (res 
 	url := p.apiroot + apiUrl
 	req, err := http.NewRequest("POST", url, bytes.NewBuffer(crypted))
 	if err != nil {
-		logrus.Error("pcrclient request erro", err)
+		log.Error().Str("name", pluginName).Err(err).Msg("")
 		return
 	}
 
@@ -258,8 +258,7 @@ func (p *pcrclient) CallApi(apiUrl string, request map[string]interface{}) (res 
 	// 发送请求
 	respRaw, err := p.client.Do(req)
 	if err != nil {
-		logrus.Error("请求失败:", err)
-		fmt.Println(err)
+		log.Error().Str("name", pluginName).Err(err).Msg("")
 		return
 	}
 	defer respRaw.Body.Close()
@@ -271,13 +270,13 @@ func (p *pcrclient) CallApi(apiUrl string, request map[string]interface{}) (res 
 	// 读取响应的内容
 	body, err := io.ReadAll(respRaw.Body)
 	if err != nil {
-		logrus.Error("读取响应失败:", err)
+		log.Error().Str("name", pluginName).Err(err).Msg("")
 		return
 	}
 
 	resp, _, err := p.unpack(body)
 	if err != nil {
-		logrus.Error("Fail to unpack body")
+		log.Error().Str("name", pluginName).Err(err).Msg("")
 	}
 
 	respHeader := resp.Get("data_headers")
@@ -294,7 +293,7 @@ func (p *pcrclient) CallApi(apiUrl string, request map[string]interface{}) (res 
 
 	if data.Get("server_error").Exists() {
 		err = fmt.Errorf("pcrclient: %s failed: %v", url, resp.Get("server_error").String())
-		logrus.Error("[pcr]", err)
+		log.Error().Str("name", pluginName).Err(err).Msg("")
 		p.login = false
 		return
 	}

@@ -7,7 +7,7 @@ import (
 
 	"ZeroBot/message"
 
-	"github.com/sirupsen/logrus"
+	"github.com/rs/zerolog/log"
 )
 
 // Ctx represents the Context which hold the event.
@@ -127,16 +127,12 @@ func (ctx *Ctx) SendChain(msg ...message.MessageSegment) message.MessageID {
 	return ctx.Send((message.Message)(msg))
 }
 
-func (ctx *Ctx) SendError(text string, err error) message.MessageID {
+func (ctx *Ctx) SendError(err error, msgs ...message.MessageSegment) message.MessageID {
 	ctx.Err = err
-	name := ctx.ma.Engine.MetaData.Name
-	if name == "" {
-		name = "default"
-	}
-	msg := fmt.Sprintf("[%s] %s err: %v", name, text, err)
-	logrus.Errorln(msg)
-
-	return ctx.SendChain(message.At(ctx.Event.UserID), message.Text(msg))
+	metadata := ctx.GetMatcherMetadata()
+	log.Error().Str("name", metadata.PluginName).Str("controller", metadata.MatcherName).Err(err).Msg("")
+	msgs = append(message.Message{message.At(ctx.Event.UserID), message.Text(err)}, msgs...)
+	return ctx.SendChain(msgs...)
 }
 
 // Echo 向自身分发虚拟事件

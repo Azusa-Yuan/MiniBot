@@ -12,12 +12,13 @@ import (
 	"ZeroBot/extension"
 	"ZeroBot/message"
 
-	"github.com/sirupsen/logrus"
+	"github.com/rs/zerolog/log"
 	"gopkg.in/yaml.v2"
 )
 
 var (
-	help = `注意：数字2为服务器编号，仅支持2~4服
+	pluginName = "pcrjjc"
+	help       = `注意：数字2为服务器编号，仅支持2~4服
 [竞技场bind 10位uid] 默认双场均启用，排名下降时推送
 [竞技场查询 10位uid] 查询（bind后无需输入uid，可缩写为jjccx、看看）
 [停止竞技场bind] 停止jjc推送
@@ -41,13 +42,14 @@ func init() {
 	// Read config YAML file
 	data, err := os.ReadFile(filepath.Join(dataPath, "config.yaml"))
 	if err != nil {
-		logrus.Fatalf("error reading config file: %v", err)
+		log.Error().Str("name", pluginName).Err(err).Msg("")
+		return
 	}
 
 	// Unmarshal YAML data
 	err = yaml.Unmarshal(data, &config)
 	if err != nil {
-		logrus.Fatalf("error unmarshalling config file: %v", err)
+		log.Error().Str("name", pluginName).Err(err).Msg("")
 	}
 	proxy = config.Proxy
 
@@ -58,7 +60,7 @@ func init() {
 	patternOrder := `(\d+)`
 	reOrder := regexp.MustCompile(patternOrder)
 	engine := zero.NewTemplate(&zero.MetaData{
-		Name: "pcrjjc",
+		Name: pluginName,
 		Help: help,
 	})
 	engine.OnPrefixGroup([]string{"看看", "jjccx", "关注查询"}).SetBlock(true).Handle(
@@ -128,7 +130,7 @@ func init() {
 			}
 			msg, err := userInfoManage.bind(cx+oldId, uid, gid, bid, false)
 			if err != nil {
-				logrus.Infoln("[pcr] 绑定账号", err)
+				log.Error().Str("name", pluginName).Err(err).Msg("")
 				msg = err.Error()
 			}
 			ctx.SendChain(message.At(ctx.Event.UserID), message.Text(msg))
@@ -149,7 +151,7 @@ func init() {
 			}
 			msg, err := userInfoManage.bind(cx+oldId, uid, gid, bid, true)
 			if err != nil {
-				logrus.Infoln("[pcr] 关注账号", err)
+				log.Error().Str("name", pluginName).Err(err).Msg("")
 				msg = err.Error()
 			}
 			ctx.SendChain(message.At(ctx.Event.UserID), message.Text(msg))
@@ -223,8 +225,7 @@ func init() {
 			queryAll(list, config.ScheduleThread)
 			sendChange()
 
-			elapsedTime := time.Since(startTime)
-			logrus.Infoln("[pcr] 轮询时间", elapsedTime)
+			log.Info().Str("name", pluginName).Dur("轮询时间", time.Since(startTime)).Msg("")
 		}
 	}()
 }
@@ -241,7 +242,7 @@ func sendChange() {
 				bid, _ := strconv.ParseInt(userInfo.Bid[i], 10, 64)
 				bot, err := zero.GetBot(bid)
 				if err != nil {
-					logrus.Errorln(err)
+					log.Error().Str("name", pluginName).Err(err).Msg("")
 					continue
 				}
 				qq, _ := strconv.ParseInt(uid, 10, 64)

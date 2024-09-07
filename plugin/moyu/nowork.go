@@ -6,7 +6,6 @@ import (
 	"time"
 
 	reg "github.com/fumiama/go-registry"
-	"github.com/sirupsen/logrus"
 )
 
 // Holiday 节日
@@ -36,7 +35,6 @@ func GetHoliday(name string) *Holiday {
 	if err != nil {
 		return NewHoliday(name+err.Error(), 0, 0, 0, 0)
 	}
-	logrus.Debugln("[moyu]获取节日:", name, dur, year, month, day)
 	return NewHoliday(name, dur, year, month, day)
 }
 

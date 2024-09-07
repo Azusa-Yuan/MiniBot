@@ -8,7 +8,7 @@ import (
 	"runtime"
 	"strings"
 
-	"github.com/sirupsen/logrus"
+	"github.com/rs/zerolog/log"
 )
 
 // 公共路径
@@ -22,31 +22,25 @@ var (
 	// bot运行路径
 	PWDPath = "/"
 	// bot的配置文件夹
-	ConfPath = "/config"
-	kinds    = []string{"plugin", "service", "utils"}
+	ConfPath  = "/config"
+	kinds     = []string{"plugin", "service", "utils"}
+	utilsName = "path"
 )
 
 func init() {
 	dir, err := os.Getwd()
 	if err != nil {
-		logrus.Fatal("Error getting current directory:", err)
+		log.Fatal().Str("name", utilsName).Err(err).Msg("")
 		return
 	}
-	// 查找最后一个 "plugin" 的起始位置
-	lastIndex := strings.LastIndex(dir, "plugin")
-	if lastIndex != -1 {
-		dir = dir[0 : lastIndex-1]
-		logrus.Infoln("[path] 根据当前工作路径认定为是测试环境,路径有所更改 请注意")
-	}
-	lastIndex = strings.LastIndex(dir, "service")
-	if lastIndex != -1 {
-		dir = dir[0 : lastIndex-1]
-		logrus.Infoln("[path] 包根据当前工作路径认定为是测试环境,路径有所更改 请注意")
-	}
-	lastIndex = strings.LastIndex(dir, "utils")
-	if lastIndex != -1 {
-		dir = dir[0 : lastIndex-1]
-		logrus.Infoln("[path] 包根据当前工作路径认定为是测试环境,路径有所更改 请注意")
+	// 查找最后一个 kinds 的起始位置
+	for _, keyWord := range kinds {
+		lastIndex := strings.LastIndex(dir, keyWord)
+		if lastIndex != -1 {
+			dir = dir[0 : lastIndex-1]
+			log.Info().Str("name", utilsName).Msg("根据当前工作路径认定为是测试环境,路径有所更改 请注意")
+			break
+		}
 	}
 	PluginPath = dir + PluginPath
 	DataPath = dir + DataPath
@@ -109,7 +103,7 @@ func GetDataPath() string {
 	for _, kind := range kinds {
 		path, err = getDataPath(name, kind)
 		if err == nil {
-			logrus.Debugln("判断包属于", kind)
+			log.Debug().Str("name", utilsName).Msgf("判断包属于%s", kind)
 			break
 		}
 	}

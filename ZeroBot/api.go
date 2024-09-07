@@ -10,11 +10,11 @@ import (
 	"regexp"
 	"strconv"
 
-	log "github.com/sirupsen/logrus"
-	"github.com/tidwall/gjson"
-
 	"ZeroBot/message"
 	"ZeroBot/utils"
+
+	"github.com/rs/zerolog/log"
+	"github.com/tidwall/gjson"
 )
 
 var base64Reg = regexp.MustCompile(`"type":"image","data":\{"file":"base64://[\w/\+=]+`)
@@ -56,10 +56,12 @@ func (ctx *Ctx) CallAction(action string, params Params) APIResponse {
 	}
 	rsp, err := ctx.caller.CallApi(req)
 	if err != nil {
-		log.Errorln("[api] 调用", action, "时出现错误: ", err)
+		log.Error().Str("name", "api").Err(err).Msgf("调用 %s 时出现错误", action)
 	}
 	if err == nil && rsp.RetCode != 0 {
-		log.Errorln("[api] 调用", action, "时出现错误, 返回值:", rsp.RetCode, ", 信息:", rsp.Msg, "解释:", rsp.Wording)
+		log.Error().Str("name", "api").Err(err).
+			Msgf("调用 %s 时出现错误, 返回值: %d, 信息: %s, 解释:%s", action, rsp.RetCode, rsp.Msg, rsp.Wording)
+
 	}
 	return rsp
 }
@@ -72,7 +74,7 @@ func (ctx *Ctx) SendGroupMessage(groupID int64, message interface{}) int64 {
 		"message":  message,
 	}).Data.Get("message_id")
 	if rsp.Exists() {
-		log.Infof("[api] 发送群消息(%v): %v (id=%v)", groupID, formatMessage(message), rsp.Int())
+		log.Info().Str("name", "api").Msgf("[api] 发送群消息(%v): %v (id=%v)", groupID, formatMessage(message), rsp.Int())
 		return rsp.Int()
 	}
 	return 0 // 无法获取返回值
@@ -86,7 +88,7 @@ func (ctx *Ctx) SendPrivateMessage(userID int64, message interface{}) int64 {
 		"message": message,
 	}).Data.Get("message_id")
 	if rsp.Exists() {
-		log.Infof("[api] 发送私聊消息(%v): %v (id=%v)", userID, formatMessage(message), rsp.Int())
+		log.Info().Str("name", "api").Msgf("发送私聊消息(%v): %v (id=%v)", userID, formatMessage(message), rsp.Int())
 		return rsp.Int()
 	}
 	return 0 // 无法获取返回值
@@ -582,7 +584,7 @@ func (ctx *Ctx) SendGuildChannelMessage(guildID, channelID string, message inter
 		"message":    message,
 	}).Data.Get("message_id")
 	if rsp.Exists() {
-		log.Infof("[api] 发送频道消息(%v-%v): %v (id=%v)", guildID, channelID, formatMessage(message), rsp.Int())
+		log.Info().Str("name", "api").Msgf("发送频道消息(%v-%v): %v (id=%v)", guildID, channelID, formatMessage(message), rsp.Int())
 		return rsp.String()
 	}
 	return "0" // 无法获取返回值

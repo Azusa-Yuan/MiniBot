@@ -1,6 +1,6 @@
 package zero
 
-import "github.com/sirupsen/logrus"
+import "github.com/rs/zerolog/log"
 
 // New 生成空引擎  只允许默认引擎使用
 func unew() *Engine {
@@ -19,7 +19,7 @@ type MetaData struct {
 
 func NewTemplate(metaData *MetaData) (e *Engine) {
 	if metaData.Name == "" {
-		logrus.Fatalln("禁止有命名的插件")
+		log.Fatal().Msg("禁止注册没有命名的插件")
 	}
 	e = &Engine{
 		MetaData:    metaData,

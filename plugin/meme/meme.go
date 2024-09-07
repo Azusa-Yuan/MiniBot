@@ -11,18 +11,20 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/sirupsen/logrus"
+	"github.com/rs/zerolog/log"
 	"golang.org/x/exp/maps"
 )
+
+var pluginName = "表情包制作"
 
 func init() {
 	err := InitMeme()
 	if err != nil {
-		logrus.Error(err)
+		log.Error().Str("name", pluginName).Err(err).Msg("")
 		return
 	}
 	metaData := zero.MetaData{
-		Name: "表情包制作",
+		Name: pluginName,
 		Help: "发送 表情包列表 查看所有表情指令 \n 发送 查看表情信息xx 查看表情详细参数",
 	}
 	engine := zero.NewTemplate(&metaData)
@@ -30,7 +32,8 @@ func init() {
 		func(ctx *zero.Ctx) {
 			data, err := GetHelp()
 			if err != nil {
-				ctx.SendChain(message.Text(fmt.Sprint("[meme]", err)))
+				ctx.SendError(err)
+				return
 			}
 			ctx.SendChain(message.At(ctx.Event.UserID), message.ImageBytes(data))
 		},
@@ -53,7 +56,7 @@ func init() {
 					qqStr := segment.Data["qq"]
 					qq, err := strconv.ParseInt(qqStr, 10, 64)
 					if err != nil {
-						logrus.Errorln("[meme]", err)
+						log.Error().Str("name", pluginName).Err(err).Msg("")
 						continue
 					}
 					args["user_infos"] = append(args["user_infos"].([]UserInfo),
@@ -64,7 +67,6 @@ func init() {
 					imgStrs = append(imgStrs, qqStr)
 				}
 				if segment.Type == "image" {
-					logrus.Debug(segment)
 					imgStrs = append(imgStrs, segment.Data["url"])
 				}
 			}
@@ -80,8 +82,6 @@ func init() {
 			}
 			// Fields函数会将字符串按空格分割,并自动忽略连续的空格
 			texts := strings.Fields(extractPlainText)
-			logrus.Debugln(texts)
-			logrus.Debugln(imgStrs)
 
 			if !fastJudge(path, len(imgStrs), len(texts)) {
 				imgStrs = append([]string{strconv.FormatInt(ctx.Event.UserID, 10)}, imgStrs...)
@@ -95,7 +95,7 @@ func init() {
 				}
 			}
 
-			// 匹配上了才组织后续
+			// 表情包占用前缀太多 匹配上了才阻止后续
 			ctx.Stop()
 
 			images, err := dealImgStr(imgStrs...)

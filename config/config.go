@@ -8,7 +8,7 @@ import (
 
 	"ZeroBot/driver"
 
-	"github.com/sirupsen/logrus"
+	"github.com/rs/zerolog/log"
 	"gopkg.in/yaml.v2"
 )
 
@@ -33,17 +33,17 @@ func ConfigInit() {
 	configPath := filepath.Join(path.ConfPath, "config.yaml")
 	if os.Getenv("ENVIRONMENT") == "dev" {
 		configPath = filepath.Join(path.ConfPath, "config_dev.yaml")
-		logrus.Infoln("目前处于开发环境，请注意主目录下所有配置文件的内容和路径是否正确")
+		log.Info().Msg("目前处于开发环境，请注意主目录下所有配置文件的内容和路径是否正确")
 	}
 	data, err := os.ReadFile(configPath)
 	if err != nil {
-		logrus.Fatalf("error reading config file: %v", err)
+		log.Fatal().Msgf("error reading config file: %v", err)
 	}
 
 	// Unmarshal YAML data
 	err = yaml.Unmarshal(data, &Config)
 	if err != nil {
-		logrus.Fatalf("error unmarshalling config file: %v", err)
+		log.Fatal().Msgf("error unmarshalling config file: %v", err)
 	}
 	for _, client := range Config.WS {
 		Config.Z.Driver = append(Config.Z.Driver, driver.NewWebSocketClient(client.URL, client.AccessToken))

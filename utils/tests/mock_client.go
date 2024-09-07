@@ -3,7 +3,6 @@ package tests
 import (
 	"MiniBot/config"
 	"MiniBot/utils/path"
-	"log"
 	"os"
 	"path/filepath"
 	"time"
@@ -11,12 +10,13 @@ import (
 	"ZeroBot/message"
 
 	"github.com/gorilla/websocket"
-	"github.com/sirupsen/logrus"
+	"github.com/rs/zerolog/log"
 	"github.com/tidwall/gjson"
 	"gopkg.in/yaml.v2"
 )
 
 var respChan = make(chan gjson.Result, 10)
+var utilsName = "mock_client"
 
 type MockClient struct {
 	conn   *websocket.Conn
@@ -50,22 +50,22 @@ func CreatMockClient() MockClient {
 	configPath := "config.yaml"
 	if os.Getenv("ENVIRONMENT") == "dev" {
 		configPath = "config_dev.yaml"
-		logrus.Infoln("目前处于开发环境，请注意主目录下所有配置文件的内容和路径是否正确")
+		log.Info().Str("name", utilsName).Msg("目前处于开发环境，请注意主目录下所有配置文件的内容和路径是否正确")
 	}
 	data, err := os.ReadFile(filepath.Join(pwdPath, configPath))
 	if err != nil {
-		logrus.Fatalf("error reading config file: %v", err)
+		log.Fatal().Str("name", utilsName).Err(err).Msg("")
 	}
 	conf := config.MiniConfig{}
 	err = yaml.Unmarshal(data, &conf)
 	if err != nil {
-		logrus.Fatalf("error unmarshalling config file: %v", err)
+		log.Fatal().Str("name", utilsName).Err(err).Msg("")
 	}
 
 	wss := conf.WSS[0]
 	conn, _, err := websocket.DefaultDialer.Dial(wss.URL+"/MiniBot", nil)
 	if err != nil {
-		log.Fatal("dial:", err)
+		log.Fatal().Str("name", utilsName).Err(err).Msg("")
 	}
 
 	conn.WriteJSON(map[string]interface{}{"self_id": int64(123456)})
@@ -74,11 +74,11 @@ func CreatMockClient() MockClient {
 		for {
 			_, payload, err := conn.ReadMessage()
 			if err != nil {
-				logrus.Error("read:", err)
+				log.Error().Str("name", utilsName).Err(err).Msg("")
 				return
 			}
 			resp := gjson.ParseBytes(payload)
-			logrus.Infof("Received: %v\n", resp.Raw)
+			log.Info().Str("name", utilsName).Msgf("Received: %v\n", resp.Raw)
 
 			echo := resp.Get("echo").Uint()
 			if echo == 0 {
@@ -112,9 +112,9 @@ func (c *MockClient) Send(msg string) {
 
 	err := c.conn.WriteJSON(&header)
 	if err != nil {
-		logrus.Fatal("[mock] 向WebsocketServer发送API请求失败: ", err.Error())
+		log.Fatal().Str("name", utilsName).Err(err).Msg("")
 	}
-	logrus.Debug("[wss] 向服务器发送请求: ", &header)
+	log.Debug().Str("name", utilsName).Msgf("向服务器发送请求:%v", &header)
 }
 
 // 快速获得初始子符串消息
@@ -122,7 +122,7 @@ func (c *MockClient) Get() string {
 	timer := time.NewTicker(3 * time.Second)
 	select {
 	case <-timer.C:
-		logrus.Fatal("超时")
+		log.Fatal().Str("name", utilsName).Msg("超时")
 		return ""
 	case resp := <-respChan:
 		res := ""

@@ -10,7 +10,7 @@ import (
 	"path/filepath"
 	"strconv"
 
-	"github.com/sirupsen/logrus"
+	"github.com/rs/zerolog/log"
 )
 
 // Rank struct represents a row in the rank CSV file
@@ -61,7 +61,8 @@ func init() {
 
 	err := json.Unmarshal(raw, &header)
 	if err != nil {
-		logrus.Errorln("json fail", err)
+		log.Error().Str("name", pluginName).Err(err).Msg("")
+		return
 	}
 
 	// 创建客户端
@@ -86,7 +87,7 @@ func init() {
 	rankExpPath := dataPath + "/rank_exp.csv" // Update this path to the actual CSV file path
 	ranks, err = loadRankExp(rankExpPath)
 	if err != nil {
-		logrus.Error("Error loading rank_exp.csv:", err)
+		log.Error().Str("name", pluginName).Err(err).Msg("")
 		return
 	}
 }
@@ -134,14 +135,14 @@ func calKnightRank(targetValue int) int {
 	for _, row := range ranks {
 		exp, err := strconv.Atoi(row.Exp)
 		if err != nil {
-			logrus.Warningln("Error converting exp to int:", err)
+			log.Error().Str("name", pluginName).Err(err).Msg("")
 			return targetRank
 		}
 
 		if targetValue >= exp {
 			rank, err := strconv.Atoi(row.Rank)
 			if err != nil {
-				logrus.Warningln("Error converting rank to int:", err)
+				log.Error().Str("name", pluginName).Err(err).Msg("")
 				return targetRank
 			}
 			targetRank = rank

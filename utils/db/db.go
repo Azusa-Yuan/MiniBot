@@ -5,12 +5,14 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/sirupsen/logrus"
+	"github.com/rs/zerolog/log"
 	"gopkg.in/yaml.v2"
 	"gorm.io/driver/mysql"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 )
+
+var utilsName = "DB"
 
 type DBInfo struct {
 	Dsn  string `yaml:"dsn"`
@@ -31,12 +33,12 @@ func NewDbConfig() *Config {
 	}
 	yamlFile, err := os.ReadFile(yamlPath)
 	if err != nil {
-		logrus.Errorf("Error reading YAML file: %v", err)
+		log.Error().Str("name", utilsName).Err(err).Msg("")
 	}
 
 	err = yaml.Unmarshal(yamlFile, &config)
 	if err != nil {
-		logrus.Errorf("Error parsing YAML: %v", err)
+		log.Error().Str("name", utilsName).Err(err).Msg("")
 	}
 	for k, v := range config.DbMap {
 		//	ok2代表是否有该数据库，ok1代表是否开启该数据库，实际上不用的话，可以直接将数据库删除
@@ -45,17 +47,17 @@ func NewDbConfig() *Config {
 			case v.Type == "pgsql":
 				v.Db, err = gorm.Open(postgres.Open(v.Dsn), &gorm.Config{})
 				if err != nil {
-					logrus.Errorf("Error open database %v", k)
+					log.Error().Str("name", utilsName).Err(err).Msgf("Error open database %v", k)
 					continue
 				}
-				logrus.Infof("success open database %v", k)
+				log.Info().Str("name", utilsName).Msgf("success open database %v", k)
 			case v.Type == "mysql":
 				v.Db, err = gorm.Open(mysql.Open(v.Dsn), &gorm.Config{})
 				if err != nil {
-					logrus.Errorf("Error open database %v", k)
+					log.Error().Str("name", utilsName).Err(err).Msgf("Error open database %v", k)
 					continue
 				}
-				logrus.Infof("success open database %v", k)
+				log.Info().Str("name", utilsName).Msgf("success open database %v", k)
 			}
 			config.DbMap[k] = v
 		}

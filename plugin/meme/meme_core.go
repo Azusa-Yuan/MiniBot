@@ -13,7 +13,7 @@ import (
 	"sync"
 
 	"github.com/FloatTech/gg"
-	"github.com/sirupsen/logrus"
+	"github.com/rs/zerolog/log"
 	"github.com/tidwall/gjson"
 )
 
@@ -38,7 +38,7 @@ func GetHelp() ([]byte, error) {
 		number++
 	}
 	fontSize := 30.0
-	canvas := gg.NewContext(1500, int(220+fontSize*float64(number)))
+	canvas := gg.NewContext(1500, int(230+fontSize*float64(number)))
 	canvas.SetRGB(1, 1, 1) // 白色
 	canvas.Clear()
 	/***********获取字体，可以注销掉***********/
@@ -159,7 +159,7 @@ func CreateEmoji(emojiPath string, images [][]byte, texts []string, args string)
 
 	// 创建请求
 	url := baseUrl + emojiPath + "/"
-	logrus.Info("creat emoji:", url)
+	log.Info().Str("name", pluginName).Msgf("creat emoji:%s", url)
 	req, err := http.NewRequest("POST", url, &requestBody)
 	if err != nil {
 		return nil, err
@@ -195,7 +195,7 @@ func CreateEmoji(emojiPath string, images [][]byte, texts []string, args string)
 func InitMeme() error {
 	pathList, err := GetList()
 	if err != nil {
-		logrus.Error(err)
+		log.Error().Str("name", pluginName).Err(err).Msg("")
 		return err
 	}
 
@@ -211,7 +211,7 @@ func InitMeme() error {
 			for path = range ch {
 				emojiInfo, err := GetEmojiInfo(path)
 				if err != nil {
-					logrus.Error(err)
+					log.Error().Str("name", pluginName).Err(err).Msg("")
 					return
 				}
 
@@ -246,7 +246,7 @@ func InitMeme() error {
 func fastJudge(path string, imgLen int, textLen int) bool {
 	if info, ok := emojiInfoMap[path]; ok {
 		if !(imgLen >= int(info.ParamsType.MinImages) && imgLen <= int(info.ParamsType.MaxImages)) {
-			logrus.Debugln("图片数量不对", imgLen, info.ParamsType.MinImages, info.ParamsType.MaxImages)
+			log.Debug().Str("name", pluginName).Msgf("图片数量不对 actual:%d max:%d min:%d", imgLen, info.ParamsType.MinImages, info.ParamsType.MaxImages)
 			return false
 		}
 		if textLen == 0 {
@@ -255,7 +255,7 @@ func fastJudge(path string, imgLen int, textLen int) bool {
 		if textLen >= int(info.ParamsType.MinTexts) && textLen <= int(info.ParamsType.MaxTexts) {
 			return true
 		}
-		logrus.Debugln("文字长度不对", textLen, info.ParamsType.MinTexts, info.ParamsType.MaxTexts)
+		log.Debug().Str("name", pluginName).Msgf("文字长度不对 actual:%d max:%d min:%d", imgLen, info.ParamsType.MinImages, info.ParamsType.MaxImages)
 	}
 	return false
 }

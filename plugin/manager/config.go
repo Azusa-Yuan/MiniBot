@@ -5,7 +5,7 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/sirupsen/logrus"
+	"github.com/rs/zerolog/log"
 	"gopkg.in/yaml.v2"
 )
 
@@ -21,10 +21,10 @@ func init() {
 	configPath := filepath.Join(path.GetDataPath(), "config.yaml")
 	data, err := os.ReadFile(configPath)
 	if err != nil {
-		logrus.Error(err)
+		log.Error().Str("name", pluginName).Msg("")
 	}
 	err = yaml.Unmarshal(data, &MC)
 	if err != nil {
-		logrus.Error(err)
+		log.Error().Str("name", pluginName).Msg("")
 	}
 }

@@ -2,9 +2,8 @@ package dnf
 
 import (
 	"MiniBot/plugin/dnf/service"
+	"fmt"
 	"testing"
-
-	"github.com/sirupsen/logrus"
 )
 
 func TestYxdr(t *testing.T) {
@@ -13,10 +12,10 @@ func TestYxdr(t *testing.T) {
 
 func TestColgNew(t *testing.T) {
 	res, _ := service.ColgNews()
-	logrus.Infoln(res)
+	fmt.Println(res)
 }
 
 func TestCreate(t *testing.T) {
 	res, _ := service.GetColgUser()
-	logrus.Infoln(res)
+	fmt.Println(res)
 }

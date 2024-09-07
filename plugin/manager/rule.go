@@ -14,7 +14,7 @@ import (
 	"ZeroBot/extension"
 	"ZeroBot/message"
 
-	"github.com/sirupsen/logrus"
+	"github.com/rs/zerolog/log"
 	"golang.org/x/time/rate"
 )
 
@@ -99,7 +99,6 @@ func newAuthHandler(metaDate *zero.MetaData) zero.Rule {
 
 		// 对群，全局个人，bot级个人，机器人，所有机器人的权限情况 可以理解为这个为全插件级,排除默认插件
 		if managers.IsBlocked(gidKey) || managers.IsBlocked(uidGobal) || managers.IsBlocked(uidKey) || managers.IsBlocked(bidKey) || managers.IsBlocked("0") {
-			// logrus.Debug("被封禁了？")
 			ctx.Stop()
 			return false
 		}
@@ -114,10 +113,8 @@ func newAuthHandler(metaDate *zero.MetaData) zero.Rule {
 			}
 			// 取最大值
 			level := slices.Max(levels)
-			// logrus.Debug("[pm] 权限等级", level)
 
 			if level < controlLevel {
-				// logrus.Debug("[pm] 权限不足")
 				return false
 			}
 		}
@@ -135,7 +132,7 @@ func judgeMalicious(ctx *zero.Ctx) {
 		limiter := LM.GetOrNewLimiter(uid)
 		if !limiter.rl.Allow() {
 			managers.DoBlock(uidGobal)
-			logrus.Info("[manager] 封禁恶意用户uid", uid)
+			log.Info().Str("name", pluginName).Msgf("[manager] 封禁恶意用户uid%d", uid)
 		}
 
 		// 每10000次触发，删除
@@ -331,7 +328,7 @@ func init() {
 			func(ctx *zero.Ctx) {
 				if ctx.Event.MessageType == "private" && ctx.Event.SubType != "friend" {
 					ctx.Stop()
-					logrus.Debug("阻止了非好友的私聊")
+					log.Debug().Str("name", pluginName).Msg("阻止了非好友的私聊")
 				}
 			},
 		)

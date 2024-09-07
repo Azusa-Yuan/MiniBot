@@ -8,7 +8,7 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/sirupsen/logrus"
+	"github.com/rs/zerolog/log"
 )
 
 func init() {
@@ -45,7 +45,7 @@ func init() {
 		func(ctx *zero.Ctx) {
 			contend, err := service.ColgNews()
 			if err != nil {
-				ctx.SendError("", err)
+				ctx.SendError(err)
 				return
 			}
 			ctx.SendChain(message.At(ctx.Event.UserID), message.Text(contend))
@@ -55,13 +55,17 @@ func init() {
 		func(ctx *zero.Ctx) {
 			users, err := service.GetColgUser()
 			if err != nil {
-				ctx.SendError("", err)
+				ctx.SendError(err)
 			}
 			if ctx.Event.GroupID != 0 {
 
 				users.Group = append(users.Group, strconv.FormatInt(ctx.Event.GroupID, 10))
 			} else {
 				users.QQ = append(users.QQ, strconv.FormatInt(ctx.Event.UserID, 10))
+			}
+			err = users.SaveBinds()
+			if err != nil {
+				ctx.SendError(err)
 			}
 		},
 	)
@@ -70,7 +74,7 @@ func init() {
 		for range time.NewTicker(180 * time.Second).C {
 			users, err := service.GetColgUser()
 			if err != nil {
-				logrus.Fatalln("[dnf]", err)
+				log.Fatal().Str("name", "dnf").Err(err).Msg("")
 			}
 			bot, err := zero.GetBot(741433361)
 			if err != nil {
