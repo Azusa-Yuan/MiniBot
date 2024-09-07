@@ -48,10 +48,7 @@ func init() {
 			args := map[string]any{}
 			args["user_infos"] = []UserInfo{}
 
-			for i, segment := range ctx.Event.Message {
-				if i == 0 {
-					continue
-				}
+			for _, segment := range ctx.Event.Message {
 				if segment.Type == "at" {
 					qqStr := segment.Data["qq"]
 					qq, err := strconv.ParseInt(qqStr, 10, 64)

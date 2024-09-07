@@ -155,6 +155,29 @@ func (a *aiBot) SendMsgWithSession(key int64, msg string) (string, error) {
 	return getResponseString(resp), nil
 }
 
+func (a *aiBot) SendPartsWithSession(key int64, parts ...genai.Part) (string, error) {
+	ctx := context.Background()
+
+	a.RLock()
+	session := a.sessionMap[key]
+	a.RUnlock()
+
+	// 不存在会话
+	if session == nil {
+		return "", fmt.Errorf("not session")
+	}
+
+	resp, err := session.chatSession.SendMessage(ctx, parts...)
+	if err != nil {
+		log.Error().Str("name", utilsName).Err(err).Msg("")
+		if err.Error() == "blocked: candidate: FinishReasonSafety" {
+			return "不可以说这种事情，达咩！", nil
+		}
+		return "", err
+	}
+	return getResponseString(resp), nil
+}
+
 func (a *aiBot) CreateSession(key int64, systemInstruction string) *session {
 	a.Lock()
 	defer a.Unlock()

@@ -112,7 +112,7 @@ func GetFont(path string) ([]byte, error) {
 		return nil, err
 	}
 	if res != "" {
-		return []byte(res), nil
+		return utils.StringToBytes(res), nil
 	}
 	data, err := os.ReadFile(path)
 	if err != nil && err != io.EOF {

@@ -1,6 +1,7 @@
 package net_tools
 
 import (
+	"MiniBot/utils"
 	"crypto/tls"
 	"fmt"
 	"io"
@@ -39,7 +40,7 @@ func download(client *http.Client, url string) ([]byte, error) {
 		return nil, err
 	}
 	if resp.StatusCode != http.StatusOK {
-		return nil, fmt.Errorf(resp.Status, ":", string(data))
+		return nil, fmt.Errorf(resp.Status, ":", utils.BytesToString(data))
 	}
 	return data, nil
 }

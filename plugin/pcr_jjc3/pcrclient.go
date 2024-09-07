@@ -1,6 +1,7 @@
 package pcrjjc3
 
 import (
+	"ZeroBot/utils"
 	"bytes"
 	"crypto/aes"
 	"crypto/cipher"
@@ -227,7 +228,7 @@ func (p *pcrclient) CallApi(apiUrl string, request map[string]interface{}) (res 
 	key := p.createkey(hexChars)
 
 	if p.viewer_id != "" {
-		encryptViewerId, err := p.encrypt([]byte(p.viewer_id), key)
+		encryptViewerId, err := p.encrypt(utils.StringToBytes(p.viewer_id), key)
 		if err != nil {
 			log.Error().Str("name", pluginName).Err(err).Msg("")
 		}

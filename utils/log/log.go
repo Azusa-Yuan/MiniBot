@@ -25,7 +25,7 @@ func init() {
 	// 记录日志到文件
 	log.Logger = log.Output(zerolog.MultiLevelWriter(
 		zerolog.ConsoleWriter{Out: os.Stderr, TimeFormat: time.RFC3339},
-		writer("./log", "MiniBot_log_", 10),
+		writer("./log", "MiniBot", 10),
 	))
 	log.Logger = log.With().Caller().Logger()
 }

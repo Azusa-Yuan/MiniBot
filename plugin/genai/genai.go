@@ -2,11 +2,16 @@ package genai
 
 import (
 	ai "MiniBot/utils/AI"
+	"MiniBot/utils/cache"
+	"MiniBot/utils/net_tools"
 	"MiniBot/utils/transform"
 	zero "ZeroBot"
 	"ZeroBot/message"
 	"fmt"
+	"strconv"
 	"strings"
+
+	"github.com/google/generative-ai-go/genai"
 )
 
 func init() {
@@ -22,16 +27,47 @@ func init() {
 			if ctx.Event.GroupID != 0 {
 				key = transform.BidWithgidInt64(ctx)
 			}
+
+			parts := []genai.Part{}
 			msg := ctx.ExtractPlainText()
 			msg = strings.TrimSpace(msg)
-			if msg == "" {
+			if msg != "" {
+				parts = append(parts, genai.Text(msg))
+			}
+
+			// 获取图片
+			imgStrs := []string{}
+			imgTypes := []string{}
+			for _, segment := range ctx.Event.Message {
+				if segment.Type == "image" {
+					imgStrs = append(imgStrs, segment.Data["url"])
+					filePath := strings.Split(segment.Data["file"], ".")
+					imgTypes = append(imgTypes, filePath[len(filePath)-1])
+
+				}
+			}
+
+			imgBytes, err := dealImgStr(imgStrs...)
+			if err != nil {
+				ctx.SendError(err)
+			}
+
+			for i := 0; i < len(imgTypes); i++ {
+				if imgTypes[i] == "jpg" {
+					imgTypes[i] = "jpeg"
+				}
+				parts = append(parts, genai.ImageData(imgTypes[i], imgBytes[i]))
+			}
+
+			if len(parts) == 0 {
 				return
 			}
-			resp, err := ai.AIBot.SendMsgWithSession(key, msg)
+			resp, err := ai.AIBot.SendPartsWithSession(key, parts...)
+
 			if err != nil {
 				if err.Error() == "not session" {
 					ai.AIBot.CreateSession(key, ai.IM.IntroduceMap["露露姆"])
-					resp, err = ai.AIBot.SendMsgWithSession(key, msg)
+					resp, err = ai.AIBot.SendPartsWithSession(key, parts...)
 				}
 				if err != nil {
 					ctx.SendChain(message.Text(fmt.Sprint("[ai] ", err)))
@@ -70,4 +106,22 @@ func init() {
 			ai.AIBot.CreateSession(key, role)
 			ctx.SendChain(message.At(ctx.Event.UserID), message.Text("切换人格成功"))
 		})
+}
+
+func dealImgStr(imgStrs ...string) ([][]byte, error) {
+	images := [][]byte{}
+	for _, imgStr := range imgStrs {
+		uid, err := strconv.ParseInt(imgStr, 10, 64)
+		var data []byte
+		if err != nil {
+			data, err = net_tools.DownloadWithoutTLSVerify(imgStr)
+		} else {
+			data, err = cache.GetAvatar(uid)
+		}
+		if err != nil {
+			return nil, err
+		}
+		images = append(images, data)
+	}
+	return images, nil
 }
