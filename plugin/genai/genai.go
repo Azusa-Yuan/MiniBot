@@ -43,7 +43,6 @@ func init() {
 					imgStrs = append(imgStrs, segment.Data["url"])
 					filePath := strings.Split(segment.Data["file"], ".")
 					imgTypes = append(imgTypes, filePath[len(filePath)-1])
-
 				}
 			}
 
