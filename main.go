@@ -4,6 +4,7 @@ package main
 import (
 	_ "MiniBot/utils/log"
 	"os"
+	"runtime/pprof"
 	"runtime/trace"
 
 	"MiniBot/cmd"
@@ -45,6 +46,9 @@ func init() {
 func main() {
 	// 创建 trace 文件
 	traceFile, err := os.Create("trace.out")
+	f, _ := os.Create("cpu_profile.prof")
+	pprof.StartCPUProfile(f)
+	defer pprof.StopCPUProfile()
 	if err != nil {
 		log.Fatal().Err(err).Msg("")
 	}
