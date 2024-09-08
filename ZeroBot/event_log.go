@@ -1,6 +1,10 @@
 package zero
 
-import "github.com/rs/zerolog/log"
+import (
+	"fmt"
+
+	"github.com/rs/zerolog/log"
+)
 
 func printMessageLog(e *Event) {
 	switch {
@@ -16,8 +20,14 @@ func printMessageLog(e *Event) {
 func printNoticeLog(e *Event) {
 	switch {
 	case e.SubType == "poke":
-		log.Info().Str("name", "bot").Msgf("%v戳了戳%v   %v", e.UserID, e.TargetID, e)
-	default:
-		log.Info().Str("name", "bot").Str("type", "post").Msgf("%v", e)
+		if e.GroupID == 0 {
+			log.Info().Str("name", "bot").Msgf("%v戳了戳%v", e.UserID, e.TargetID)
+		} else {
+			log.Info().Str("name", "bot").Msgf("%v 在群%v戳了戳%v", e.UserID, e.GroupID, e.TargetID)
+		}
+	case e.NoticeType == "group_card":
+		log.Info().Str("name", "bot").Msgf("%v 在群%v修改了群名片 %v → %v", e.UserID, e.GroupID, e.CardOld, e.CardNew)
+
 	}
+	fmt.Println(e.RawEvent.Raw)
 }
