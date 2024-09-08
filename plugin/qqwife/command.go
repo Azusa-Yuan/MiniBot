@@ -92,13 +92,13 @@ func init() {
 				return
 			}
 			// 有缓存获取群员列表
-			temp, err := cache.GetGroupMemberList(ctx.Event.UserID, ctx.Event.GroupID)
+			botId := ctx.Event.SelfID
+			temp, err := cache.GetGroupMemberList(botId, ctx.Event.GroupID)
 			if err != nil {
 				ctx.SendError(err)
 				return
 			}
 
-			botId := ctx.Event.SelfID
 			temp = temp[len(temp)/3:]
 
 			// 将已经娶过的人和机器人本身剔除
