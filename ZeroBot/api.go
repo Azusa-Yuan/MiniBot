@@ -60,9 +60,8 @@ func (ctx *Ctx) CallAction(action string, params Params) (APIResponse, error) {
 		log.Error().Str("name", "api").Err(err).Msgf("调用 %s 时出现错误", action)
 	}
 	if err == nil && resp.RetCode != 0 {
-		log.Error().Str("name", "api").Err(err).
-			Msgf("调用 %s 时出现错误, 返回值: %d, 信息: %s, 解释:%s", action, resp.RetCode, resp.Msg, resp.Wording)
-
+		err = fmt.Errorf("调用 %s 时出现错误, 返回值: %d, 信息: %s, 解释:%s", action, resp.RetCode, resp.Msg, resp.Wording)
+		log.Error().Str("name", "api").Err(err).Msg("")
 	}
 	return resp, err
 }

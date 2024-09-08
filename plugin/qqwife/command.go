@@ -101,9 +101,6 @@ func init() {
 
 			temp = temp[len(temp)/3:]
 
-			// 将已经娶过的人和机器人本身剔除
-			qqgrouplist := make([]int64, 0, len(temp))
-
 			qqwife.Lock()
 			defer qqwife.Unlock()
 			marriedInfo, err := qqwife.GetAllInfo(gid)
@@ -120,6 +117,7 @@ func init() {
 					return
 				}
 			}
+			qqgrouplist := make([]int64, 0, len(temp))
 			for k := 0; k < len(temp); k++ {
 				uid := temp[k]
 				if uid == botId {
