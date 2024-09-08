@@ -3,6 +3,8 @@ package main
 
 import (
 	_ "MiniBot/utils/log"
+	"os"
+	"runtime/trace"
 
 	"MiniBot/cmd"
 	"MiniBot/config"
@@ -28,6 +30,8 @@ import (
 	"ZeroBot/message"
 
 	"MiniBot/plugin/manager"
+
+	"github.com/rs/zerolog/log"
 	// webctrl "github.com/FloatTech/zbputils/control/web"
 	// -----------------------以上为内置依赖，勿动------------------------ //
 )
@@ -39,12 +43,19 @@ func init() {
 }
 
 func main() {
+	// 创建 trace 文件
+	traceFile, err := os.Create("trace.out")
+	if err != nil {
+		log.Fatal().Err(err).Msg("")
+	}
+	defer traceFile.Close()
+	trace.Start(traceFile)
 	// 帮助
 	zero.OnFullMatchGroup([]string{"help", "/help", ".help", "帮助"}).SetBlock(true).
 		Handle(func(ctx *zero.Ctx) {
-			ctx.SendChain(message.Text("\n发送lssv ， 插件列表 或 服务列表 查看 bot 开放插件\n发送\"帮助 插件\"查看插件帮助"))
+			ctx.SendChain(message.Text("\n发送lssv , 插件列表 或 服务列表 查看 bot 开放插件\n发送\"帮助 插件\"查看插件帮助"))
 		})
-	// 确保所有driver都连接上，加了个全局锁
+
 	if web.On {
 		go func() {
 			r := web.GetWebEngine()

@@ -4,7 +4,6 @@ go 1.22
 
 require (
 	github.com/FloatTech/ttl v0.0.0-20220715042055-15612be72f5b
-	github.com/RomiChan/syncx v0.0.0-20221202055724-5f842c53020e
 	github.com/RomiChan/websocket v1.4.3-0.20220227141055-9b2c6168c9c5
 	github.com/rs/zerolog v1.33.0
 	github.com/stretchr/testify v1.9.0

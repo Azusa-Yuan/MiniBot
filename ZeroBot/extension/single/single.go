@@ -2,10 +2,9 @@ package single
 
 import (
 	"runtime"
+	"sync"
 
 	zero "ZeroBot"
-
-	"github.com/RomiChan/syncx"
 )
 
 // Option 配置项
@@ -13,7 +12,7 @@ type Option[K comparable] func(*Single[K])
 
 // Single 反并发
 type Single[K comparable] struct {
-	group syncx.Map[K, struct{}]
+	group sync.Map
 	key   func(ctx *zero.Ctx) K
 	post  func(ctx *zero.Ctx)
 }
