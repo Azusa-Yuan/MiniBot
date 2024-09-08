@@ -6,6 +6,7 @@ import (
 	"encoding/base64"
 	"encoding/hex"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"regexp"
 	"strconv"
@@ -49,33 +50,34 @@ func formatMessage(msg interface{}) string {
 }
 
 // CallAction 调用 cqhttp API
-func (ctx *Ctx) CallAction(action string, params Params) APIResponse {
+func (ctx *Ctx) CallAction(action string, params Params) (APIResponse, error) {
 	req := APIRequest{
 		Action: action,
 		Params: params,
 	}
-	rsp, err := ctx.caller.CallApi(req)
+	resp, err := ctx.caller.CallApi(req)
 	if err != nil {
 		log.Error().Str("name", "api").Err(err).Msgf("调用 %s 时出现错误", action)
 	}
-	if err == nil && rsp.RetCode != 0 {
+	if err == nil && resp.RetCode != 0 {
 		log.Error().Str("name", "api").Err(err).
-			Msgf("调用 %s 时出现错误, 返回值: %d, 信息: %s, 解释:%s", action, rsp.RetCode, rsp.Msg, rsp.Wording)
+			Msgf("调用 %s 时出现错误, 返回值: %d, 信息: %s, 解释:%s", action, resp.RetCode, resp.Msg, resp.Wording)
 
 	}
-	return rsp
+	return resp, err
 }
 
 // SendGroupMessage 发送群消息
 // https://github.com/botuniverse/onebot-11/blob/master/api/public.md#send_group_msg-%E5%8F%91%E9%80%81%E7%BE%A4%E6%B6%88%E6%81%AF
 func (ctx *Ctx) SendGroupMessage(groupID int64, message interface{}) int64 {
-	rsp := ctx.CallAction("send_group_msg", Params{ // 调用并保存返回值
+	resp, _ := ctx.CallAction("send_group_msg", Params{ // 调用并保存返回值
 		"group_id": groupID,
 		"message":  message,
-	}).Data.Get("message_id")
-	if rsp.Exists() {
-		log.Info().Str("name", "api").Msgf("[api] 发送群消息(%v): %v (id=%v)", groupID, formatMessage(message), rsp.Int())
-		return rsp.Int()
+	})
+	msgId := resp.Data.Get("message_id")
+	if msgId.Exists() {
+		log.Info().Str("name", "api").Msgf("[api] 发送群消息(%v): %v (id=%v)", groupID, formatMessage(message), msgId.Int())
+		return msgId.Int()
 	}
 	return 0 // 无法获取返回值
 }
@@ -83,13 +85,14 @@ func (ctx *Ctx) SendGroupMessage(groupID int64, message interface{}) int64 {
 // SendPrivateMessage 发送私聊消息
 // https://github.com/botuniverse/onebot-11/blob/master/api/public.md#send_private_msg-%E5%8F%91%E9%80%81%E7%A7%81%E8%81%8A%E6%B6%88%E6%81%AF
 func (ctx *Ctx) SendPrivateMessage(userID int64, message interface{}) int64 {
-	rsp := ctx.CallAction("send_private_msg", Params{
+	resp, _ := ctx.CallAction("send_private_msg", Params{
 		"user_id": userID,
 		"message": message,
-	}).Data.Get("message_id")
-	if rsp.Exists() {
-		log.Info().Str("name", "api").Msgf("发送私聊消息(%v): %v (id=%v)", userID, formatMessage(message), rsp.Int())
-		return rsp.Int()
+	})
+	msgId := resp.Data.Get("message_id")
+	if msgId.Exists() {
+		log.Info().Str("name", "api").Msgf("发送私聊消息(%v): %v (id=%v)", userID, formatMessage(message), msgId.Int())
+		return msgId.Int()
 	}
 	return 0 // 无法获取返回值
 }
@@ -98,9 +101,9 @@ func (ctx *Ctx) SendPrivateMessage(userID int64, message interface{}) int64 {
 // https://github.com/botuniverse/onebot-11/blob/master/api/public.md#delete_msg-%E6%92%A4%E5%9B%9E%E6%B6%88%E6%81%AF
 //
 //nolint:interfacer
-func (ctx *Ctx) DeleteMessage(messageID message.MessageID) {
+func (ctx *Ctx) DeleteMessage(messageID interface{}) {
 	ctx.CallAction("delete_msg", Params{
-		"message_id": messageID.String(),
+		"message_id": messageID,
 	})
 }
 
@@ -108,17 +111,21 @@ func (ctx *Ctx) DeleteMessage(messageID message.MessageID) {
 // https://github.com/botuniverse/onebot-11/blob/master/api/public.md#get_msg-%E8%8E%B7%E5%8F%96%E6%B6%88%E6%81%AF
 //
 //nolint:interfacer
-func (ctx *Ctx) GetMessage(messageID message.MessageID) Message {
-	rsp := ctx.CallAction("get_msg", Params{
-		"message_id": messageID.String(),
-	}).Data
+func (ctx *Ctx) GetMessage(messageID interface{}) Message {
+	resp, err := ctx.CallAction("get_msg", Params{
+		"message_id": messageID,
+	})
+	if err != nil {
+		return Message{}
+	}
+	rspData := resp.Data
 	m := Message{
-		Elements:    message.ParseMessage(utils.StringToBytes(rsp.Get("message").Raw)),
-		MessageId:   message.NewMessageIDFromInteger(rsp.Get("message_id").Int()),
-		MessageType: rsp.Get("message_type").String(),
+		Elements:    message.ParseMessage(utils.StringToBytes(rspData.Get("message").Raw)),
+		MessageId:   message.NewMessageIDFromInteger(rspData.Get("message_id").Int()),
+		MessageType: rspData.Get("message_type").String(),
 		Sender:      &User{},
 	}
-	err := json.Unmarshal(utils.StringToBytes(rsp.Get("sender").Raw), m.Sender)
+	err = json.Unmarshal(utils.StringToBytes(rspData.Get("sender").Raw), m.Sender)
 	if err != nil {
 		return Message{}
 	}
@@ -128,10 +135,20 @@ func (ctx *Ctx) GetMessage(messageID message.MessageID) Message {
 // GetForwardMessage 获取合并转发消息
 // https://github.com/botuniverse/onebot-11/blob/master/api/public.md#get_forward_msg-%E8%8E%B7%E5%8F%96%E5%90%88%E5%B9%B6%E8%BD%AC%E5%8F%91%E6%B6%88%E6%81%AF
 func (ctx *Ctx) GetForwardMessage(id string) gjson.Result {
-	rsp := ctx.CallAction("get_forward_msg", Params{
+	resp, _ := ctx.CallAction("get_forward_msg", Params{
 		"id": id,
-	}).Data
-	return rsp
+	})
+	return resp.Data
+}
+
+// SendLike 发送好友赞
+// https://github.com/botuniverse/onebot-11/blob/master/api/public.md#send_like-%E5%8F%91%E9%80%81%E5%A5%BD%E5%8F%8B%E8%B5%9E
+func (ctx *Ctx) SendLike(userID int64, times int) error {
+	_, err := ctx.CallAction("send_like", Params{
+		"user_id": userID,
+		"times":   times,
+	})
+	return err
 }
 
 // SetGroupKick 群组踢人
@@ -230,17 +247,18 @@ func (ctx *Ctx) SetThisGroupCard(userID int64, card string) {
 
 // SetGroupName 设置群名
 // https://github.com/botuniverse/onebot-11/blob/master/api/public.md#set_group_name-%E8%AE%BE%E7%BD%AE%E7%BE%A4%E5%90%8D
-func (ctx *Ctx) SetGroupName(groupID int64, groupName string) {
-	ctx.CallAction("set_group_name", Params{
+func (ctx *Ctx) SetGroupName(groupID int64, groupName string) error {
+	_, err := ctx.CallAction("set_group_name", Params{
 		"group_id":   groupID,
 		"group_name": groupName,
 	})
+	return err
 }
 
 // SetThisGroupName 设置本群名
 // https://github.com/botuniverse/onebot-11/blob/master/api/public.md#set_group_name-%E8%AE%BE%E7%BD%AE%E7%BE%A4%E5%90%8D
-func (ctx *Ctx) SetThisGroupName(groupID int64, groupName string) {
-	ctx.SetGroupName(ctx.Event.GroupID, groupName)
+func (ctx *Ctx) SetThisGroupName(groupID int64, groupName string) error {
+	return ctx.SetGroupName(ctx.Event.GroupID, groupName)
 }
 
 // SetGroupLeave 退出群组
@@ -297,128 +315,146 @@ func (ctx *Ctx) SetGroupAddRequest(flag string, subType string, approve bool, re
 
 // GetLoginInfo 获取登录号信息
 // https://github.com/botuniverse/onebot-11/blob/master/api/public.md#get_login_info-%E8%8E%B7%E5%8F%96%E7%99%BB%E5%BD%95%E5%8F%B7%E4%BF%A1%E6%81%AF
-func (ctx *Ctx) GetLoginInfo() gjson.Result {
-	return ctx.CallAction("get_login_info", Params{}).Data
+func (ctx *Ctx) GetLoginInfo() (gjson.Result, error) {
+	resp, err := ctx.CallAction("get_login_info", Params{})
+	return resp.Data, err
 }
 
 // GetStrangerInfo 获取陌生人信息
 // https://github.com/botuniverse/onebot-11/blob/master/api/public.md#get_stranger_info-%E8%8E%B7%E5%8F%96%E9%99%8C%E7%94%9F%E4%BA%BA%E4%BF%A1%E6%81%AF
-func (ctx *Ctx) GetStrangerInfo(userID int64, noCache bool) gjson.Result {
-	return ctx.CallAction("get_stranger_info", Params{
+func (ctx *Ctx) GetStrangerInfo(userID int64, noCache bool) (gjson.Result, error) {
+	resp, err := ctx.CallAction("get_stranger_info", Params{
 		"user_id":  userID,
 		"no_cache": noCache,
-	}).Data
+	})
+	return resp.Data, err
 }
 
 // GetFriendList 获取好友列表
 // https://github.com/botuniverse/onebot-11/blob/master/api/public.md#get_friend_list-%E8%8E%B7%E5%8F%96%E5%A5%BD%E5%8F%8B%E5%88%97%E8%A1%A8
-func (ctx *Ctx) GetFriendList() gjson.Result {
-	return ctx.CallAction("get_friend_list", Params{}).Data
+func (ctx *Ctx) GetFriendList() (gjson.Result, error) {
+	resp, err := ctx.CallAction("get_friend_list", Params{})
+	return resp.Data, err
 }
 
 // GetGroupInfo 获取群信息
 // https://github.com/botuniverse/onebot-11/blob/master/api/public.md#get_group_info-%E8%8E%B7%E5%8F%96%E7%BE%A4%E4%BF%A1%E6%81%AF
-func (ctx *Ctx) GetGroupInfo(groupID int64, noCache bool) Group {
-	rsp := ctx.CallAction("get_group_info", Params{
+func (ctx *Ctx) GetGroupInfo(groupID int64, noCache bool) (Group, error) {
+	resp, err := ctx.CallAction("get_group_info", Params{
 		"group_id": groupID,
 		"no_cache": noCache,
-	}).Data
+	})
 	group := Group{}
-	_ = json.Unmarshal([]byte(rsp.Raw), &group)
-	return group
+	if err != nil {
+		return group, err
+	}
+	err = json.Unmarshal([]byte(resp.Data.Raw), &group)
+	if err != nil {
+		return group, err
+	}
+	return group, nil
 }
 
 // GetThisGroupInfo 获取本群信息
 // https://github.com/botuniverse/onebot-11/blob/master/api/public.md#get_group_info-%E8%8E%B7%E5%8F%96%E7%BE%A4%E4%BF%A1%E6%81%AF
-func (ctx *Ctx) GetThisGroupInfo(noCache bool) Group {
+func (ctx *Ctx) GetThisGroupInfo(noCache bool) (Group, error) {
 	return ctx.GetGroupInfo(ctx.Event.GroupID, noCache)
 }
 
 // GetGroupList 获取群列表
 // https://github.com/botuniverse/onebot-11/blob/master/api/public.md#get_group_list-%E8%8E%B7%E5%8F%96%E7%BE%A4%E5%88%97%E8%A1%A8
-func (ctx *Ctx) GetGroupList() gjson.Result {
-	return ctx.CallAction("get_group_list", Params{}).Data
+func (ctx *Ctx) GetGroupList() (gjson.Result, error) {
+	resp, err := ctx.CallAction("get_group_list", Params{})
+	return resp.Data, err
 }
 
 // GetGroupMemberInfo 获取群成员信息
 // https://github.com/botuniverse/onebot-11/blob/master/api/public.md#get_group_member_info-%E8%8E%B7%E5%8F%96%E7%BE%A4%E6%88%90%E5%91%98%E4%BF%A1%E6%81%AF
-func (ctx *Ctx) GetGroupMemberInfo(groupID int64, userID int64, noCache bool) gjson.Result {
-	return ctx.CallAction("get_group_member_info", Params{
+func (ctx *Ctx) GetGroupMemberInfo(groupID int64, userID int64, noCache bool) (gjson.Result, error) {
+	resp, err := ctx.CallAction("get_group_member_info", Params{
 		"group_id": groupID,
 		"user_id":  userID,
 		"no_cache": noCache,
-	}).Data
+	})
+	return resp.Data, err
 }
 
 // GetThisGroupMemberInfo 获取本群成员信息
 // https://github.com/botuniverse/onebot-11/blob/master/api/public.md#get_group_member_info-%E8%8E%B7%E5%8F%96%E7%BE%A4%E6%88%90%E5%91%98%E4%BF%A1%E6%81%AF
-func (ctx *Ctx) GetThisGroupMemberInfo(userID int64, noCache bool) gjson.Result {
+func (ctx *Ctx) GetThisGroupMemberInfo(userID int64, noCache bool) (gjson.Result, error) {
 	return ctx.GetGroupMemberInfo(ctx.Event.GroupID, userID, noCache)
 }
 
 // GetGroupMemberList 获取群成员列表
 // https://github.com/botuniverse/onebot-11/blob/master/api/public.md#get_group_member_list-%E8%8E%B7%E5%8F%96%E7%BE%A4%E6%88%90%E5%91%98%E5%88%97%E8%A1%A8
-func (ctx *Ctx) GetGroupMemberList(groupID int64) gjson.Result {
-	return ctx.CallAction("get_group_member_list", Params{
+func (ctx *Ctx) GetGroupMemberList(groupID int64) (gjson.Result, error) {
+	resp, err := ctx.CallAction("get_group_member_list", Params{
 		"group_id": groupID,
-	}).Data
+	})
+	return resp.Data, err
 }
 
 // GetThisGroupMemberList 获取本群成员列表
-func (ctx *Ctx) GetThisGroupMemberList() gjson.Result {
+func (ctx *Ctx) GetThisGroupMemberList() (gjson.Result, error) {
 	return ctx.GetGroupMemberList(ctx.Event.GroupID)
 }
 
 // GetGroupMemberListNoCache 无缓存获取群员列表
 // https://github.com/botuniverse/onebot-11/blob/master/api/public.md#get_group_member_list-%E8%8E%B7%E5%8F%96%E7%BE%A4%E6%88%90%E5%91%98%E5%88%97%E8%A1%A8
-func (ctx *Ctx) GetGroupMemberListNoCache(groupID int64) gjson.Result {
-	return ctx.CallAction("get_group_member_list", Params{
+func (ctx *Ctx) GetGroupMemberListNoCache(groupID int64) (gjson.Result, error) {
+	resp, err := ctx.CallAction("get_group_member_list", Params{
 		"group_id": groupID,
 		"no_cache": true,
-	}).Data
+	})
+	return resp.Data, err
 }
 
 // GetThisGroupMemberListNoCache 无缓存获取本群员列表
-func (ctx *Ctx) GetThisGroupMemberListNoCache() gjson.Result {
+func (ctx *Ctx) GetThisGroupMemberListNoCache() (gjson.Result, error) {
 	return ctx.GetGroupMemberListNoCache(ctx.Event.GroupID)
 }
 
 // GetGroupHonorInfo 获取群荣誉信息
 // https://github.com/botuniverse/onebot-11/blob/master/api/public.md#get_group_honor_info-%E8%8E%B7%E5%8F%96%E7%BE%A4%E8%8D%A3%E8%AA%89%E4%BF%A1%E6%81%AF
-func (ctx *Ctx) GetGroupHonorInfo(groupID int64, hType string) gjson.Result {
-	return ctx.CallAction("get_group_honor_info", Params{
+func (ctx *Ctx) GetGroupHonorInfo(groupID int64, hType string) (gjson.Result, error) {
+	resp, err := ctx.CallAction("get_group_honor_info", Params{
 		"group_id": groupID,
 		"type":     hType,
-	}).Data
+	})
+	return resp.Data, err
 }
 
 // GetThisGroupHonorInfo 获取本群荣誉信息
 // https://github.com/botuniverse/onebot-11/blob/master/api/public.md#get_group_honor_info-%E8%8E%B7%E5%8F%96%E7%BE%A4%E8%8D%A3%E8%AA%89%E4%BF%A1%E6%81%AF
-func (ctx *Ctx) GetThisGroupHonorInfo(hType string) gjson.Result {
+func (ctx *Ctx) GetThisGroupHonorInfo(hType string) (gjson.Result, error) {
 	return ctx.GetGroupHonorInfo(ctx.Event.GroupID, hType)
 }
 
 // GetRecord 获取语音
 // https://github.com/botuniverse/onebot-11/blob/master/api/public.md#get_record-%E8%8E%B7%E5%8F%96%E8%AF%AD%E9%9F%B3
 func (ctx *Ctx) GetRecord(file string, outFormat string) gjson.Result {
-	return ctx.CallAction("get_record", Params{
+	resp, _ := ctx.CallAction("get_record", Params{
 		"file":       file,
 		"out_format": outFormat,
-	}).Data
+	})
+	return resp.Data
 }
 
 // GetImage 获取图片
 // https://github.com/botuniverse/onebot-11/blob/master/api/public.md#get_image-%E8%8E%B7%E5%8F%96%E5%9B%BE%E7%89%87
 func (ctx *Ctx) GetImage(file string) gjson.Result {
-	return ctx.CallAction("get_image", Params{
+	resp, _ := ctx.CallAction("get_image", Params{
 		"file": file,
-	}).Data
+	})
+
+	return resp.Data
 }
 
 // GetVersionInfo 获取运行状态
 // https://github.com/botuniverse/onebot-11/blob/master/api/public.md#get_status-%E8%8E%B7%E5%8F%96%E8%BF%90%E8%A1%8C%E7%8A%B6%E6%80%81
-func (ctx *Ctx) GetVersionInfo() gjson.Result {
-	return ctx.CallAction("get_version_info", Params{}).Data
+func (ctx *Ctx) GetVersionInfo() (gjson.Result, error) {
+	resp, err := ctx.CallAction("get_version_info", Params{})
+	return resp.Data, err
 }
 
 // Expand API
@@ -440,72 +476,99 @@ func (ctx *Ctx) SetThisGroupPortrait(file string) {
 
 // OCRImage 图片OCR
 // https://github.com/Mrs4s/go-cqhttp/blob/master/docs/cqhttp.md#%E5%9B%BE%E7%89%87ocr
-func (ctx *Ctx) OCRImage(file string) gjson.Result {
-	return ctx.CallAction("ocr_image", Params{
+func (ctx *Ctx) OCRImage(file string) (gjson.Result, error) {
+	resp, err := ctx.CallAction("ocr_image", Params{
 		"image": file,
-	}).Data
+	})
+	return resp.Data, err
 }
 
 // SendGroupForwardMessage 发送合并转发(群)
 // https://github.com/Mrs4s/go-cqhttp/blob/master/docs/cqhttp.md#%E5%9B%BE%E7%89%87ocr
 func (ctx *Ctx) SendGroupForwardMessage(groupID int64, message message.Message) gjson.Result {
-	return ctx.CallAction("send_group_forward_msg", Params{
+	resp, _ := ctx.CallAction("send_group_forward_msg", Params{
 		"group_id": groupID,
 		"messages": message,
-	}).Data
+	})
+	return resp.Data
 }
 
 // SendPrivateForwardMessage 发送合并转发(私聊)
 // https://github.com/Mrs4s/go-cqhttp/blob/master/docs/cqhttp.md#%E5%9B%BE%E7%89%87ocr
-func (ctx *Ctx) SendPrivateForwardMessage(userID int64, rawMessage message.Message) gjson.Result {
-	message := message.Message{}
-	return ctx.CallAction("send_private_forward_msg", Params{
+func (ctx *Ctx) SendPrivateForwardMessage(userID int64, message message.Message) gjson.Result {
+	resp, _ := ctx.CallAction("send_private_forward_msg", Params{
 		"user_id":  userID,
 		"messages": message,
-	}).Data
+	})
+	return resp.Data
+}
+
+// ForwardFriendSingleMessage 转发单条消息到好友
+//
+// https://llonebot.github.io/zh-CN/develop/extends_api
+func (ctx *Ctx) ForwardFriendSingleMessage(userID int64, messageID interface{}) (APIResponse, error) {
+	return ctx.CallAction("forward_friend_single_msg", Params{
+		"user_id":    userID,
+		"message_id": messageID,
+	})
+}
+
+// ForwardGroupSingleMessage 转发单条消息到群
+//
+// https://llonebot.github.io/zh-CN/develop/extends_api
+func (ctx *Ctx) ForwardGroupSingleMessage(groupID int64, messageID interface{}) (APIResponse, error) {
+	return ctx.CallAction("forward_group_single_msg", Params{
+		"group_id":   groupID,
+		"message_id": messageID,
+	})
 }
 
 // GetGroupSystemMessage 获取群系统消息
 // https://github.com/Mrs4s/go-cqhttp/blob/master/docs/cqhttp.md#%E8%8E%B7%E5%8F%96%E7%BE%A4%E7%B3%BB%E7%BB%9F%E6%B6%88%E6%81%AF
-func (ctx *Ctx) GetGroupSystemMessage() gjson.Result {
-	return ctx.CallAction("get_group_system_msg", Params{}).Data
+func (ctx *Ctx) GetGroupSystemMessage() (gjson.Result, error) {
+	resp, err := ctx.CallAction("get_group_system_msg", Params{})
+	return resp.Data, err
 }
 
 // MarkMessageAsRead 标记消息已读
 // https://github.com/Mrs4s/go-cqhttp/blob/master/docs/cqhttp.md#%E6%A0%87%E8%AE%B0%E6%B6%88%E6%81%AF%E5%B7%B2%E8%AF%BB
 func (ctx *Ctx) MarkMessageAsRead(messageID int64) APIResponse {
-	return ctx.CallAction("mark_msg_as_read", Params{
+	resp, _ := ctx.CallAction("mark_msg_as_read", Params{
 		"message_id": messageID,
 	})
+	return resp
 }
 
 // MarkThisMessageAsRead 标记本消息已读
 // https://github.com/Mrs4s/go-cqhttp/blob/master/docs/cqhttp.md#%E6%A0%87%E8%AE%B0%E6%B6%88%E6%81%AF%E5%B7%B2%E8%AF%BB
 func (ctx *Ctx) MarkThisMessageAsRead() APIResponse {
-	return ctx.CallAction("mark_msg_as_read", Params{
+	resp, _ := ctx.CallAction("mark_msg_as_read", Params{
 		"message_id": ctx.Event.MessageID,
 	})
+	return resp
 }
 
 // GetOnlineClients 获取当前账号在线客户端列表
 // https://github.com/Mrs4s/go-cqhttp/blob/master/docs/cqhttp.md#%E8%8E%B7%E5%8F%96%E5%BD%93%E5%89%8D%E8%B4%A6%E5%8F%B7%E5%9C%A8%E7%BA%BF%E5%AE%A2%E6%88%B7%E7%AB%AF%E5%88%97%E8%A1%A8
-func (ctx *Ctx) GetOnlineClients(noCache bool) gjson.Result {
-	return ctx.CallAction("get_online_clients", Params{
+func (ctx *Ctx) GetOnlineClients(noCache bool) (gjson.Result, error) {
+	resp, err := ctx.CallAction("get_online_clients", Params{
 		"no_cache": noCache,
-	}).Data
+	})
+	return resp.Data, err
 }
 
 // GetGroupAtAllRemain 获取群@全体成员剩余次数
 // https://github.com/Mrs4s/go-cqhttp/blob/master/docs/cqhttp.md#%E8%8E%B7%E5%8F%96%E7%BE%A4%E5%85%A8%E4%BD%93%E6%88%90%E5%91%98%E5%89%A9%E4%BD%99%E6%AC%A1%E6%95%B0
-func (ctx *Ctx) GetGroupAtAllRemain(groupID int64) gjson.Result {
-	return ctx.CallAction("get_group_at_all_remain", Params{
+func (ctx *Ctx) GetGroupAtAllRemain(groupID int64) (gjson.Result, error) {
+	resp, err := ctx.CallAction("get_group_at_all_remain", Params{
 		"group_id": groupID,
-	}).Data
+	})
+	return resp.Data, err
 }
 
 // GetThisGroupAtAllRemain 获取本群@全体成员剩余次数
 // https://github.com/Mrs4s/go-cqhttp/blob/master/docs/cqhttp.md#%E8%8E%B7%E5%8F%96%E7%BE%A4%E5%85%A8%E4%BD%93%E6%88%90%E5%91%98%E5%89%A9%E4%BD%99%E6%AC%A1%E6%95%B0
-func (ctx *Ctx) GetThisGroupAtAllRemain() gjson.Result {
+func (ctx *Ctx) GetThisGroupAtAllRemain() (gjson.Result, error) {
 	return ctx.GetGroupAtAllRemain(ctx.Event.GroupID)
 }
 
@@ -513,48 +576,51 @@ func (ctx *Ctx) GetThisGroupAtAllRemain() gjson.Result {
 // https://github.com/Mrs4s/go-cqhttp/blob/master/docs/cqhttp.md#%E8%8E%B7%E5%8F%96%E7%BE%A4%E6%B6%88%E6%81%AF%E5%8E%86%E5%8F%B2%E8%AE%B0%E5%BD%95
 //
 //	messageID: 起始消息序号, 可通过 get_msg 获得
-func (ctx *Ctx) GetGroupMessageHistory(groupID, messageID int64) gjson.Result {
-	return ctx.CallAction("get_group_msg_history", Params{
+func (ctx *Ctx) GetGroupMessageHistory(groupID, messageID int64) (gjson.Result, error) {
+	resp, err := ctx.CallAction("get_group_msg_history", Params{
 		"group_id":    groupID,
 		"message_seq": messageID,
-	}).Data
+	})
+	return resp.Data, err
 }
 
 // GettLatestGroupMessageHistory 获取最新群消息历史记录
-func (ctx *Ctx) GetLatestGroupMessageHistory(groupID int64) gjson.Result {
-	return ctx.CallAction("get_group_msg_history", Params{
+func (ctx *Ctx) GetLatestGroupMessageHistory(groupID int64) (gjson.Result, error) {
+	resp, err := ctx.CallAction("get_group_msg_history", Params{
 		"group_id": groupID,
-	}).Data
+	})
+	return resp.Data, err
 }
 
 // GetThisGroupMessageHistory 获取本群消息历史记录
 //
 //	messageID: 起始消息序号, 可通过 get_msg 获得
-func (ctx *Ctx) GetThisGroupMessageHistory(messageID int64) gjson.Result {
+func (ctx *Ctx) GetThisGroupMessageHistory(messageID int64) (gjson.Result, error) {
 	return ctx.GetGroupMessageHistory(ctx.Event.GroupID, messageID)
 }
 
 // GettLatestThisGroupMessageHistory 获取最新本群消息历史记录
-func (ctx *Ctx) GetLatestThisGroupMessageHistory() gjson.Result {
+func (ctx *Ctx) GetLatestThisGroupMessageHistory() (gjson.Result, error) {
 	return ctx.GetLatestGroupMessageHistory(ctx.Event.GroupID)
 }
 
 // GetGroupEssenceMessageList 获取群精华消息列表
 // https://github.com/Mrs4s/go-cqhttp/blob/master/docs/cqhttp.md#%E8%8E%B7%E5%8F%96%E7%B2%BE%E5%8D%8E%E6%B6%88%E6%81%AF%E5%88%97%E8%A1%A8
-func (ctx *Ctx) GetGroupEssenceMessageList(groupID int64) gjson.Result {
-	return ctx.CallAction("get_essence_msg_list", Params{
+func (ctx *Ctx) GetGroupEssenceMessageList(groupID int64) (gjson.Result, error) {
+	resp, err := ctx.CallAction("get_essence_msg_list", Params{
 		"group_id": groupID,
-	}).Data
+	})
+	return resp.Data, err
 }
 
 // GetThisGroupEssenceMessageList 获取本群精华消息列表
-func (ctx *Ctx) GetThisGroupEssenceMessageList() gjson.Result {
+func (ctx *Ctx) GetThisGroupEssenceMessageList() (gjson.Result, error) {
 	return ctx.GetGroupEssenceMessageList(ctx.Event.GroupID)
 }
 
 // SetGroupEssenceMessage 设置群精华消息
 // https://github.com/Mrs4s/go-cqhttp/blob/master/docs/cqhttp.md#%E8%AE%BE%E7%BD%AE%E7%B2%BE%E5%8D%8E%E6%B6%88%E6%81%AF
-func (ctx *Ctx) SetGroupEssenceMessage(messageID int64) APIResponse {
+func (ctx *Ctx) SetGroupEssenceMessage(messageID int64) (APIResponse, error) {
 	return ctx.CallAction("set_essence_msg", Params{
 		"message_id": messageID,
 	})
@@ -562,7 +628,7 @@ func (ctx *Ctx) SetGroupEssenceMessage(messageID int64) APIResponse {
 
 // DeleteGroupEssenceMessage 移出群精华消息
 // https://github.com/Mrs4s/go-cqhttp/blob/master/docs/cqhttp.md#%E7%A7%BB%E5%87%BA%E7%B2%BE%E5%8D%8E%E6%B6%88%E6%81%AF
-func (ctx *Ctx) DeleteGroupEssenceMessage(messageID int64) APIResponse {
+func (ctx *Ctx) DeleteGroupEssenceMessage(messageID int64) (APIResponse, error) {
 	return ctx.CallAction("delete_essence_msg", Params{
 		"message_id": messageID,
 	})
@@ -570,22 +636,24 @@ func (ctx *Ctx) DeleteGroupEssenceMessage(messageID int64) APIResponse {
 
 // GetWordSlices 获取中文分词
 // https://github.com/Mrs4s/go-cqhttp/blob/master/docs/cqhttp.md#%E8%8E%B7%E5%8F%96%E4%B8%AD%E6%96%87%E5%88%86%E8%AF%8D
-func (ctx *Ctx) GetWordSlices(content string) gjson.Result {
-	return ctx.CallAction(".get_word_slices", Params{
+func (ctx *Ctx) GetWordSlices(content string) (gjson.Result, error) {
+	resp, err := ctx.CallAction(".get_word_slices", Params{
 		"content": content,
-	}).Data
+	})
+	return resp.Data, err
 }
 
 // SendGuildChannelMessage 发送频道消息
 func (ctx *Ctx) SendGuildChannelMessage(guildID, channelID string, message interface{}) string {
-	rsp := ctx.CallAction("send_guild_channel_msg", Params{
+	resp, _ := ctx.CallAction("send_guild_channel_msg", Params{
 		"guild_id":   guildID,
 		"channel_id": channelID,
 		"message":    message,
-	}).Data.Get("message_id")
-	if rsp.Exists() {
-		log.Info().Str("name", "api").Msgf("发送频道消息(%v-%v): %v (id=%v)", guildID, channelID, formatMessage(message), rsp.Int())
-		return rsp.String()
+	})
+	msgId := resp.Data.Get("message_id")
+	if msgId.Exists() {
+		log.Info().Str("name", "api").Msgf("发送频道消息(%v-%v): %v (id=%v)", guildID, channelID, formatMessage(message), msgId.Int())
+		return msgId.String()
 	}
 	return "0" // 无法获取返回值
 }
@@ -604,73 +672,78 @@ func (ctx *Ctx) NickName() (name string) {
 
 // CardOrNickName 从 uid 获取群名片，如果没有则获取昵称
 func (ctx *Ctx) CardOrNickName(uid int64) (name string) {
-	infoData := ctx.GetGroupMemberInfo(ctx.Event.GroupID, uid, false)
+	infoData, _ := ctx.GetGroupMemberInfo(ctx.Event.GroupID, uid, false)
 	name = infoData.Get("card").String()
 	if name == "" {
 		name = infoData.Get("nickname").String()
 	}
 	if name == "" {
-		name = ctx.GetStrangerInfo(uid, false).Get("nickname").String()
+		infoData, _ = ctx.GetStrangerInfo(uid, false)
+		name = infoData.Get("nickname").String()
 	}
 	return
 }
 
 // GetGroupFilesystemInfo 获取群文件系统信息
 // https://github.com/Mrs4s/go-cqhttp/blob/master/docs/cqhttp.md#%E8%8E%B7%E5%8F%96%E7%BE%A4%E6%96%87%E4%BB%B6%E7%B3%BB%E7%BB%9F%E4%BF%A1%E6%81%AF
-func (ctx *Ctx) GetGroupFilesystemInfo(groupID int64) gjson.Result {
-	return ctx.CallAction("get_group_file_system_info", Params{
+func (ctx *Ctx) GetGroupFilesystemInfo(groupID int64) (gjson.Result, error) {
+	resp, err := ctx.CallAction("get_group_file_system_info", Params{
 		"group_id": groupID,
-	}).Data
+	})
+	return resp.Data, err
 }
 
 // GetThisGroupFilesystemInfo 获取本群文件系统信息
 // https://github.com/Mrs4s/go-cqhttp/blob/master/docs/cqhttp.md#%E8%8E%B7%E5%8F%96%E7%BE%A4%E6%96%87%E4%BB%B6%E7%B3%BB%E7%BB%9F%E4%BF%A1%E6%81%AF
-func (ctx *Ctx) GetThisGroupFilesystemInfo() gjson.Result {
+func (ctx *Ctx) GetThisGroupFilesystemInfo() (gjson.Result, error) {
 	return ctx.GetGroupFilesystemInfo(ctx.Event.GroupID)
 }
 
 // GetGroupRootFiles 获取群根目录文件列表
 // https://github.com/Mrs4s/go-cqhttp/blob/master/docs/cqhttp.md#%E8%8E%B7%E5%8F%96%E7%BE%A4%E6%A0%B9%E7%9B%AE%E5%BD%95%E6%96%87%E4%BB%B6%E5%88%97%E8%A1%A8
-func (ctx *Ctx) GetGroupRootFiles(groupID int64) gjson.Result {
-	return ctx.CallAction("get_group_root_files", Params{
+func (ctx *Ctx) GetGroupRootFiles(groupID int64) (gjson.Result, error) {
+	resp, err := ctx.CallAction("get_group_root_files", Params{
 		"group_id": groupID,
-	}).Data
+	})
+	return resp.Data, err
 }
 
 // GetThisGroupRootFiles 获取本群根目录文件列表
 // https://github.com/Mrs4s/go-cqhttp/blob/master/docs/cqhttp.md#%E8%8E%B7%E5%8F%96%E7%BE%A4%E6%A0%B9%E7%9B%AE%E5%BD%95%E6%96%87%E4%BB%B6%E5%88%97%E8%A1%A8
-func (ctx *Ctx) GetThisGroupRootFiles() gjson.Result {
+func (ctx *Ctx) GetThisGroupRootFiles() (gjson.Result, error) {
 	return ctx.GetGroupRootFiles(ctx.Event.GroupID)
 }
 
 // GetGroupFilesByFolder 获取群子目录文件列表
 // https://github.com/Mrs4s/go-cqhttp/blob/master/docs/cqhttp.md#%E8%8E%B7%E5%8F%96%E7%BE%A4%E5%AD%90%E7%9B%AE%E5%BD%95%E6%96%87%E4%BB%B6%E5%88%97%E8%A1%A8
-func (ctx *Ctx) GetGroupFilesByFolder(groupID int64, folderID string) gjson.Result {
-	return ctx.CallAction("get_group_files_by_folder", Params{
+func (ctx *Ctx) GetGroupFilesByFolder(groupID int64, folderID string) (gjson.Result, error) {
+	resp, err := ctx.CallAction("get_group_files_by_folder", Params{
 		"group_id":  groupID,
 		"folder_id": folderID,
-	}).Data
+	})
+	return resp.Data, err
 }
 
 // GetThisGroupFilesByFolder 获取本群子目录文件列表
 // https://github.com/Mrs4s/go-cqhttp/blob/master/docs/cqhttp.md#%E8%8E%B7%E5%8F%96%E7%BE%A4%E5%AD%90%E7%9B%AE%E5%BD%95%E6%96%87%E4%BB%B6%E5%88%97%E8%A1%A8
-func (ctx *Ctx) GetThisGroupFilesByFolder(folderID string) gjson.Result {
+func (ctx *Ctx) GetThisGroupFilesByFolder(folderID string) (gjson.Result, error) {
 	return ctx.GetGroupFilesByFolder(ctx.Event.GroupID, folderID)
 }
 
 // GetGroupFileUrl 获取群文件资源链接
 // https://github.com/Mrs4s/go-cqhttp/blob/master/docs/cqhttp.md#%E8%8E%B7%E5%8F%96%E7%BE%A4%E6%96%87%E4%BB%B6%E8%B5%84%E6%BA%90%E9%93%BE%E6%8E%A5
-func (ctx *Ctx) GetGroupFileUrl(groupID, busid int64, fileID string) string {
-	return ctx.CallAction("get_group_file_url", Params{
+func (ctx *Ctx) GetGroupFileUrl(groupID, busid int64, fileID string) (string, error) {
+	resp, err := ctx.CallAction("get_group_file_url", Params{
 		"group_id": groupID,
 		"file_id":  fileID,
 		"busid":    busid,
-	}).Data.Get("url").Str
+	})
+	return resp.Data.Get("url").Str, err
 }
 
 // GetThisGroupFileUrl 获取本群文件资源链接
 // https://github.com/Mrs4s/go-cqhttp/blob/master/docs/cqhttp.md#%E8%8E%B7%E5%8F%96%E7%BE%A4%E6%96%87%E4%BB%B6%E8%B5%84%E6%BA%90%E9%93%BE%E6%8E%A5
-func (ctx *Ctx) GetThisGroupFileUrl(busid int64, fileID string) string {
+func (ctx *Ctx) GetThisGroupFileUrl(busid int64, fileID string) (string, error) {
 	return ctx.GetGroupFileUrl(ctx.Event.GroupID, busid, fileID)
 }
 
@@ -678,7 +751,7 @@ func (ctx *Ctx) GetThisGroupFileUrl(busid int64, fileID string) string {
 // https://github.com/Mrs4s/go-cqhttp/blob/master/docs/cqhttp.md#%E4%B8%8A%E4%BC%A0%E7%BE%A4%E6%96%87%E4%BB%B6
 //
 //	msg: FILE_NOT_FOUND FILE_SYSTEM_UPLOAD_API_ERROR ...
-func (ctx *Ctx) UploadGroupFile(groupID int64, file, name, folder string) APIResponse {
+func (ctx *Ctx) UploadGroupFile(groupID int64, file, name, folder string) (APIResponse, error) {
 	return ctx.CallAction("upload_group_file", Params{
 		"group_id": groupID,
 		"file":     file,
@@ -691,6 +764,45 @@ func (ctx *Ctx) UploadGroupFile(groupID int64, file, name, folder string) APIRes
 // https://github.com/Mrs4s/go-cqhttp/blob/master/docs/cqhttp.md#%E4%B8%8A%E4%BC%A0%E7%BE%A4%E6%96%87%E4%BB%B6
 //
 //	msg: FILE_NOT_FOUND FILE_SYSTEM_UPLOAD_API_ERROR ...
-func (ctx *Ctx) UploadThisGroupFile(file, name, folder string) APIResponse {
+func (ctx *Ctx) UploadThisGroupFile(file, name, folder string) (APIResponse, error) {
 	return ctx.UploadGroupFile(ctx.Event.GroupID, file, name, folder)
+}
+
+// SetMyAvatar 设置我的头像
+//
+// https://llonebot.github.io/zh-CN/develop/extends_api
+func (ctx *Ctx) SetMyAvatar(file string) (APIResponse, error) {
+	return ctx.CallAction("set_qq_avatar", Params{
+		"file": file,
+	})
+}
+
+// GetFile 下载收到的群文件或私聊文件
+//
+// https://llonebot.github.io/zh-CN/develop/extends_api
+func (ctx *Ctx) GetFile(fileID string) (gjson.Result, error) {
+	resp, err := ctx.CallAction("get_file", Params{
+		"file_id": fileID,
+	})
+	return resp.Data, err
+}
+
+// SetMessageEmojiLike 发送表情回应
+//
+// https://llonebot.github.io/zh-CN/develop/extends_api
+//
+// emoji_id 参考 https://bot.q.qq.com/wiki/develop/api-v2/openapi/emoji/model.html#EmojiType
+func (ctx *Ctx) SetMessageEmojiLike(messageID interface{}, emojiID rune) error {
+	resp, err := ctx.CallAction("set_msg_emoji_like", Params{
+		"message_id": messageID,
+		"emoji_id":   strconv.Itoa(int(emojiID)),
+	})
+	if err != nil {
+		return err
+	}
+	ret := resp.Data.Get("errMsg").Str
+	if ret != "" {
+		return errors.New(ret)
+	}
+	return nil
 }

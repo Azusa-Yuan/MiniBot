@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"image/jpeg"
 	"math/rand/v2"
-	"sort"
 	"strconv"
 
 	zero "ZeroBot"
@@ -93,11 +92,11 @@ func init() {
 				return
 			}
 			// 有缓存获取群员列表
-			temp := ctx.GetThisGroupMemberList().Array()
-
-			sort.SliceStable(temp, func(i, j int) bool {
-				return temp[i].Get("last_sent_time").Int() < temp[j].Get("last_sent_time").Int()
-			})
+			temp, err := cache.GetGroupMemberList(ctx.Event.UserID, ctx.Event.GroupID)
+			if err != nil {
+				ctx.SendError(err)
+				return
+			}
 
 			botId := ctx.Event.SelfID
 			temp = temp[len(temp)/3:]
@@ -116,14 +115,13 @@ func init() {
 			marriedMap := make(map[int64]struct{})
 			for _, v := range marriedInfo {
 				marriedMap[v.UID] = struct{}{}
-				marriedMap[v.Target] = struct{}{}
 				// 多一次校验
-				if uid == v.UID || uid == v.GID {
+				if uid == v.UID {
 					return
 				}
 			}
 			for k := 0; k < len(temp); k++ {
-				uid := temp[k].Get("user_id").Int()
+				uid := temp[k]
 				if uid == botId {
 					continue
 				}
@@ -300,28 +298,22 @@ func init() {
 			pigs := []int64{}
 			if len(pigsInfos) == 0 {
 				// 获取群员列表
-				temp := ctx.GetThisGroupMemberListNoCache().Array()
-				sort.SliceStable(temp, func(i, j int) bool {
-					return temp[i].Get("last_sent_time").Int() < temp[j].Get("last_sent_time").Int()
-				})
-
-				temp = temp[len(temp)/3:]
-				pig_num := len(temp)/20 + 1
-				qqgrouplist := make([]int64, 0, len(temp))
-				for k := 0; k < len(temp); k++ {
-					usr := temp[k].Get("user_id").Int()
-					if usr == botId {
-						continue
-					}
-					qqgrouplist = append(qqgrouplist, usr)
+				qqgrouplist, err := cache.GetGroupMemberList(botId, ctx.Event.GroupID)
+				if err != nil {
+					ctx.SendError(err)
+					return
 				}
+
+				qqgrouplist = qqgrouplist[len(qqgrouplist)/3:]
+				pig_num := len(qqgrouplist)/20 + 1
+
 				rand.Shuffle(len(qqgrouplist), func(i, j int) {
 					qqgrouplist[i], qqgrouplist[j] = qqgrouplist[j], qqgrouplist[i]
 				})
 				pigs = qqgrouplist[:pig_num]
-				err := qqwife.SavePigs(gid, pigs)
+				err = qqwife.SavePigs(gid, pigs)
 				if err != nil {
-					ctx.SendChain(message.Text("[ERROR]:", err))
+					ctx.SendError(err)
 					return
 				}
 			} else {

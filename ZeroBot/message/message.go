@@ -1,6 +1,8 @@
 package message
 
 import (
+	"ZeroBot/utils"
+	"bytes"
 	"crypto/md5"
 	"encoding/base64"
 	"encoding/hex"
@@ -9,8 +11,6 @@ import (
 	"hash/crc64"
 	"strconv"
 	"strings"
-
-	"ZeroBot/utils"
 )
 
 // Message impl the array form of message
@@ -184,15 +184,36 @@ func Face(id int) MessageSegment {
 	}
 }
 
-// Image 普通图片
-// https://github.com/botuniverse/onebot-11/tree/master/message/segment.md#%E5%9B%BE%E7%89%87
-func Image(file string) MessageSegment {
+// File 文件
+// https://llonebot.github.io/zh-CN/develop/extends_api
+func File(file, name string) MessageSegment {
 	return MessageSegment{
+		Type: "file",
+		Data: map[string]string{
+			"file": file,
+			"name": name,
+		},
+	}
+}
+
+// Image 普通图片
+//
+// https://github.com/botuniverse/onebot-11/tree/master/message/segment.md#%E5%9B%BE%E7%89%87
+//
+// https://llonebot.github.io/zh-CN/develop/extends_api
+//
+// summary: LLOneBot的扩展字段：图片预览文字
+func Image(file string, summary ...interface{}) MessageSegment {
+	m := MessageSegment{
 		Type: "image",
 		Data: map[string]string{
 			"file": file,
 		},
 	}
+	if len(summary) > 0 {
+		m.Data["summary"] = fmt.Sprint(summary...)
+	}
+	return m
 }
 
 // ImageBytes 普通图片
@@ -211,6 +232,17 @@ func ImageBytes(data []byte) MessageSegment {
 func Record(file string) MessageSegment {
 	return MessageSegment{
 		Type: "record",
+		Data: map[string]string{
+			"file": file,
+		},
+	}
+}
+
+// Video 短视频
+// https://github.com/botuniverse/onebot-11/blob/master/message/segment.md#%E7%9F%AD%E8%A7%86%E9%A2%91
+func Video(file string) MessageSegment {
+	return MessageSegment{
+		Type: "video",
 		Data: map[string]string{
 			"file": file,
 		},
@@ -291,6 +323,19 @@ func NewMessageIDFromInteger(raw int64) (m MessageID) {
 	m.s = strconv.FormatInt(raw, 10)
 	m.i = raw
 	return
+}
+
+func (m MessageID) MarshalJSON() ([]byte, error) {
+	sb := bytes.NewBuffer(make([]byte, 0, len(m.s)+2))
+	_, err := strconv.ParseInt(m.s, 10, 64)
+	if err != nil {
+		sb.WriteByte('"')
+		json.HTMLEscape(sb, []byte(m.s))
+		sb.WriteByte('"')
+	} else {
+		sb.WriteString(m.s)
+	}
+	return sb.Bytes(), nil
 }
 
 func (m MessageID) String() string {

@@ -31,16 +31,30 @@ func init() {
 			now := time.Unix(ctx.Event.Time, 0).Format("2006-01-02 15:04:05")
 			userid := ctx.Event.UserID
 			username := ctx.CardOrNickName(userid)
-			groupname := ctx.GetThisGroupInfo(true).Name
 			groupid := ctx.Event.GroupID
-			log.Info().Str("name", pluginName).Msgf("收到来自[%s](%d)的群聊邀请，群:[%s](%d)", username, userid, groupname, groupid)
+
+			groupInfo, err := ctx.GetThisGroupInfo(true)
+			if err != nil {
+				ctx.SendPrivateForwardMessage(su,
+					message.Message{message.CustomNode(username, userid,
+						"在"+now+"收到来自"+
+							"\n用户:["+username+"]("+strconv.FormatInt(userid, 10)+")的群聊邀请"+
+							"\n群聊:("+strconv.FormatInt(groupid, 10)+")"+
+							"\n请在下方复制flag并在前面加上:"+
+							"\n同意/拒绝邀请，来决定同意还是拒绝"),
+						message.CustomNode(username, userid, ctx.Event.Flag)})
+				return
+			}
+
+			groupName := groupInfo.Name
+			log.Info().Str("name", pluginName).Msgf("收到来自[%s](%d)的群聊邀请，群:[%s](%d)", username, userid, groupName, groupid)
 
 			if zero.SuperUserPermission(ctx) {
 				ctx.SetGroupAddRequest(ctx.Event.Flag, "invite", true, "")
 				ctx.SendPrivateForwardMessage(su, message.Message{message.CustomNode(username, userid,
 					"已自动同意在"+now+"收到来自"+
 						"\n用户:["+username+"]("+strconv.FormatInt(userid, 10)+")的群聊邀请"+
-						"\n群聊:["+groupname+"]("+strconv.FormatInt(groupid, 10)+")"+
+						"\n群聊:["+groupName+"]("+strconv.FormatInt(groupid, 10)+")"+
 						"\nflag:"+ctx.Event.Flag)})
 				return
 			}
@@ -48,11 +62,12 @@ func init() {
 				message.Message{message.CustomNode(username, userid,
 					"在"+now+"收到来自"+
 						"\n用户:["+username+"]("+strconv.FormatInt(userid, 10)+")的群聊邀请"+
-						"\n群聊:["+groupname+"]("+strconv.FormatInt(groupid, 10)+")"+
+						"\n群聊:["+groupName+"]("+strconv.FormatInt(groupid, 10)+")"+
 						"\n请在下方复制flag并在前面加上:"+
 						"\n同意/拒绝邀请，来决定同意还是拒绝"),
 					message.CustomNode(username, userid, ctx.Event.Flag)})
 		})
+
 	zero.On("request/friend").SetBlock(false).
 		Handle(func(ctx *zero.Ctx) {
 			su := zero.BotConfig.SuperUsers[0]

@@ -5,11 +5,14 @@ import (
 	"MiniBot/utils/net_tools"
 	"MiniBot/utils/path"
 	"MiniBot/utils/text"
+	zero "ZeroBot"
 	"context"
+	"encoding/json"
 	"fmt"
 	"io"
 	"os"
 	"path/filepath"
+	"sort"
 	"strconv"
 	"strings"
 	"time"
@@ -124,4 +127,43 @@ func GetFont(path string) ([]byte, error) {
 
 func GetDefaultFont() ([]byte, error) {
 	return GetFont(defalutFontPath)
+}
+
+func GetGroupMemberList(bid, gid int64) ([]int64, error) {
+	key := strconv.FormatInt(gid, 10) + "mem_list"
+	res, err := redisClient.Get(context.TODO(), key).Result()
+	if err != nil && err != redis.Nil {
+		return nil, err
+	}
+
+	memberList := []int64{}
+	if res != "" {
+		json.Unmarshal(utils.StringToBytes(res), &memberList)
+		return memberList, nil
+	}
+
+	bot, err := zero.GetBot(bid)
+	if err != nil {
+		return nil, err
+	}
+
+	tempRaw, err := bot.GetGroupMemberListNoCache(gid)
+	if err != nil {
+		return nil, err
+	}
+	temp := tempRaw.Array()
+	sort.SliceStable(temp, func(i, j int) bool {
+		return temp[i].Get("last_sent_time").Int() < temp[j].Get("last_sent_time").Int()
+	})
+	for _, v := range temp {
+		memberList = append(memberList, v.Get("user_id").Int())
+	}
+
+	data, err := json.Marshal(memberList)
+	if err != nil {
+		return nil, err
+	}
+
+	redisClient.Set(context.TODO(), key, data, time.Hour*24)
+	return memberList, nil
 }

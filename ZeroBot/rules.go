@@ -265,11 +265,24 @@ func GroupHigherPermission(gettarget func(ctx *Ctx) int64) Rule {
 			sender := ctx.Event.UserID
 			return BotConfig.GetFirstSuperUser(sender, target) == sender
 		}
+		if target == ctx.Event.UserID { // 特判, 自己和自己比
+			return false
+		}
 		if ctx.Event.Sender.Role == "owner" {
-			return !issu(target) && ctx.GetThisGroupMemberInfo(target, false).Get("role").Str != "owner"
+			info, err := ctx.GetThisGroupMemberInfo(target, false)
+			if err != nil {
+				ctx.SendError(err)
+				return false
+			}
+			return !issu(target) && info.Get("role").Str != "owner"
 		}
 		if ctx.Event.Sender.Role == "admin" {
-			tgtrole := ctx.GetThisGroupMemberInfo(target, false).Get("role").Str
+			info, err := ctx.GetThisGroupMemberInfo(target, false)
+			if err != nil {
+				ctx.SendError(err)
+				return false
+			}
+			tgtrole := info.Get("role").Str
 			return !issu(target) && tgtrole != "owner" && tgtrole != "admin"
 		}
 		return false // member is the lowest
