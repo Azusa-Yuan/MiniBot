@@ -211,11 +211,13 @@ func processEventAsync(response []byte, caller APICaller, maxwait time.Duration)
 	case "notice":
 		event.DetailType = event.NoticeType
 		preprocessNoticeEvent(&event)
+		printNoticeLog(&event)
 	case "request":
 		event.DetailType = event.RequestType
 	}
 	if event.PostType == "message" {
 		preprocessMessageEvent(&event)
+		printMessageLog(&event)
 	}
 	ctx := &Ctx{
 		Event:  &event,
@@ -451,14 +453,11 @@ func preprocessMessageEvent(e *Event) {
 
 	switch {
 	case e.DetailType == "group":
-		log.Info().Str("name", "bot").Msgf("收到群(%v)消息 %v : %v", e.GroupID, e.Sender.String(), e.RawMessage)
 		processAt()
 	case e.DetailType == "guild" && e.SubType == "channel":
-		log.Info().Str("name", "bot").Msgf("收到频道(%v)(%v-%v)消息 %v : %v", e.GroupID, e.GuildID, e.ChannelID, e.Sender.String(), e.Message)
 		processAt()
 	default:
 		e.IsToMe = true // 私聊也判断为at
-		log.Info().Str("name", "bot").Msgf("收到私聊消息 %v : %v", e.Sender.String(), e.RawMessage)
 	}
 	if len(e.Message) > 0 && e.Message[0].Type == "text" { // Trim Again!
 		e.Message[0].Data["text"] = strings.TrimLeft(e.Message[0].Data["text"], " ")
@@ -472,6 +471,7 @@ func preprocessNoticeEvent(e *Event) {
 	} else {
 		e.IsToMe = e.UserID == e.SelfID
 	}
+
 }
 
 // GetBot 获取指定的bot (Ctx)实例
