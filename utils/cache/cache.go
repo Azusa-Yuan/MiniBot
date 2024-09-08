@@ -18,6 +18,7 @@ import (
 	"time"
 
 	"github.com/rs/zerolog/log"
+	"github.com/tidwall/gjson"
 
 	"github.com/redis/go-redis/v9"
 	"gopkg.in/yaml.v2"
@@ -147,10 +148,19 @@ func GetGroupMemberList(bid, gid int64) ([]int64, error) {
 		return nil, err
 	}
 
-	tempRaw, err := bot.GetGroupMemberListNoCache(gid)
+	var tempRaw gjson.Result
+	for i := 0; i < 10; i++ {
+		tempRaw, err = bot.GetGroupMemberListNoCache(gid)
+		if err == nil {
+			break
+		}
+		log.Error().Str("name", utilsName).Err(err)
+	}
+
 	if err != nil {
 		return nil, err
 	}
+
 	temp := tempRaw.Array()
 	sort.SliceStable(temp, func(i, j int) bool {
 		return temp[i].Get("last_sent_time").Int() < temp[j].Get("last_sent_time").Int()
