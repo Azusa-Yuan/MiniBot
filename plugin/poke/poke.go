@@ -4,6 +4,7 @@ import (
 	"MiniBot/utils/path"
 	zero "ZeroBot"
 	"ZeroBot/message"
+	"fmt"
 	"math/rand/v2"
 	"os"
 	"path/filepath"
@@ -53,6 +54,8 @@ func init() {
 					ctx.SendError(err)
 					return
 				}
+				fmt.Println("file://" + filePath)
+				ctx.SendChain(message.Record("file://" + filePath))
 				ctx.SendChain(message.RecordBytes(dinggongData))
 				return
 			} else {
