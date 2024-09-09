@@ -218,15 +218,16 @@ func (wssc *WSSCaller) CallApi(req zero.APIRequest) (zero.APIResponse, error) {
 	req.Echo = wssc.nextSeq()
 	wssc.seqMap.Store(req.Echo, ch)
 
+	data, _ := json.Marshal(&req)
 	// send message
 	wssc.mu.Lock() // websocket write is not goroutine safe
-	err := wssc.conn.WriteJSON(&req)
+	err := wssc.conn.WriteMessage(websocket.BinaryMessage, data)
 	wssc.mu.Unlock()
 	if err != nil {
 		log.Warn().Str("name", "wss").Err(err).Msg("向WebsocketServer发送API请求失败")
 		return nullResponse, err
 	}
-	log.Debug().Str("name", "wss").Msgf("向服务器发送请求: %v", &req)
+	log.Debug().Str("name", "wss").Msgf("向服务器发送请求: %v", utils.BytesToString(data))
 
 	select { // 等待数据返回
 	case rsp, ok := <-ch:

@@ -216,15 +216,14 @@ func Image(file string, summary ...interface{}) MessageSegment {
 	return m
 }
 
+// 参数为本地路径
+func ImagePath(path string) MessageSegment {
+	return Image("file://" + path)
+}
+
 // ImageBytes 普通图片
-// https://github.com/botuniverse/onebot-11/tree/master/message/segment.md#%E5%9B%BE%E7%89%87
 func ImageBytes(data []byte) MessageSegment {
-	return MessageSegment{
-		Type: "image",
-		Data: map[string]string{
-			"file": "base64://" + base64.StdEncoding.EncodeToString(data),
-		},
-	}
+	return Image("base64://" + base64.StdEncoding.EncodeToString(data))
 }
 
 // Record 语音
@@ -239,12 +238,7 @@ func Record(file string) MessageSegment {
 }
 
 func RecordBytes(data []byte) MessageSegment {
-	return MessageSegment{
-		Type: "record",
-		Data: map[string]string{
-			"file": "base64://" + base64.StdEncoding.EncodeToString(data),
-		},
-	}
+	return Record("base64://" + base64.StdEncoding.EncodeToString(data))
 }
 
 // Video 短视频
