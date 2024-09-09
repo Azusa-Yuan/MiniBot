@@ -20,6 +20,7 @@ import (
 	_ "MiniBot/plugin/monitor"
 	_ "MiniBot/plugin/moyu"
 	_ "MiniBot/plugin/pcr_jjc3"
+	_ "MiniBot/plugin/poke"
 	_ "MiniBot/plugin/qqwife"
 	_ "MiniBot/plugin/score"
 
