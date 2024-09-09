@@ -43,7 +43,7 @@ func init() {
 				}
 				ctx.SendChain(message.ImageBytes(imgData))
 				return
-			} else if r > 0.3 && r < 0.6 {
+			} else {
 				files, err := os.ReadDir(dinggongPath)
 				if err != nil {
 					ctx.SendError(err)
@@ -60,10 +60,11 @@ func init() {
 				ctx.SendChain(message.Record("file://" + filePath))
 				// ctx.SendChain(message.RecordBytes(dinggongData))
 				return
-			} else {
-				fmt.Println("是这里了吗")
-				ctx.SendChain(message.Poke(ctx.Event.UserID))
 			}
+			// else {
+			// 	fmt.Println("是这里了吗")
+			// 	ctx.SendChain(message.Poke(ctx.Event.UserID))
+			// }
 		},
 	)
 }

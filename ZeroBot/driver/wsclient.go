@@ -2,6 +2,7 @@ package driver
 
 import (
 	"encoding/base64"
+	"encoding/json"
 	"io"
 	"net"
 	"net/http"
@@ -146,16 +147,17 @@ func (ws *WSClient) CallApi(req zero.APIRequest) (zero.APIResponse, error) {
 	req.Echo = ws.nextSeq()
 	ws.seqMap.Store(req.Echo, ch)
 
+	data, _ := json.Marshal(&req)
 	// send message
 	ws.mu.Lock() // websocket write is not goroutine safe
-	err := ws.conn.WriteJSON(&req)
+	err := ws.conn.WriteMessage(websocket.BinaryMessage, data)
 	ws.mu.Unlock()
 	if err != nil {
 		log.Warn().Str("name", "ws").Err(err).Msg("向WebsocketServer发送API请求失败: ")
 
 		return nullResponse, err
 	}
-	log.Debug().Str("name", "ws").Msgf("向服务器发送请求: %v", &req)
+	log.Debug().Str("name", "ws").Msgf("向服务器发送请求: %v", utils.BytesToString(data))
 
 	select { // 等待数据返回
 	case rsp, ok := <-ch:
