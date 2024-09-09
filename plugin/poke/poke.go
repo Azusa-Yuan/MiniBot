@@ -56,8 +56,8 @@ func init() {
 					ctx.SendError(err)
 					return
 				}
-				fmt.Println("file:///" + filePath)
-				ctx.SendChain(message.Record("file:///" + filePath))
+				fmt.Println("file://" + filePath)
+				ctx.SendChain(message.Record("file://" + filePath))
 				ctx.SendChain(message.RecordBytes(dinggongData))
 				return
 			} else {

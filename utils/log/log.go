@@ -12,8 +12,12 @@ import (
 )
 
 func init() {
-
-	zerolog.SetGlobalLevel(zerolog.InfoLevel)
+	if os.Getenv("LogLevel") == "debug" {
+		log.Info().Msg("目前处于debug等级，请注意打印日志的等级")
+		zerolog.SetGlobalLevel(zerolog.DebugLevel)
+	} else {
+		zerolog.SetGlobalLevel(zerolog.InfoLevel)
+	}
 
 	// 创建日志文件夹
 	logFolder := "./log"
