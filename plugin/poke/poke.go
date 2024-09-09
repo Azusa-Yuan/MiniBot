@@ -4,7 +4,6 @@ import (
 	"MiniBot/utils/path"
 	zero "ZeroBot"
 	"ZeroBot/message"
-	"fmt"
 	"math/rand/v2"
 	"os"
 	"path/filepath"
@@ -25,7 +24,6 @@ func init() {
 	engine := zero.NewTemplate(metaData)
 	engine.On("notice/notify/poke", zero.OnlyToMe).Handle(
 		func(ctx *zero.Ctx) {
-			fmt.Println("被触发了？")
 			r := rand.Float64()
 			if r <= 0.3 {
 				files, err := os.ReadDir(lulumuPath)
@@ -49,7 +47,7 @@ func init() {
 					return
 				}
 				index := rand.IntN(len(files))
-				filePath := filepath.Join(lulumuPath, files[index].Name())
+				filePath := filepath.Join(dinggongPath, files[index].Name())
 				dinggongData, err := os.ReadFile(filePath)
 				if err != nil {
 					ctx.SendError(err)
