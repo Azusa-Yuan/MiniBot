@@ -61,6 +61,7 @@ func init() {
 				ctx.SendChain(message.RecordBytes(dinggongData))
 				return
 			} else {
+				fmt.Println("是这里了吗")
 				ctx.SendChain(message.Poke(ctx.Event.UserID))
 			}
 		},
