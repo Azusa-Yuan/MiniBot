@@ -51,14 +51,14 @@ func init() {
 				}
 				index := rand.IntN(len(files))
 				filePath := filepath.Join(dinggongPath, files[index].Name())
-				dinggongData, err := os.ReadFile(filePath)
-				if err != nil {
-					ctx.SendError(err)
-					return
-				}
+				// dinggongData, err := os.ReadFile(filePath)
+				// if err != nil {
+				// 	ctx.SendError(err)
+				// 	return
+				// }
 				fmt.Println("file://" + filePath)
 				ctx.SendChain(message.Record("file://" + filePath))
-				ctx.SendChain(message.RecordBytes(dinggongData))
+				// ctx.SendChain(message.RecordBytes(dinggongData))
 				return
 			} else {
 				fmt.Println("是这里了吗")
