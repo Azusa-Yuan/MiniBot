@@ -59,7 +59,7 @@ type User struct {
 type Event struct {
 	Time          int64           `json:"time"`
 	PostType      string          `json:"post_type"`
-	DetailType    string          `json:"-"`
+	DetailType    string          `json:"-"` // 用来统一message_type, notice_type, request_type
 	MessageType   string          `json:"message_type"`
 	SubType       string          `json:"sub_type"`
 	MessageID     interface{}     `json:"-"`          // int64 in qq or string in guild

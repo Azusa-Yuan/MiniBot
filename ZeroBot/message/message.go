@@ -238,6 +238,15 @@ func Record(file string) MessageSegment {
 	}
 }
 
+func RecordBytes(data []byte) MessageSegment {
+	return MessageSegment{
+		Type: "record",
+		Data: map[string]string{
+			"file": "base64://" + base64.StdEncoding.EncodeToString(data),
+		},
+	}
+}
+
 // Video 短视频
 // https://github.com/botuniverse/onebot-11/blob/master/message/segment.md#%E7%9F%AD%E8%A7%86%E9%A2%91
 func Video(file string) MessageSegment {

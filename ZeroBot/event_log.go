@@ -23,10 +23,10 @@ func printNoticeLog(e *Event) {
 		if e.GroupID == 0 {
 			log.Info().Str("name", "bot").Msgf("%v戳了戳%v", e.UserID, e.TargetID)
 		} else {
-			log.Info().Str("name", "bot").Msgf("%v 在群%v戳了戳%v", e.UserID, e.GroupID, e.TargetID)
+			log.Info().Str("name", "bot").Msgf("%v在群%v戳了戳%v", e.UserID, e.GroupID, e.TargetID)
 		}
 	case e.NoticeType == "group_card":
-		log.Info().Str("name", "bot").Msgf("%v 在群%v修改了群名片 %v → %v", e.UserID, e.GroupID, e.CardOld, e.CardNew)
+		log.Info().Str("name", "bot").Msgf("%v在群%v修改了群名片 %v → %v", e.UserID, e.GroupID, e.CardOld, e.CardNew)
 
 	}
 	fmt.Println(e.RawEvent.Raw)

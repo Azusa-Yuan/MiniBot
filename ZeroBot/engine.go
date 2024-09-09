@@ -98,7 +98,7 @@ func (e *Engine) UsePostHandler(handler ...Handler) {
 // On 添加新的指定消息类型的匹配器(默认Engine)
 func On(typ string, rules ...Rule) *Matcher { return defaultEngine.On(typ, rules...) }
 
-// On 添加新的指定消息类型的匹配器
+// On 添加新的指定消息类型的匹配器 格式post_type/detail_type/sub_type
 func (e *Engine) On(typ string, rules ...Rule) *Matcher {
 	matcher := &Matcher{
 		Type:   Type(typ),
