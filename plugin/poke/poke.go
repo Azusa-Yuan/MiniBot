@@ -22,7 +22,7 @@ func init() {
 		Help: "",
 	}
 	engine := zero.NewTemplate(metaData)
-	engine.On("/notice/notify/poke", zero.OnlyToMe).Handle(
+	engine.On("notice/notify/poke", zero.OnlyToMe).Handle(
 		func(ctx *zero.Ctx) {
 			r := rand.Float64()
 			if r <= 0.3 {
