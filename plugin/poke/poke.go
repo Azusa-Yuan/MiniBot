@@ -49,8 +49,8 @@ func init() {
 					ctx.SendError(err)
 					return
 				}
-				index := rand.IntN(len(files))
-				filePath := filepath.Join(dinggongPath, files[index].Name())
+				// index := rand.IntN(len(files))
+				filePath := filepath.Join(dinggongPath, files[0].Name())
 				// dinggongData, err := os.ReadFile(filePath)
 				// if err != nil {
 				// 	ctx.SendError(err)
