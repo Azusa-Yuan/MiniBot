@@ -237,6 +237,11 @@ func Record(file string) MessageSegment {
 	}
 }
 
+// 参数为本地路径
+func RecordPath(path string) MessageSegment {
+	return Record("file://" + path)
+}
+
 func RecordBytes(data []byte) MessageSegment {
 	return Record("base64://" + base64.StdEncoding.EncodeToString(data))
 }

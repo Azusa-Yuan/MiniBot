@@ -384,7 +384,7 @@ func init() {
 			}
 			favor, err := qqwife.GetFavorability(uid, fiancee)
 			if err != nil {
-				ctx.SendChain(message.Text("[ERROR]:", err))
+				ctx.SendError(err)
 				return
 			}
 			if favor < 30 {
@@ -395,20 +395,26 @@ func init() {
 				return
 			}
 
+			favor, err = qqwife.UpdateFavorability(uid, fiancee, 5)
+			if err != nil {
+				ctx.SendError(err)
+				return
+			}
+
 			// 去qqwife登记
 			var choicetext string
 			switch choice {
 			case "娶":
 				err := qqwife.SaveMarriageInfo(gid, uid, fiancee, ctx.CardOrNickName(uid), ctx.CardOrNickName(fiancee))
 				if err != nil {
-					ctx.SendChain(message.Text("[ERROR]:", err))
+					ctx.SendError(err)
 					return
 				}
 				choicetext = "\n今天你的群老婆是"
 			default:
 				err := qqwife.SaveMarriageInfo(gid, fiancee, uid, ctx.CardOrNickName(fiancee), ctx.CardOrNickName(uid))
 				if err != nil {
-					ctx.SendChain(message.Text("[ERROR]:", err))
+					ctx.SendError(err)
 					return
 				}
 				choicetext = "\n今天你的群老公是"
@@ -429,7 +435,7 @@ func init() {
 					message.Text(
 						"\n",
 						"[", ctx.CardOrNickName(fiancee), "]",
-						"(", fiancee, ")哒",
+						"(", fiancee, ")哒\n当前你们好感度为", favor,
 					),
 				)
 			}()
@@ -495,17 +501,17 @@ func init() {
 				err = qqwife.SaveMarriageInfo(gid, uid, target, ctx.CardOrNickName(uid), ctx.CardOrNickName(target))
 			}
 			if err != nil {
-				ctx.SendChain(message.Text("[qqwife]复婚登记失败力\n", err))
+				ctx.SendError(err)
 				return
 			}
 
-			favor, err = qqwife.UpdateFavorability(uid, greenID, -5)
+			_, err = qqwife.UpdateFavorability(uid, greenID, -5)
 			if err != nil {
-				ctx.SendChain(message.Text("[ERROR]:", err))
+				ctx.SendError(err)
 			}
-			_, err = qqwife.UpdateFavorability(uid, target, 5)
+			favor, err = qqwife.UpdateFavorability(uid, target, 5)
 			if err != nil {
-				ctx.SendChain(message.Text("[ERROR]:", err))
+				ctx.SendError(err)
 			}
 			// 主要瓶颈就在网络i/o上
 			go func() {

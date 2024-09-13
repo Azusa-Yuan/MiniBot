@@ -52,12 +52,7 @@ func init() {
 				}
 				index := rand.IntN(len(files))
 				filePath := filepath.Join(lulumuPath, files[index].Name())
-				imgData, err := os.ReadFile(filePath)
-				if err != nil {
-					ctx.SendError(err)
-					return
-				}
-				ctx.SendChain(message.ImageBytes(imgData))
+				ctx.SendChain(message.ImagePath(filePath))
 				return
 			} else if r <= 0.6 {
 				files, err := os.ReadDir(dinggongPath)
@@ -66,7 +61,7 @@ func init() {
 					return
 				}
 				filePath := filepath.Join(dinggongPath, files[0].Name())
-				ctx.SendChain(message.Record("file://" + filePath))
+				ctx.SendChain(message.RecordPath(filePath))
 				return
 			} else {
 				index := rand.IntN(len(replyMessages))
