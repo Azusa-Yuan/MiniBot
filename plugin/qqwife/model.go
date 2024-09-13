@@ -292,10 +292,9 @@ func (sql *QQWife) UpdateFavorability(uid, target int64, score int) (favor int, 
 	info := Favorability{}
 	info.UID = uid
 	info.Target = target
-	res := sql.db.Where("uid = ? AND target = ?", uid, target).First(&info)
-	if res.Error != nil {
-		if !errors.Is(res.Error, gorm.ErrRecordNotFound) {
-			err = res.Error
+	err = sql.db.Where("uid = ? AND target = ?", uid, target).First(&info).Error
+	if err != nil {
+		if !errors.Is(err, gorm.ErrRecordNotFound) {
 			return
 		}
 	}

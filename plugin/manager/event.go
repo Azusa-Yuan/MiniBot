@@ -2,6 +2,10 @@
 package manager
 
 import (
+	ai "MiniBot/utils/AI"
+	"MiniBot/utils/cache"
+	"MiniBot/utils/image_tools"
+	"MiniBot/utils/transform"
 	"fmt"
 	"slices"
 	"strconv"
@@ -10,6 +14,7 @@ import (
 	zero "ZeroBot"
 	"ZeroBot/message"
 
+	"github.com/google/generative-ai-go/genai"
 	"github.com/rs/zerolog/log"
 )
 
@@ -43,6 +48,7 @@ func init() {
 							"\n请在下方复制flag并在前面加上:"+
 							"\n同意/拒绝邀请，来决定同意还是拒绝"),
 						message.CustomNode(username, userid, ctx.Event.Flag)})
+				log.Error().Str("name", pluginName).Err(err).Msg("")
 				return
 			}
 
@@ -90,6 +96,7 @@ func init() {
 				"\n请在下方复制flag并在前面加上:"+
 				"\n同意/拒绝申请，来决定同意还是拒绝"+"\nflag:"+ctx.Event.Flag))
 		})
+
 	zero.OnRegex(`^(同意|拒绝)(申请|邀请)\s*(\S+)\s*(.*)$`, zero.SuperUserPermission, zero.OnlyPrivate).SetBlock(true).
 		Handle(func(ctx *zero.Ctx) {
 			su := zero.BotConfig.SuperUsers[0]
@@ -118,12 +125,56 @@ func init() {
 			}
 		})
 
-	// // 入群欢迎
-	// zero.OnNotice().SetBlock(false).
-	// 	Handle(func(ctx *zero.Ctx) {
-	// 		if ctx.Event.NoticeType == "group_increase" && ctx.Event.SelfID != ctx.Event.UserID {
-	// 		}
-	// 	})
+	// 入群欢迎
+	zero.OnNotice().SetBlock(false).
+		Handle(func(ctx *zero.Ctx) {
+			if ctx.Event.NoticeType == "group_increase" && ctx.Event.SelfID != ctx.Event.UserID {
+				qqinfo, err := ctx.GetStrangerInfo(ctx.Event.UserID, true)
+				if err != nil {
+					log.Error().Err(err)
+					return
+				}
+				log.Info().Str("name", pluginName).Msg(qqinfo.Raw)
+				imgBytes, err := cache.GetAvatar(ctx.Event.UserID)
+				if err != nil {
+					log.Error().Err(err)
+					return
+				}
+				format, err := image_tools.GetImageFormat(imgBytes)
+				if err != nil {
+					log.Error().Err(err)
+					return
+				}
+				msg := ""
+				name := qqinfo.Get("nickname").String()
+				msg += fmt.Sprint(name, "进群了")
+				sex := qqinfo.Get("sex").String()
+				if sex != "" {
+					msg += fmt.Sprint(",性别为", sex)
+				}
+				age := qqinfo.Get("age").Int()
+				if age != 0 {
+					msg += fmt.Sprint(",年龄为", age)
+				}
+				msg += ",请你为他写一份简短的欢迎词,下面是他的头像"
+				parts := []genai.Part{}
+				parts = append(parts, genai.Text(msg))
+				parts = append(parts, genai.ImageData(format, imgBytes))
+				key := transform.BidWithuidInt64(ctx)
+				resp, err := ai.AIBot.SendPartsWithSession(key, parts...)
+				if err != nil {
+					if err.Error() == "not session" {
+						ai.AIBot.CreateSession(key, ai.IM.IntroduceMap["露露姆"])
+						resp, err = ai.AIBot.SendPartsWithSession(key, parts...)
+					}
+					if err != nil {
+						log.Error().Err(err)
+						return
+					}
+				}
+				ctx.SendChain(message.At(ctx.Event.UserID), message.Text(resp))
+			}
+		})
 	// 非超级权限拉进群
 	zero.OnNotice().SetBlock(false).
 		Handle(func(ctx *zero.Ctx) {
