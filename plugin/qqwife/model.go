@@ -298,6 +298,7 @@ func (sql *QQWife) UpdateFavorability(uid, target int64, score int) (favor int, 
 			return
 		}
 	}
+	err = nil
 	info.Favor += score
 	if info.Favor > 100 {
 		info.Favor = 100
