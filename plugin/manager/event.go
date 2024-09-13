@@ -149,7 +149,7 @@ func init() {
 				name := qqinfo.Get("nickname").String()
 				msg += fmt.Sprint(name, "进群了")
 				sex := qqinfo.Get("sex").String()
-				if sex != "" {
+				if sex != "" && sex != "unknown" {
 					msg += fmt.Sprint(",性别为", sex)
 				}
 				age := qqinfo.Get("age").Int()
