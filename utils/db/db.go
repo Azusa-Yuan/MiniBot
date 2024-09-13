@@ -1,6 +1,7 @@
 package database
 
 import (
+	_ "MiniBot/utils/log"
 	"MiniBot/utils/path"
 	"context"
 	"fmt"
