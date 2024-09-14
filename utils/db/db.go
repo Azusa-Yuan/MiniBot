@@ -115,6 +115,7 @@ func NewDbConfig() *Config {
 		log.Error().Str("name", utilsName).Err(err).Msg("")
 	}
 	gormLogger := &zerologLogger{logger: log.Logger}
+	gormLogger.LogMode(logger.Info)
 	for k, v := range config.DbMap {
 		//	ok2代表是否有该数据库，ok1代表是否开启该数据库，实际上不用的话，可以直接将数据库删除
 		if ok1, ok2 := config.DbType[v.Type]; ok2 && ok1 {

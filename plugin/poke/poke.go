@@ -60,7 +60,8 @@ func init() {
 					ctx.SendError(err)
 					return
 				}
-				filePath := filepath.Join(dinggongPath, files[0].Name())
+				index := rand.IntN(len(files))
+				filePath := filepath.Join(dinggongPath, files[index].Name())
 				ctx.SendChain(message.RecordPath(filePath))
 				return
 			} else {
