@@ -48,6 +48,7 @@ func init() {
 					resp += "\n" + c.MetaDate.Name
 				}
 			}
+			resp += "\n发送\"帮助 服务名字\"查看服务帮助"
 			ctx.SendChain(message.Text(resp))
 		})
 }

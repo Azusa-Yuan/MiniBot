@@ -4,6 +4,7 @@ import (
 	"MiniBot/plugin/dnf/service"
 	zero "ZeroBot"
 	"ZeroBot/message"
+	"slices"
 	"strconv"
 	"time"
 
@@ -62,15 +63,25 @@ func init() {
 				ctx.SendError(err)
 			}
 			if ctx.Event.GroupID != 0 {
-
+				groupStr := strconv.FormatInt(ctx.Event.GroupID, 10)
+				if slices.Index(users.Group, groupStr) != -1 {
+					ctx.SendChain(message.At(ctx.Event.UserID), message.Text("已经订阅过啦"))
+					return
+				}
 				users.Group = append(users.Group, strconv.FormatInt(ctx.Event.GroupID, 10))
 			} else {
-				users.QQ = append(users.QQ, strconv.FormatInt(ctx.Event.UserID, 10))
+				qqStr := strconv.FormatInt(ctx.Event.UserID, 10)
+				if slices.Index(users.QQ, qqStr) != -1 {
+					ctx.SendChain(message.At(ctx.Event.UserID), message.Text("已经订阅过啦"))
+					return
+				}
+				users.QQ = append(users.QQ, qqStr)
 			}
 			err = users.SaveBinds()
 			if err != nil {
 				ctx.SendError(err)
 			}
+			ctx.SendChain(message.At(ctx.Event.UserID), message.Text("订阅成功"))
 		},
 	)
 

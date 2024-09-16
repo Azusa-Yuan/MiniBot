@@ -17,7 +17,11 @@ import (
 func init() {
 	metaData := zero.MetaData{
 		Name: "genai",
-		Help: "使用google api生成",
+		Help: `使用Google大模型Gemini生成,快和露露姆进行ai对话
+指令:
+	重置会话:可以重置当前ai会话的上下文,默认上下文的时长为2小时
+	切换人格[人格]:可以切换不同的对话风格，默认的对话风格为露露姆(虽然出于安全的考虑,已经OOC了),人格为空就是没有人格
+				目前支持的人格:露露姆,伊蕾娜,爱莉希雅`,
 	}
 	engine := zero.NewTemplate(&metaData)
 	engine.OnMessage(zero.OnlyToMe).SetPriority(10).Handle(

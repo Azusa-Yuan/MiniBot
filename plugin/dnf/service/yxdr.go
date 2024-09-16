@@ -43,6 +43,11 @@ var (
 	ScCtx, _    = chromedp.NewContext(allocCtx)
 )
 
+func init() {
+	chromedp.Emulate(device.Reset)
+	chromedp.EmulateViewport(1000, 1500)
+}
+
 func Screenshot(server string, productType string) ([]byte, string, error) {
 
 	if _, ok := ReportRegions[server]; !ok {
@@ -51,18 +56,9 @@ func Screenshot(server string, productType string) ([]byte, string, error) {
 
 	// 导航到指定的URL
 	var buf []byte
+	// url := "https://www.baidu.com"
 	url := fmt.Sprintf("https://www.yxdr.com/bijiaqi/dnf/%s/kua%s", productType, ReportRegions[server])
 	err := chromedp.Run(ScCtx,
-		// emulate iPhone 7 landscape
-		// chromedp.Emulate(device.IPhone8Plus),
-		// chromedp.Navigate(`https://www.bilibili.com/`),
-		// chromedp.CaptureScreenshot(&buf),
-
-		// reset
-		chromedp.Emulate(device.Reset),
-
-		//set really large viewport
-		chromedp.EmulateViewport(1000, 1500),
 		chromedp.Navigate(url),
 		chromedp.WaitVisible("#right_m"),
 		chromedp.CaptureScreenshot(&buf),
