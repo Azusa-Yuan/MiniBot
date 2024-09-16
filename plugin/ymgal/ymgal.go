@@ -15,7 +15,9 @@ func init() {
 		Name: "月慕galgame相关",
 		Help: "- 随机galCG\n- 随机gal表情包\n- galCG[xxx]\n- gal表情包[xxx]\n- 更新gal",
 	})
-	gdb = (*ymgaldb)(database.DbConfig.GetDb("lulumu"))
+	db := database.DbConfig.GetDb("lulumu")
+	db.AutoMigrate(&ymgal{})
+	gdb = (*ymgaldb)(db)
 
 	engine.OnRegex("^随机gal(CG|表情包)$").SetBlock(true).
 		Handle(func(ctx *zero.Ctx) {

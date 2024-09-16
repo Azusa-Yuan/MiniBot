@@ -60,6 +60,7 @@ func (l Logger) Trace(ctx context.Context, begin time.Time, fc func() (string, i
 	sql, rows := fc()            // 获取 SQL 语句和影响的行数
 
 	switch {
+	// todo  不知道具体是哪一行代码出错
 	case err != nil:
 		l.logger.Error().
 			Err(err).
