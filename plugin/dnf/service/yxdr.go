@@ -41,7 +41,8 @@ var (
 	)
 
 	allocCtx, _ = chromedp.NewExecAllocator(context.Background(), opts...)
-	ScCtx, _    = chromedp.NewContext(allocCtx)
+	TemCtx, _   = chromedp.NewContext(allocCtx)
+	ScCtx       = context.WithoutCancel(TemCtx)
 )
 
 func init() {
@@ -57,8 +58,7 @@ func Screenshot(server string, productType string) ([]byte, string, error) {
 
 	// 导航到指定的URL
 	var buf []byte
-	ctx, cancel := context.WithTimeout(ScCtx, 10*time.Second)
-	defer cancel()
+	ctx, _ := context.WithTimeout(ScCtx, 10*time.Second)
 	// url := "https://www.baidu.com"
 	url := fmt.Sprintf("https://www.yxdr.com/bijiaqi/dnf/%s/kua%s", productType, ReportRegions[server])
 	err := chromedp.Run(ctx,
