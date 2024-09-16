@@ -3,7 +3,6 @@ package service
 import (
 	"context"
 	"fmt"
-	"time"
 
 	"github.com/chromedp/chromedp"
 	"github.com/chromedp/chromedp/device"
@@ -58,7 +57,6 @@ func Screenshot(server string, productType string) ([]byte, string, error) {
 	// 导航到指定的URL
 	var buf []byte
 	// url := "https://www.baidu.com"
-	ctx, _ := context.WithTimeout(ScCtx, 20*time.Second)
 	url := fmt.Sprintf("https://www.yxdr.com/bijiaqi/dnf/%s/kua%s", productType, ReportRegions[server])
 	err := chromedp.Run(ctx,
 		chromedp.EmulateViewport(1000, 1500),
