@@ -2,6 +2,7 @@
 package bilibili
 
 import (
+	"MiniBot/plugin/manager/plugin"
 	"MiniBot/utils/path"
 	"bytes"
 	"encoding/json"
@@ -16,7 +17,6 @@ import (
 	bz "github.com/FloatTech/AnimeAPI/bilibili"
 	"github.com/FloatTech/floatbox/binary"
 	"github.com/FloatTech/floatbox/web"
-	"github.com/FloatTech/zbputils/control"
 	"github.com/FloatTech/zbputils/img/text"
 	"github.com/pkg/errors"
 	"github.com/tidwall/gjson"
@@ -325,7 +325,7 @@ func sendDynamic(ctx *zero.Ctx) error {
 			ct := cardList[i].Get("desc.timestamp").Int()
 			if ct > t && ct > time.Now().Unix()-600 {
 				lastTime[buid] = ct
-				m, ok := control.Lookup("bilibilipush")
+				m, ok := plugin.CM.Lookup("bilibilipush")
 				if ok {
 					groupList := bdb.getAllGroupByBuidAndDynamic(buid)
 					dc, err := bz.LoadDynamicDetail(cardList[i].Raw)
@@ -339,7 +339,7 @@ func sendDynamic(ctx *zero.Ctx) error {
 						return err
 					}
 					for _, gid := range groupList {
-						if m.IsEnabledIn(gid) {
+						if m.IsEnabled(strconv.FormatInt(gid, 10)) {
 							time.Sleep(time.Millisecond * 100)
 							switch {
 							case gid > 0:
@@ -374,7 +374,7 @@ func sendLive(ctx *zero.Ctx) error {
 		oldStatus := liveStatus[key.Int()]
 		if newStatus != oldStatus && newStatus == 1 {
 			liveStatus[key.Int()] = newStatus
-			m, ok := control.Lookup("bilibilipush")
+			m, ok := plugin.CM.Lookup("bilibilipush")
 			if ok {
 				groupList := bdb.getAllGroupByBuidAndLive(key.Int())
 				roomID := value.Get("short_id").Int()
@@ -394,7 +394,7 @@ func sendLive(ctx *zero.Ctx) error {
 				msg = append(msg, message.Image(lCover))
 				msg = append(msg, message.Text("直播链接：", lURL))
 				for _, gid := range groupList {
-					if m.IsEnabledIn(gid) {
+					if m.IsEnabled(strconv.FormatInt(gid, 10)) {
 						time.Sleep(time.Millisecond * 100)
 						switch {
 						case gid > 0:

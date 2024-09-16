@@ -17,18 +17,17 @@ import (
 	"strconv"
 	"time"
 
+	"MiniBot/utils/cache"
+	"MiniBot/utils/file"
 	minipath "MiniBot/utils/path"
 	zero "ZeroBot"
 	"ZeroBot/message"
 
 	bz "github.com/FloatTech/AnimeAPI/bilibili"
 	fcext "github.com/FloatTech/floatbox/ctxext"
-	"github.com/FloatTech/floatbox/file"
 	"github.com/FloatTech/floatbox/web"
 	"github.com/FloatTech/gg"
 	"github.com/FloatTech/imgfactory"
-	"github.com/FloatTech/zbputils/control"
-	"github.com/FloatTech/zbputils/img/text"
 )
 
 var (
@@ -185,7 +184,7 @@ func init() {
 				canvas.DrawImage(back, 0, 0)
 			}
 			canvas.SetColor(color.Black)
-			data, err := file.GetLazyData(text.BoldFontFile, control.Md5File, true)
+			data, err := cache.GetDefaultFont()
 			if err != nil {
 				ctx.SendChain(message.Text("ERROR: ", err))
 			}
@@ -322,7 +321,7 @@ func init() {
 		}
 		canvas := gg.NewContext(100, 100)
 		fontSize := 50.0
-		data, err = file.GetLazyData(text.BoldFontFile, control.Md5File, true)
+		data, err = cache.GetDefaultFont()
 		if err != nil {
 			ctx.SendChain(message.Text("ERROR: ", err))
 		}

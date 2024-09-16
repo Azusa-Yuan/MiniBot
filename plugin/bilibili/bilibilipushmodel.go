@@ -77,7 +77,7 @@ func (bdb *bilibilipushdb) insertOrUpdateLiveAndDynamic(bpMap map[string]any) (e
 			err = db.Model(&bilibilipush{}).Create(&bp).Error
 		}
 	} else {
-		err = db.Model(&bilibilipush{}).Where("bilibili_uid = ? and group_id = ?", bp.BilibiliUID, bp.GroupID).UpdateColumns(bpMap).Error
+		err = db.Model(&bilibilipush{}).Where("bilibili_uid = ? and group_id = ?", bp.BilibiliUID, bp.GroupID).Updates(bpMap).Error
 	}
 	return
 }
@@ -162,7 +162,7 @@ func (bdb *bilibilipushdb) updateAtAll(bpMap map[string]any) (err error) {
 			err = db.Model(&bilibiliAt{}).Create(&bp).Error
 		}
 	} else {
-		err = db.Model(&bilibiliAt{}).Where("group_id = ?", bp.GroupID).UpdateColumns(bpMap).Error
+		err = db.Model(&bilibiliAt{}).Where("group_id = ?", bp.GroupID).Updates(bpMap).Error
 	}
 	return
 }

@@ -14,7 +14,7 @@ import (
 	_ "MiniBot/plugin/asill"
 	_ "MiniBot/plugin/atri"
 
-	// _ "MiniBot/plugin/bilibili"
+	_ "MiniBot/plugin/bilibili"
 	_ "MiniBot/plugin/dnf"
 	_ "MiniBot/plugin/emojimix"
 	_ "MiniBot/plugin/genai"
@@ -25,6 +25,7 @@ import (
 	_ "MiniBot/plugin/poke"
 	_ "MiniBot/plugin/qqwife"
 	_ "MiniBot/plugin/score"
+	_ "MiniBot/plugin/sleepmanage"
 
 	// -----------------------以下为内置依赖，勿动------------------------ //
 	zero "ZeroBot"
