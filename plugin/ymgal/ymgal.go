@@ -49,7 +49,7 @@ func init() {
 			ctx.Send("少女祈祷中......")
 			err := updatePic()
 			if err != nil {
-				ctx.SendChain(message.Text("ERROR: ", err))
+				ctx.SendError(err)
 				return
 			}
 			ctx.Send("ymgal数据库已更新")
