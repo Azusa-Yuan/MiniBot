@@ -13,7 +13,8 @@ import (
 	// ---------以下插件均可通过前面加 // 注释，注释后停用并不加载插件--------- //
 	_ "MiniBot/plugin/asill"
 	_ "MiniBot/plugin/atri"
-	_ "MiniBot/plugin/bilibili"
+
+	// _ "MiniBot/plugin/bilibili"
 	_ "MiniBot/plugin/dnf"
 	_ "MiniBot/plugin/emojimix"
 	_ "MiniBot/plugin/genai"

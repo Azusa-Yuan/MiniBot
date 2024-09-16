@@ -1,10 +1,11 @@
 package bilibili
 
 import (
+	database "MiniBot/utils/db"
 	"encoding/json"
 	"os"
 
-	"github.com/jinzhu/gorm"
+	"gorm.io/gorm"
 )
 
 // bilibilipushdb bilibili推送数据库
@@ -53,11 +54,9 @@ func initializePush(dbpath string) *bilibilipushdb {
 		}
 		defer f.Close()
 	}
-	gdb, err := gorm.Open("sqlite3", dbpath)
-	if err != nil {
-		panic(err)
-	}
-	gdb.AutoMigrate(&bilibilipush{}).AutoMigrate(&bilibiliup{}).AutoMigrate(&bilibiliAt{})
+	gdb := database.DbConfig.GetDb("lulumu")
+
+	gdb.AutoMigrate(&bilibilipush{}, &bilibiliup{}, &bilibiliAt{})
 	return (*bilibilipushdb)(gdb)
 }
 
