@@ -17,11 +17,6 @@ func init() {
 		Help: "比例 跨二",
 	})
 
-	// 先启动，减少第一次使用的启动时间
-	go func() {
-		service.Screenshot("跨二", "youxibi")
-	}()
-
 	engine.OnPrefixGroup([]string{"比例", "金币", "游戏币"}).SetBlock(true).Handle(
 		func(ctx *zero.Ctx) {
 			arg := ctx.State["args"].(string)
