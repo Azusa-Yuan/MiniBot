@@ -26,6 +26,7 @@ import (
 	_ "MiniBot/plugin/qqwife"
 	_ "MiniBot/plugin/score"
 	_ "MiniBot/plugin/sleepmanage"
+	_ "MiniBot/plugin/ymgal"
 
 	// -----------------------以下为内置依赖，勿动------------------------ //
 	zero "ZeroBot"

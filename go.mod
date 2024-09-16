@@ -26,6 +26,7 @@ require (
 	github.com/FloatTech/rendercard v0.0.10-0.20230223064326-45d29fa4ede9
 	github.com/FloatTech/zbputils v1.7.1
 	github.com/PuerkitoBio/goquery v1.9.2
+	github.com/antchfx/htmlquery v1.2.5
 	github.com/chromedp/chromedp v0.10.0
 	github.com/disintegration/imaging v1.6.2
 	github.com/ericpauley/go-quantize v0.0.0-20200331213906-ae555eb2afa4
@@ -63,6 +64,7 @@ require (
 	github.com/RomiChan/syncx v0.0.0-20240418144900-b7402ffdebc7 // indirect
 	github.com/RomiChan/websocket v1.4.3-0.20220227141055-9b2c6168c9c5 // indirect
 	github.com/andybalholm/cascadia v1.3.2 // indirect
+	github.com/antchfx/xpath v1.2.1 // indirect
 	github.com/beorn7/perks v1.0.1 // indirect
 	github.com/blend/go-sdk v1.20240719.1 // indirect
 	github.com/bytedance/sonic v1.11.6 // indirect
