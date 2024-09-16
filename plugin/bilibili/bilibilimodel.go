@@ -2,7 +2,6 @@ package bilibili
 
 import (
 	database "MiniBot/utils/db"
-	"os"
 
 	"github.com/FloatTech/floatbox/binary"
 	"github.com/FloatTech/floatbox/web"
@@ -29,15 +28,7 @@ func (vup) TableName() string {
 }
 
 // initializeVup 初始化vup数据库
-func initializeVup(dbpath string) (*vupdb, error) {
-	if _, err := os.Stat(dbpath); err != nil || os.IsNotExist(err) {
-		// 生成文件
-		f, err := os.Create(dbpath)
-		if err != nil {
-			return nil, err
-		}
-		defer f.Close()
-	}
+func initializeVup() (*vupdb, error) {
 	gdb := database.DbConfig.GetDb("lulumu")
 	gdb.AutoMigrate(&vup{})
 	return (*vupdb)(gdb), nil

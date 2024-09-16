@@ -58,12 +58,12 @@ func init() {
 			"- 更新vup\n" +
 			"Tips: (412就是拦截的意思,建议私聊把cookie设全)\n",
 	})
-	cachePath := minipath.GetPluginDataPath() + "cache/"
+	cachePath := filepath.Join(minipath.GetPluginDataPath(), "cache/")
 	_ = os.RemoveAll(cachePath)
 	_ = os.MkdirAll(cachePath, 0755)
 	var getdb = fcext.DoOnceOnSuccess(func(ctx *zero.Ctx) bool {
 		var err error
-		vdb, err = initializeVup(minipath.GetPluginDataPath() + "bilibili.db")
+		vdb, err = initializeVup()
 		if err != nil {
 			ctx.SendChain(message.Text("ERROR: ", err))
 			return false
