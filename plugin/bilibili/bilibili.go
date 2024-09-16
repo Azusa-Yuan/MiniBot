@@ -117,7 +117,7 @@ func init() {
 			today := time.Now().Format("20060102")
 			drawedFile := cachePath + id + today + "vupLike.png"
 			if file.IsExist(drawedFile) {
-				ctx.SendChain(message.Image("file:///" + file.BOTPATH + "/" + drawedFile))
+				ctx.SendChain(message.ImagePath(drawedFile))
 				return
 			}
 			u, err := bz.GetMemberCard(id)
@@ -269,7 +269,7 @@ func init() {
 				ctx.SendChain(message.Text("ERROR: ", err))
 				return
 			}
-			ctx.SendChain(message.Image("file:///" + file.BOTPATH + "/" + drawedFile))
+			ctx.SendChain(message.ImagePath(drawedFile))
 		})
 
 	engine.OnRegex(`^查弹幕\s?(\S{1,25})\s?(\d*)$`, getPara).SetBlock(true).Handle(func(ctx *zero.Ctx) {
