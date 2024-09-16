@@ -46,7 +46,6 @@ var (
 
 func init() {
 	chromedp.Emulate(device.Reset)
-	chromedp.EmulateViewport(1000, 1500)
 }
 
 func Screenshot(server string, productType string) ([]byte, string, error) {
@@ -60,6 +59,7 @@ func Screenshot(server string, productType string) ([]byte, string, error) {
 	// url := "https://www.baidu.com"
 	url := fmt.Sprintf("https://www.yxdr.com/bijiaqi/dnf/%s/kua%s", productType, ReportRegions[server])
 	err := chromedp.Run(ScCtx,
+		chromedp.EmulateViewport(1000, 1500),
 		chromedp.Navigate(url),
 		chromedp.WaitVisible("#right_m"),
 		chromedp.CaptureScreenshot(&buf),
