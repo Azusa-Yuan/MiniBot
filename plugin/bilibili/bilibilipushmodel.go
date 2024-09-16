@@ -73,11 +73,11 @@ func (bdb *bilibilipushdb) insertOrUpdateLiveAndDynamic(bpMap map[string]any) (e
 		return
 	}
 	if err = db.Model(&bilibilipush{}).First(&bp, "bilibili_uid = ? and group_id = ?", bp.BilibiliUID, bp.GroupID).Error; err != nil {
-		if gorm.IsRecordNotFoundError(err) {
+		if err != gorm.ErrRecordNotFound {
 			err = db.Model(&bilibilipush{}).Create(&bp).Error
 		}
 	} else {
-		err = db.Model(&bilibilipush{}).Where("bilibili_uid = ? and group_id = ?", bp.BilibiliUID, bp.GroupID).Update(bpMap).Error
+		err = db.Model(&bilibilipush{}).Where("bilibili_uid = ? and group_id = ?", bp.BilibiliUID, bp.GroupID).UpdateColumns(bpMap).Error
 	}
 	return
 }
@@ -158,11 +158,11 @@ func (bdb *bilibilipushdb) updateAtAll(bpMap map[string]any) (err error) {
 		return
 	}
 	if err = db.Model(&bilibiliAt{}).First(&bp, "group_id = ?", bp.GroupID).Error; err != nil {
-		if gorm.IsRecordNotFoundError(err) {
+		if err == gorm.ErrRecordNotFound {
 			err = db.Model(&bilibiliAt{}).Create(&bp).Error
 		}
 	} else {
-		err = db.Model(&bilibiliAt{}).Where("group_id = ?", bp.GroupID).Update(bpMap).Error
+		err = db.Model(&bilibiliAt{}).Where("group_id = ?", bp.GroupID).UpdateColumns(bpMap).Error
 	}
 	return
 }

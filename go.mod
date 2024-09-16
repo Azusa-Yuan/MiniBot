@@ -34,7 +34,6 @@ require (
 	github.com/golang/freetype v0.0.0-20170609003504-e2365dfdc4a0
 	github.com/google/generative-ai-go v0.17.0
 	github.com/gorilla/websocket v1.5.3
-	github.com/jinzhu/gorm v1.9.16
 	github.com/lestrrat/go-file-rotatelogs v0.0.0-20180223000712-d3151e2a480f
 	github.com/mattn/go-sqlite3 v1.14.15
 	github.com/pkg/errors v0.9.1
