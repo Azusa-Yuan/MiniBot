@@ -27,7 +27,7 @@ type ymgal struct {
 	Title              string `gorm:"column:title" `
 	PictureType        string `gorm:"column:picture_type" `
 	PictureDescription string `gorm:"column:picture_description;type:varchar(1024)" `
-	PictureList        string `gorm:"column:picture_list;type:MEDIUMTEXT" `
+	PictureList        string `gorm:"column:picture_list;type:text" `
 }
 
 // TableName ...
