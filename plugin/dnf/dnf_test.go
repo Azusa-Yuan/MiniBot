@@ -7,9 +7,11 @@ import (
 )
 
 func TestYxdr(t *testing.T) {
-	service.Screenshot("跨1", "youxibi")
-	fmt.Println("why?2354")
-	service.Screenshot("跨2", "youxibi")
+	_, _, err := service.Screenshot("跨1", "youxibi")
+	fmt.Println(err)
+	_, _, err = service.Screenshot("跨2", "youxibi")
+	fmt.Println(err)
+
 }
 
 func TestColgNew(t *testing.T) {

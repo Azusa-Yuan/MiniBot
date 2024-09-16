@@ -22,7 +22,7 @@ func init() {
 			arg := ctx.State["args"].(string)
 			data, url, err := service.Screenshot(arg, "youxibi")
 			if err != nil {
-				ctx.SendError(err)
+				ctx.SendError(err, message.Text("网络不稳定喵，请点链接查看"), message.Text(url))
 			}
 
 			if data == nil {
