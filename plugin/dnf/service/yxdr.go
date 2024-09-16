@@ -58,7 +58,7 @@ func Screenshot(server string, productType string) ([]byte, string, error) {
 
 	// 导航到指定的URL
 	var buf []byte
-	ctx, _ := context.WithTimeout(ScCtx, 10*time.Second)
+	ctx, _ := context.WithTimeout(ScCtx, 20*time.Second)
 	// url := "https://www.baidu.com"
 	url := fmt.Sprintf("https://www.yxdr.com/bijiaqi/dnf/%s/kua%s", productType, ReportRegions[server])
 	err := chromedp.Run(ctx,
