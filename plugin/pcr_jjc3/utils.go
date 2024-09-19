@@ -22,9 +22,8 @@ type Rank struct {
 // var pcrClient *pcrclient
 var (
 	dataPath = path.GetPluginDataPath()
-	// proxy   = "http://192.168.241.1:10811"
-	proxy = ""
-	cxMap = map[string]string{
+	proxy    string
+	cxMap    = map[string]string{
 		"1": "美食殿堂",
 		"2": "真步真步王国",
 		"3": "破晓之星",

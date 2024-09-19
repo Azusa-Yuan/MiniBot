@@ -293,7 +293,7 @@ func (p *pcrclient) CallApi(apiUrl string, request map[string]interface{}) (res 
 	data := resp.Get("data")
 
 	if data.Get("server_error").Exists() {
-		err = fmt.Errorf("pcrclient: %s failed: %v", url, resp.Get("server_error").String())
+		err = fmt.Errorf("pcrclient: %s failed: %v", url, data.Get("server_error").String())
 		log.Error().Str("name", pluginName).Err(err).Msg("")
 		p.login = false
 		return

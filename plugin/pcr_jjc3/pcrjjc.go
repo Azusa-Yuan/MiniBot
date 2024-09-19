@@ -104,18 +104,17 @@ func init() {
 			}
 
 			if id != "" {
-				res, err := userQuery(id)
+				msg, err = userQuery(id)
 				if err != nil {
-					msg = fmt.Sprint("[pcr]", err)
-				} else {
-					msg = res
+					ctx.SendError(err)
+					return
 				}
 			}
 
 			ctx.SendChain(message.At(ctx.Event.UserID), message.Text(msg))
 		})
 
-	engine.OnRegex(`竞技场bind\s*(\d)\s*(\d{9})$`).Handle(
+	engine.OnRegex(`竞技场bind\s*(\d)\s*(\d{9})$`).SetBlock(true).Handle(
 		func(ctx *zero.Ctx) {
 			model := extension.RegexModel{}
 			_ = ctx.Parse(&model)
@@ -136,7 +135,7 @@ func init() {
 			ctx.SendChain(message.At(ctx.Event.UserID), message.Text(msg))
 		})
 
-	engine.OnRegex(`竞技场关注\s*(\d)\s*(\d{9})$`).Handle(
+	engine.OnRegex(`竞技场关注\s*(\d)\s*(\d{9})$`).SetBlock(true).Handle(
 		func(ctx *zero.Ctx) {
 			model := extension.RegexModel{}
 			_ = ctx.Parse(&model)
@@ -157,21 +156,21 @@ func init() {
 			ctx.SendChain(message.At(ctx.Event.UserID), message.Text(msg))
 		})
 
-	engine.OnFullMatch("关注列表").Handle(
+	engine.OnFullMatch("关注列表").SetBlock(true).Handle(
 		func(ctx *zero.Ctx) {
 			uid := strconv.FormatInt(ctx.Event.UserID, 10)
 			msg := userInfoManage.attentionList(uid)
 			ctx.SendChain(message.At(ctx.Event.UserID), message.Text(msg))
 		})
 
-	engine.OnFullMatch("删除绑定").Handle(
+	engine.OnFullMatch("删除绑定").SetBlock(true).Handle(
 		func(ctx *zero.Ctx) {
 			uid := strconv.FormatInt(ctx.Event.UserID, 10)
 			msg := userInfoManage.delBind(uid, 0)
 			ctx.SendChain(message.At(ctx.Event.UserID), message.Text(msg))
 		})
 
-	engine.OnRegex(`删除关注\s*(\d+)`).Handle(
+	engine.OnRegex(`删除关注\s*(\d+)`).SetBlock(true).Handle(
 		func(ctx *zero.Ctx) {
 			model := extension.RegexModel{}
 			_ = ctx.Parse(&model)
@@ -182,7 +181,7 @@ func init() {
 			ctx.SendChain(message.At(ctx.Event.UserID), message.Text(msg))
 		})
 
-	engine.OnPrefix("更新版本", zero.SuperUserPermission).Handle(
+	engine.OnPrefix("更新版本", zero.SuperUserPermission).SetBlock(true).Handle(
 		func(ctx *zero.Ctx) {
 			model := extension.PrefixModel{}
 			_ = ctx.Parse(&model)
@@ -197,7 +196,7 @@ func init() {
 			ctx.SendChain(message.At(ctx.Event.UserID), message.Text(msg))
 		})
 
-	engine.OnRegex(`(开启|关闭)轮询`, zero.SuperUserPermission).Handle(
+	engine.OnRegex(`(开启|关闭)轮询`, zero.SuperUserPermission).SetBlock(true).Handle(
 		func(ctx *zero.Ctx) {
 			model := extension.RegexModel{}
 			_ = ctx.Parse(&model)
