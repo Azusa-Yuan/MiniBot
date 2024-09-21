@@ -68,7 +68,7 @@ func sendYmgal(y ymgal, ctx *zero.Ctx) {
 	// }
 	urlList := strings.Split(y.PictureList, ",")
 	url := urlList[rand.IntN(len(urlList))]
-	ctx.SendChain(message.Image(url))
+	ctx.SendChain(message.Text(y.Title), message.Image(url))
 	// for _, v := range strings.Split(y.PictureList, ",") {
 	// 	m = append(m, message_tools.FakeSenderForwardNode(ctx, message.Image(v)))
 	// }
