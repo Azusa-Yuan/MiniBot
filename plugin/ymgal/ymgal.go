@@ -20,6 +20,13 @@ func init() {
 	db.AutoMigrate(&ymgal{})
 	gdb = (*ymgaldb)(db)
 
+	engine.OnKeywordGroup([]string{"色图", "涩图", "瑟图"}, zero.OnlyToMe).SetBlock(true).
+		Handle(func(ctx *zero.Ctx) {
+			ctx.Send("少女祈祷中......")
+			y := gdb.randomYmgal(cgType)
+			sendYmgal(y, ctx)
+		})
+
 	engine.OnRegex("^gal(CG|表情包)$").SetBlock(true).
 		Handle(func(ctx *zero.Ctx) {
 			ctx.Send("少女祈祷中......")
