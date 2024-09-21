@@ -112,7 +112,7 @@ func (l GormLogger) Warn(ctx context.Context, msg string, data ...interface{}) {
 }
 
 func (l GormLogger) Info(ctx context.Context, msg string, data ...interface{}) {
-	l.logger.Info().Msg(fmt.Sprintf(msg, data...))
+	l.logger.Info().CallerSkipFrame(2).Msg(fmt.Sprintf(msg, data...))
 }
 
 func (l GormLogger) Trace(ctx context.Context, begin time.Time, fc func() (string, int64), err error) {
