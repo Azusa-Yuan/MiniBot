@@ -3,7 +3,7 @@ package ymgal
 
 import (
 	database "MiniBot/utils/db"
-	"MiniBot/utils/message_tools"
+	"math/rand/v2"
 	"strings"
 
 	zero "ZeroBot"
@@ -13,15 +13,14 @@ import (
 // todo 需要进行改造才能使用
 func init() {
 	engine := zero.NewTemplate(&zero.MetaData{
-		Name:  "月慕galgame相关",
-		Help:  "- 随机galCG\n- 随机gal表情包\n- galCG[xxx]\n- gal表情包[xxx]\n- 更新gal",
-		Level: 2,
+		Name: "月慕galgame相关",
+		Help: "- 随机galCG\n- 随机gal表情包\n- galCG[xxx]\n- gal表情包[xxx]\n- 更新gal",
 	})
 	db := database.DbConfig.GetDb("lulumu")
 	db.AutoMigrate(&ymgal{})
 	gdb = (*ymgaldb)(db)
 
-	engine.OnRegex("^随机gal(CG|表情包)$").SetBlock(true).
+	engine.OnRegex("^gal(CG|表情包)$").SetBlock(true).
 		Handle(func(ctx *zero.Ctx) {
 			ctx.Send("少女祈祷中......")
 			pictureType := ctx.State["regex_matched"].([]string)[1]
@@ -63,14 +62,17 @@ func sendYmgal(y ymgal, ctx *zero.Ctx) {
 		ctx.SendChain(message.Text(zero.BotConfig.NickName[0] + "暂时没有这样的图呢"))
 		return
 	}
-	m := message.Message{message_tools.FakeSenderForwardNode(ctx, message.Text(y.Title))}
-	if y.PictureDescription != "" {
-		m = append(m, message_tools.FakeSenderForwardNode(ctx, message.Text(y.PictureDescription)))
-	}
-	for _, v := range strings.Split(y.PictureList, ",") {
-		m = append(m, message_tools.FakeSenderForwardNode(ctx, message.Image(v)))
-	}
-	if id := ctx.Send(m).ID(); id == 0 {
-		ctx.SendChain(message.Text("ERROR: 可能被风控了"))
-	}
+	// m := message.Message{message_tools.FakeSenderForwardNode(ctx, message.Text(y.Title))}
+	// if y.PictureDescription != "" {
+	// 	m = append(m, message_tools.FakeSenderForwardNode(ctx, message.Text(y.PictureDescription)))
+	// }
+	urlList := strings.Split(y.PictureList, ",")
+	url := urlList[rand.IntN(len(urlList))]
+	ctx.SendChain(message.Image(url))
+	// for _, v := range strings.Split(y.PictureList, ",") {
+	// 	m = append(m, message_tools.FakeSenderForwardNode(ctx, message.Image(v)))
+	// }
+	// if id := ctx.Send(m).ID(); id == 0 {
+	// 	ctx.SendChain(message.Text("ERROR: 可能被风控了"))
+	// }
 }
