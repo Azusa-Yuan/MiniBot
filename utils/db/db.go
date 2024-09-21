@@ -27,7 +27,16 @@ type Config struct {
 	DbMap  map[string]DBInfo `yaml:"db"`
 }
 
-func NewDbConfig() *Config {
+var DbConfig *Config
+
+func (config *Config) GetDb(name string) *gorm.DB {
+	if dbInfo, ok := config.DbMap[name]; ok {
+		return dbInfo.Db
+	}
+	return nil
+}
+
+func init() {
 	config := &Config{}
 	yamlPath := filepath.Join(path.ConfPath, "db.yaml")
 	if os.Getenv("ENVIRONMENT") == "dev" {
@@ -42,7 +51,8 @@ func NewDbConfig() *Config {
 	if err != nil {
 		log.Error().Str("name", utilsName).Err(err).Msg("")
 	}
-	gormLogger := &log_utils.GormLogger{}
+	gormLogger := &log_utils.GormLogger{Logger: log.Logger}
+	gormLogger.LogMode(logger.Info)
 	for k, v := range config.DbMap {
 		//	ok2代表是否有该数据库，ok1代表是否开启该数据库，实际上不用的话，可以直接将数据库删除
 		if ok1, ok2 := config.DbType[v.Type]; ok2 && ok1 {
@@ -68,18 +78,5 @@ func NewDbConfig() *Config {
 			config.DbMap[k] = v
 		}
 	}
-	return config
-}
-
-var DbConfig = NewDbConfig()
-
-func (config *Config) GetDb(name string) *gorm.DB {
-	if dbInfo, ok := config.DbMap[name]; ok {
-		return dbInfo.Db
-	}
-	return nil
-}
-
-func init() {
-
+	DbConfig = config
 }

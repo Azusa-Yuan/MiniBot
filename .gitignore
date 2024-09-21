@@ -8,7 +8,7 @@ __debug*
 *.copy
 binds.json
 critical
-log/
+log/MiniBot
 tmp.json
 data/*
 *.gz

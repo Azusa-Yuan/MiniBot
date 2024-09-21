@@ -87,7 +87,8 @@ func FileWithLineNum() string {
 	for i := 0; i < len; i++ {
 		// second return value is "more", not "ok"
 		frame, _ := frames.Next()
-		if !strings.HasPrefix(frame.File, logSourceDir) {
+		if (!strings.HasPrefix(frame.File, logSourceDir) && !strings.Contains(frame.File, "gorm.io") ||
+			strings.HasSuffix(frame.File, "_test.go")) && !strings.HasSuffix(frame.File, ".gen.go") {
 			return string(strconv.AppendInt(append([]byte(frame.File), ':'), int64(frame.Line), 10))
 		}
 	}
@@ -96,29 +97,37 @@ func FileWithLineNum() string {
 }
 
 type GormLogger struct {
-	logger zerolog.Logger
+	Logger   zerolog.Logger
+	LogLevel logger.LogLevel
 }
 
-func (l GormLogger) LogMode(logger.LogLevel) logger.Interface {
+func (l GormLogger) LogMode(level logger.LogLevel) logger.Interface {
+	l.LogLevel = level
 	return l
 }
 
 func (l GormLogger) Error(ctx context.Context, msg string, data ...interface{}) {
-	l.logger.Error().Msg(fmt.Sprintf(msg, data...))
+	if l.LogLevel > logger.Error {
+		l.Logger.Error().Str("sql_caller", FileWithLineNum()).Msg(fmt.Sprintf(msg, data...))
+	}
 }
 
 func (l GormLogger) Warn(ctx context.Context, msg string, data ...interface{}) {
-	l.logger.Warn().Msg(fmt.Sprintf(msg, data...))
+	if l.LogLevel > logger.Warn {
+		l.Logger.Warn().Str("sql_caller", FileWithLineNum()).Msg(fmt.Sprintf(msg, data...))
+	}
 }
 
 func (l GormLogger) Info(ctx context.Context, msg string, data ...interface{}) {
-	l.logger.Info().CallerSkipFrame(2).Msg(fmt.Sprintf(msg, data...))
+	if l.LogLevel > logger.Info {
+		l.Logger.Info().Str("sql_caller", FileWithLineNum()).Msg(fmt.Sprintf(msg, data...))
+	}
 }
 
 func (l GormLogger) Trace(ctx context.Context, begin time.Time, fc func() (string, int64), err error) {
-	// if logger.LogLevel(zl.logger.GetLevel()) <= 0 {
-	// 	return
-	// }
+	if l.LogLevel <= logger.Silent {
+		return
+	}
 
 	elapsed := time.Since(begin) // 执行时间
 	sql, rows := fc()            // 获取 SQL 语句和影响的行数
@@ -126,21 +135,21 @@ func (l GormLogger) Trace(ctx context.Context, begin time.Time, fc func() (strin
 	switch {
 	// todo  不知道具体是哪一行代码出错
 	case err != nil:
-		l.logger.Error().
+		l.Logger.Error().Str("sql_caller", FileWithLineNum()).
 			Err(err).
 			Str("sql", sql).
 			Int64("rows", rows).
 			Str("elapsed", fmt.Sprintf("%v", elapsed)).
 			Msg("SQL execution error")
-	case elapsed > time.Second: // 如果执行时间超过 1 秒，记录为 Warn 日志
-		l.logger.Warn().
+	case elapsed > 200*time.Millisecond: // 如果执行时间超过 1 秒，记录为 Warn 日志
+		l.Logger.Warn().Str("sql_caller", FileWithLineNum()).
 			Str("sql", sql).
 			Int64("rows", rows).
 			Str("elapsed", fmt.Sprintf("%v", elapsed)).
 			Msg("Slow SQL query")
 
 	default:
-		l.logger.Info().
+		l.Logger.Info().Str("sql_caller", FileWithLineNum()).
 			Str("sql", sql).
 			Int64("rows", rows).
 			Str("elapsed", fmt.Sprintf("%v", elapsed)).
