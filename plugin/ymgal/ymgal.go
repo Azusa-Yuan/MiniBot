@@ -10,7 +10,6 @@ import (
 	"ZeroBot/message"
 )
 
-// todo 需要进行改造才能使用
 func init() {
 	engine := zero.NewTemplate(&zero.MetaData{
 		Name: "月慕galgame相关",
