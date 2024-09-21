@@ -157,16 +157,15 @@ func updatePic() error {
 		if err != nil {
 			return err
 		}
-		time.Sleep(time.Millisecond * 500)
+		time.Sleep(time.Millisecond * 100)
 	}
 	for i := 1; i <= maxEmoticonPageNumber; i++ {
 		err = getPicID(i, emoticonType)
 		if err != nil {
 			return err
 		}
-		time.Sleep(time.Millisecond * 500)
+		time.Sleep(time.Millisecond * 100)
 	}
-CGLOOP:
 	for i := len(cgIDList) - 1; i >= 0; i-- {
 		mu.RLock()
 		y := gdb.getYmgalByID(cgIDList[i])
@@ -178,12 +177,10 @@ CGLOOP:
 			if err != nil {
 				return err
 			}
-		} else {
-			break CGLOOP
 		}
-		time.Sleep(time.Millisecond * 500)
+		time.Sleep(time.Millisecond * 200)
 	}
-EMOTICONLOOP:
+
 	for i := len(emoticonIDList) - 1; i >= 0; i-- {
 		mu.RLock()
 		y := gdb.getYmgalByID(emoticonIDList[i])
@@ -195,10 +192,8 @@ EMOTICONLOOP:
 			if err != nil {
 				return err
 			}
-		} else {
-			break EMOTICONLOOP
 		}
-		time.Sleep(time.Millisecond * 500)
+		time.Sleep(time.Millisecond * 200)
 	}
 	return nil
 }
