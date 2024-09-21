@@ -52,7 +52,8 @@ func init() {
 			}
 			sendYmgal(y, ctx)
 		})
-	engine.OnFullMatch("更新gal", zero.SuperUserPermission).SetBlock(true).Handle(
+	engine.OnFullMatch("更新gal", zero.SuperUserPermission).
+		SetBlock(true).SetNoTimeOut(true).Handle(
 		func(ctx *zero.Ctx) {
 			ctx.Send("少女祈祷中......")
 			err := updatePic()

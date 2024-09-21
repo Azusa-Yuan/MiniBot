@@ -69,6 +69,12 @@ func (m *Matcher) SetBlock(block bool) *Matcher {
 	return m
 }
 
+// SetBlock 设置是否需要超时控制
+func (m *Matcher) SetNoTimeOut(NoTimeOut bool) *Matcher {
+	m.NoTimeout = NoTimeOut
+	return m
+}
+
 func (m *Matcher) GetMatcherList() (matcherListInfo []*Matcher) {
 	matcherLock.Lock()
 	defer matcherLock.Unlock()

@@ -23,7 +23,7 @@ var mu sync.RWMutex
 
 // ymgal gal图片储存结构体
 type ymgal struct {
-	ID                 int64  `gorm:"column:id" `
+	ID                 int64  `gorm:"column:id;index" `
 	Title              string `gorm:"column:title" `
 	PictureType        string `gorm:"column:picture_type" `
 	PictureDescription string `gorm:"column:picture_description;type:varchar(1024)" `
@@ -178,7 +178,7 @@ func updatePic() error {
 				return err
 			}
 		}
-		time.Sleep(time.Millisecond * 200)
+		time.Sleep(time.Millisecond * 100)
 	}
 
 	for i := len(emoticonIDList) - 1; i >= 0; i-- {
@@ -193,7 +193,7 @@ func updatePic() error {
 				return err
 			}
 		}
-		time.Sleep(time.Millisecond * 200)
+		time.Sleep(time.Millisecond * 100)
 	}
 	return nil
 }
