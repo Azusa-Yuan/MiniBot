@@ -1,3 +1,4 @@
+// 魔改自 https://github.com/azmiao/pcrjjc3-tw
 package pcrjjc3
 
 import (

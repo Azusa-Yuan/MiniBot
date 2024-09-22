@@ -1,3 +1,4 @@
+// 基于zhenxun_bot改造
 package poke
 
 import (
@@ -38,7 +39,7 @@ var (
 func init() {
 	metaData := &zero.MetaData{
 		Name: pluginName,
-		Help: "",
+		Help: "戳机器人，有几率发图发语音",
 	}
 	engine := zero.NewTemplate(metaData)
 	engine.On("notice/notify/poke", zero.OnlyToMe).Handle(
