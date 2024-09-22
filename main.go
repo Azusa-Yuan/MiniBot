@@ -18,6 +18,7 @@ import (
 	_ "MiniBot/plugin/dnf"
 	_ "MiniBot/plugin/emojimix"
 	_ "MiniBot/plugin/genai"
+	_ "MiniBot/plugin/like"
 	_ "MiniBot/plugin/meme"
 	_ "MiniBot/plugin/monitor"
 	_ "MiniBot/plugin/moyu"
