@@ -51,8 +51,6 @@ func init() {
 */
 func writer(logPath string, level string, save int) *rotatelogs.RotateLogs {
 	logFullPath := filepath.Join(logPath, level)
-	// var cstSh, _ = time.LoadLocation("Asia/Shanghai") //上海
-	// fileSuffix := time.Now().In(cstSh).Format("2006-01-02") + ".log"
 
 	logier, err := rotatelogs.New(
 		logFullPath+"-"+"%Y%m%d"+".log",

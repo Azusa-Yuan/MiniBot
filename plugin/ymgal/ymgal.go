@@ -13,7 +13,7 @@ import (
 func init() {
 	engine := zero.NewTemplate(&zero.MetaData{
 		Name: "月慕galgame相关",
-		Help: "- 随机galCG\n- 随机gal表情包\n- galCG[xxx]\n- gal表情包[xxx]\n- 更新gal",
+		Help: "- galCG 随机发一张galCG\n- gal表情包 随机发一张gal表情包\n- galCG[xxx]\n- gal表情包[xxx]\n- 更新gal",
 	})
 	db := database.DbConfig.GetDb("lulumu")
 	db.AutoMigrate(&ymgal{})
@@ -26,7 +26,7 @@ func init() {
 			sendYmgal(y, ctx)
 		})
 
-	engine.OnRegex("^gal(CG|表情包)$").SetBlock(true).
+	engine.OnRegex(`^gal(CG|表情包)\s*$`).SetBlock(true).
 		Handle(func(ctx *zero.Ctx) {
 			ctx.Send("少女祈祷中......")
 			pictureType := ctx.State["regex_matched"].([]string)[1]
@@ -38,7 +38,8 @@ func init() {
 			}
 			sendYmgal(y, ctx)
 		})
-	engine.OnRegex("^gal(CG|表情包)([一-龥ぁ-んァ-ヶA-Za-z0-9]{1,25})$").SetBlock(true).
+	// 这里应该不会有sql注入问题，直接改成除空格符
+	engine.OnRegex(`^gal(CG|表情包)\s*(.{1,25})$`).SetBlock(true).
 		Handle(func(ctx *zero.Ctx) {
 			ctx.Send("少女祈祷中......")
 			pictureType := ctx.State["regex_matched"].([]string)[1]

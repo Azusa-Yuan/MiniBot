@@ -8,18 +8,9 @@ import (
 	"math/rand/v2"
 	"strconv"
 
+	"MiniBot/utils/cache"
 	zero "ZeroBot"
 	"ZeroBot/message"
-
-	// 反并发
-
-	// 数据库
-	// Sqlite driver based on CGO
-	// "github.com/glebarez/sqlite" // Pure go SQLite driver, checkout https://github.com/glebarez/sqlite for details
-
-	// 画图
-
-	"MiniBot/utils/cache"
 
 	"github.com/FloatTech/gg"
 )
@@ -183,7 +174,14 @@ func init() {
 				ctx.SendChain(message.Text("[ERROR]:", err))
 				return
 			}
-			list, err := qqwife.GetAllInfo(gid)
+			listAll, err := qqwife.GetAllInfo(gid)
+			list := []UserInfo{}
+			for _, v := range listAll {
+				if v.Mode == 0 {
+					continue
+				}
+				list = append(list, v)
+			}
 			if err != nil {
 				ctx.SendChain(message.Text("[ERROR]:", err))
 				return

@@ -48,6 +48,10 @@ type GroupInfo struct {
 	Updatetime string  // 登记时间
 }
 
+func (GroupInfo) TableName() string {
+	return "married_group_info"
+}
+
 // 猪头信息
 type PigInfo struct {
 	ID         int64  `gorm:"column:id; primaryKey"`
@@ -66,6 +70,10 @@ type UserInfo struct {
 	Targetname string    `gorm:"column:target_name"`                     // 对象名称
 	Updatetime time.Time // 登记时间
 	Mode       uint16    `gorm:"column:mode"`
+}
+
+func (UserInfo) TableName() string {
+	return "married_user_info"
 }
 
 // cd信息
@@ -197,21 +205,11 @@ func (sql *QQWife) SaveMarriageInfo(gid, husband, wife int64, husbandname, wifet
 }
 
 func (sql *QQWife) GetAllInfo(gid int64) (list []UserInfo, err error) {
-	res := sql.db.Where("gid = ? AND mode = 1", gid).Find(&list)
+	res := sql.db.Where("gid = ?", gid).Find(&list)
 	if res.Error != nil {
 		err = res.Error
 	}
 	return
-	// for _, info := range infos {
-	// 	dbinfo := [4]string{
-	// 		info.Username,
-	// 		strconv.FormatInt(info.UID, 10),
-	// 		info.Targetname,
-	// 		strconv.FormatInt(info.Target, 10),
-	// 	}
-	// 	list = append(list, dbinfo)
-	// }
-	// return
 }
 
 // func (sql *QQWife) 清理花名册(gid ...string) error {
