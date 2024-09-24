@@ -49,7 +49,7 @@ type GroupInfo struct {
 }
 
 func (GroupInfo) TableName() string {
-	return "married_group_info"
+	return "qqwife_group_info"
 }
 
 // 猪头信息

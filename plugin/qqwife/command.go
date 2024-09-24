@@ -18,10 +18,11 @@ import (
 var (
 	metaData = zero.MetaData{
 		Name: "qqwife",
-		Help: "- 娶群友\n- 群老婆列表\n- [允许|禁止]自由恋爱\n- [允许|禁止]牛头人\n- 设置CD为xx小时    →(默认1小时)\n- 重置花名册\n- 重置所有花名册(用于清除所有群数据及其设置)\n- GetFavorability[对方Q号|@对方QQ]\n- 好感度列表\n- 好感度数据整理 (当好感度列表出现重复名字时使用)\n" +
+		// - 重置花名册\n- 重置所有花名册(用于清除所有群数据及其设置)\n- GetFavorability[对方Q号|@对方QQ]\n-
+		Help: "- 娶群友或今日老婆\n- 群老婆列表\n- [允许|禁止]自由恋爱\n- [允许|禁止]牛头人\n- 设置CD为xx小时  →(默认1小时)\n - 好感度列表\n" +
 			"--------------------------------\n以下指令存在CD,不跨天刷新,前两个受指令开关\n--------------------------------\n" +
 			"- (娶|嫁)@对方QQ\n自由选择对象, 自由恋爱(好感度越高成功率越高,保底30%概率)\n" +
-			"- 当[对方Q号|@对方QQ]的小三\n我和你才是真爱, 为了你我愿意付出一切(好感度越高成功率越高,保底10%概率)\n" +
+			"- 当[@对方QQ]的小三   (ntr|NTR|牛头人) [@对方QQ] \n我和你才是真爱, 为了你我愿意付出一切(好感度越高成功率越高,保底10%概率)\n" +
 			"- 闹离婚\n你谁啊, 给我滚(好感度越高成功率越低)\n" +
 			"- 买礼物给[对方Q号|@对方QQ]\n使用小熊饼干获取好感度\n" +
 			"- 做媒 @攻方QQ @受方QQ\n身为管理, 群友的xing福是要搭把手的(攻受双方好感度越高成功率越高,保底30%概率)\n" +
@@ -629,6 +630,12 @@ func init() {
 				ctx.SendChain(message.Text(sendtext[3][rand.IntN(len(sendtext[3]))]))
 				return
 			}
+
+			_, err = qqwife.UpdateFavorability(uid, target, -5)
+			if err != nil {
+				ctx.SendError(err)
+			}
+
 			err = qqwife.DelMarriageInfo(gid, uid)
 			if err != nil {
 				ctx.SendChain(message.Text("[ERROR]:", err))
