@@ -64,7 +64,7 @@ func init() {
 			switch {
 			case v.Type == "pgsql":
 				v.Db, err = gorm.Open(postgres.Open(v.Dsn), &gorm.Config{
-					Logger: gormLogger.LogMode(logger.Info),
+					Logger: gormLogger.LogMode(logger.Error),
 				})
 
 				if err != nil {
@@ -73,7 +73,9 @@ func init() {
 				}
 				log.Info().Str("name", utilsName).Msgf("success open database %v", k)
 			case v.Type == "mysql":
-				v.Db, err = gorm.Open(mysql.Open(v.Dsn), &gorm.Config{})
+				v.Db, err = gorm.Open(mysql.Open(v.Dsn), &gorm.Config{
+					Logger: gormLogger.LogMode(logger.Error),
+				})
 				if err != nil {
 					log.Error().Str("name", utilsName).Err(err).Msgf("Error open database %v", k)
 					continue

@@ -314,17 +314,16 @@ func initPic(picFile string, uid int64) (avatar []byte, err error) {
 		return
 	}
 	url, err := net_tools.GetRealURL(backgroundURL)
-	if err != nil {
-		return
-	}
-	request, _ := http.NewRequest("GET", url, nil)
-	request.Header.Add("referer", referer)
-	response, err = http.DefaultClient.Do(request)
 
-	if response.StatusCode != http.StatusOK {
+	if err == nil {
+		request, _ := http.NewRequest("GET", url, nil)
+		request.Header.Add("referer", referer)
+		response, err = http.DefaultClient.Do(request)
 
-		s := fmt.Sprintf("status code: %d", response.StatusCode)
-		err = errors.New(s)
+		if response.StatusCode != http.StatusOK {
+			s := fmt.Sprintf("status code: %d", response.StatusCode)
+			err = errors.New(s)
+		}
 	}
 
 	var data []byte
