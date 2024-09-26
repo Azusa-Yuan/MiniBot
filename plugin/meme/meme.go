@@ -80,14 +80,14 @@ func init() {
 			// Fields函数会将字符串按空格分割,并自动忽略连续的空格
 			texts := strings.Fields(extractPlainText)
 
-			if !fastJudge(path, len(imgStrs), len(texts)) {
+			if !fastJudge(path, imgStrs, texts) {
 				imgStrs = append([]string{strconv.FormatInt(ctx.Event.UserID, 10)}, imgStrs...)
 				args["user_infos"] = append(args["user_infos"].([]UserInfo),
 					UserInfo{
 						Name:   ctx.CardOrNickName(ctx.Event.UserID),
 						Gender: "female",
 					})
-				if !fastJudge(path, len(imgStrs), len(texts)) {
+				if !fastJudge(path, imgStrs, texts) {
 					return
 				}
 			}
