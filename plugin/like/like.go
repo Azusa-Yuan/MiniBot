@@ -69,9 +69,9 @@ func SendLike() {
 		}
 		err = bot.SendLike(bookInfo.UserID, defaultTimes)
 		if err != nil {
-			bot.SendError(err)
+			log.Error().Str("name", pluginName).Err(err).Msg("")
 			continue
 		}
-		bot.SendChain(message.Text("今天的点赞成功啦"))
+		bot.SendPrivateMessage(bookInfo.UserID, message.Text("今天的点赞成功啦"))
 	}
 }
