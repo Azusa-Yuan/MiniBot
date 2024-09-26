@@ -134,10 +134,10 @@ func OnMetaEvent(rules ...Rule) *Matcher { return On("meta_event", rules...) }
 // OnMetaEvent 元事件触发器
 func (e *Engine) OnMetaEvent(rules ...Rule) *Matcher { return On("meta_event", rules...) }
 
-// OnPrefix 前缀触发器
+// OnPrefix 前缀触发器  ctx.State["args"]   ctx.State["prefix"]
 func OnPrefix(prefix string, rules ...Rule) *Matcher { return defaultEngine.OnPrefix(prefix, rules...) }
 
-// OnPrefix 前缀触发器
+// OnPrefix 前缀触发器  ctx.State["args"]   ctx.State["prefix"]
 func (e *Engine) OnPrefix(prefix string, rules ...Rule) *Matcher {
 	matcher := &Matcher{
 		Type:   Type("message"),
@@ -276,12 +276,12 @@ func (e *Engine) OnCommandGroup(commands []string, rules ...Rule) *Matcher {
 	return e.On("message", append([]Rule{CommandRule(commands...)}, rules...)...)
 }
 
-// OnPrefixGroup 前缀触发器组
+// OnPrefixGroup 前缀触发器组  ctx.State["args"]   ctx.State["prefix"]
 func OnPrefixGroup(prefix []string, rules ...Rule) *Matcher {
 	return defaultEngine.OnPrefixGroup(prefix, rules...)
 }
 
-// OnPrefixGroup 前缀触发器组
+// OnPrefixGroup 前缀触发器组 ctx.State["args"]   ctx.State["prefix"]
 func (e *Engine) OnPrefixGroup(prefix []string, rules ...Rule) *Matcher {
 	matcher := &Matcher{
 		Type:   Type("message"),

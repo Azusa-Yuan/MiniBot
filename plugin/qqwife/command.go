@@ -22,7 +22,7 @@ var (
 		Help: "- 娶群友或今日老婆\n- 群老婆列表\n- [允许|禁止]自由恋爱\n- [允许|禁止]牛头人\n- 设置CD为xx小时  →(默认1小时)\n - 好感度列表\n" +
 			"--------------------------------\n以下指令存在CD,不跨天刷新,前两个受指令开关\n--------------------------------\n" +
 			"- (娶|嫁)@对方QQ\n自由选择对象, 自由恋爱(好感度越高成功率越高,保底30%概率)\n" +
-			"- 当[@对方QQ]的小三   (ntr|NTR|牛头人) [@对方QQ] \n我和你才是真爱, 为了你我愿意付出一切(好感度越高成功率越高,保底10%概率)\n" +
+			"- (ntr|NTR|牛头人) [@对方QQ] \n我和你才是真爱, 为了你我愿意付出一切(好感度越高成功率越高,保底10%概率)\n" +
 			"- 闹离婚\n你谁啊, 给我滚(好感度越高成功率越低)\n" +
 			"- 买礼物给[对方Q号|@对方QQ]\n使用小熊饼干获取好感度\n" +
 			"- 做媒 @攻方QQ @受方QQ\n身为管理, 群友的xing福是要搭把手的(攻受双方好感度越高成功率越高,保底30%概率)\n" +
@@ -337,21 +337,27 @@ func init() {
 		})
 
 	// 单身技能
-	engine.OnRegex(`^(娶|嫁)\[CQ:at,qq=(\d+)\]`, zero.OnlyGroup).SetBlock(true).
+	engine.OnPrefixGroup([]string{"娶", "嫁"}, zero.OnlyGroup).
 		Handle(func(ctx *zero.Ctx) {
 			gid := ctx.Event.GroupID
 			uid := ctx.Event.UserID
-			choice := ctx.State["regex_matched"].([]string)[1]
-			fiancee, err := strconv.ParseInt(ctx.State["regex_matched"].([]string)[2], 10, 64)
-			if err != nil {
-				ctx.SendChain(message.Text("额,你的target好像不存在?"))
+			choice := ctx.State["prefix"].(string)
+			atInfos := ctx.GetAtInfos()
+			if len(atInfos) != 1 {
 				return
 			}
+
+			fiancee := atInfos[0].QQ
 			selfId := ctx.Event.SelfID
 			// 判断是否机器人自身
 			if selfId == fiancee {
 				return
 			}
+
+			defer func() {
+				ctx.Stop()
+			}()
+
 			res, msg := checkSingleDog(gid, uid, fiancee)
 			if !res {
 				if msg != "" {
@@ -363,7 +369,7 @@ func init() {
 			qqwife.Lock()
 			defer qqwife.Unlock()
 			// 写入CD
-			err = qqwife.SaveCD(gid, uid, "嫁娶")
+			err := qqwife.SaveCD(gid, uid, "嫁娶")
 			if err != nil {
 				ctx.SendChain(message.At(uid), message.Text("[qqwife]你的技能CD记录失败\n", err))
 			}
@@ -441,7 +447,7 @@ func init() {
 
 		})
 	// NTR技能
-	engine.OnRegex(`(^当(\[CQ:at,qq=(\d+)\]\s?|(\d+))的小三)|(^(ntr|牛头人|NTR)(\[CQ:at,qq=(\d+)\]\s?|(\d+)))`, zero.OnlyGroup).SetBlock(true).
+	engine.OnPrefixGroup([]string{"ntr", "牛头人", "NTR"}, zero.OnlyGroup).
 		Handle(func(ctx *zero.Ctx) {
 			var targetInfo UserInfo
 			var ok bool
@@ -453,11 +459,18 @@ func init() {
 			defer qqwife.Unlock()
 			gid := ctx.Event.GroupID
 			uid := ctx.Event.UserID
-			fid := ctx.State["regex_matched"].([]string)
-			target, e := strconv.ParseInt(fid[3]+fid[4], 10, 64)
-			if e != nil {
-				target, _ = strconv.ParseInt(fid[8]+fid[9], 10, 64)
+
+			atInfos := ctx.GetAtInfos()
+			if len(atInfos) != 1 {
+				return
 			}
+
+			defer func() {
+				ctx.Stop()
+			}()
+
+			target := atInfos[0].QQ
+
 			// 写入CD
 			err := qqwife.SaveCD(gid, uid, "NTR")
 			if err != nil {
@@ -533,12 +546,17 @@ func init() {
 			}()
 		})
 	// 做媒技能
-	engine.OnRegex(`^做媒\s?\[CQ:at,qq=(\d+)\]\s?\[CQ:at,qq=(\d+)\]`, zero.OnlyGroup, checkMatchmaker).SetBlock(true).
+	engine.OnPrefix("做媒", zero.OnlyGroup, checkMatchmaker).SetBlock(true).
 		Handle(func(ctx *zero.Ctx) {
+			atInfos := ctx.GetAtInfos()
+			if len(atInfos) != 2 {
+				return
+			}
 			gid := ctx.Event.GroupID
 			uid := ctx.Event.UserID
-			gayOne, _ := strconv.ParseInt(ctx.State["regex_matched"].([]string)[1], 10, 64)
-			gayZero, _ := strconv.ParseInt(ctx.State["regex_matched"].([]string)[2], 10, 64)
+
+			gayOne := atInfos[0].QQ
+			gayZero := atInfos[1].QQ
 			qqwife.Lock()
 			defer qqwife.Unlock()
 			// 写入CD

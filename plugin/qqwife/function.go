@@ -200,8 +200,13 @@ func checkDivorce(ctx *zero.Ctx) bool {
 }
 
 func checkMatchmaker(ctx *zero.Ctx) bool {
+	atInfos := ctx.GetAtInfos()
+	if len(atInfos) != 2 {
+		return false
+	}
 	gid := ctx.Event.GroupID
 	uid := ctx.Event.UserID
+
 	gayOne, err := strconv.ParseInt(ctx.State["regex_matched"].([]string)[1], 10, 64)
 
 	if err != nil {

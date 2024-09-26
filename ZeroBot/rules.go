@@ -31,22 +31,49 @@ func Type(type_ string) Rule {
 // PrefixRule check if the message has the prefix and trim the prefix
 //
 // 检查消息前缀
+//
+//	func PrefixRule(prefixes ...string) Rule {
+//		return func(ctx *Ctx) bool {
+//			if len(ctx.Event.Message) == 0 || ctx.Event.Message[0].Type != "text" { // 确保无空指针
+//				return false
+//			}
+//			first := ctx.Event.Message[0]
+//			firstMessage := first.Data["text"]
+//			for _, prefix := range prefixes {
+//				if strings.HasPrefix(firstMessage, prefix) {
+//					ctx.State["prefix"] = prefix
+//					arg := strings.TrimLeft(firstMessage[len(prefix):], " ")
+//					if len(ctx.Event.Message) > 1 {
+//						arg += ctx.Event.Message[1:].ExtractPlainText()
+//					}
+//					ctx.State["args"] = arg
+//					return true
+//				}
+//			}
+//			return false
+//		}
+//	}
+//
+// 检查消息前缀
 func PrefixRule(prefixes ...string) Rule {
 	return func(ctx *Ctx) bool {
-		if len(ctx.Event.Message) == 0 || ctx.Event.Message[0].Type != "text" { // 确保无空指针
+		if len(ctx.Event.Message) == 0 { // 确保无空指针
 			return false
 		}
-		first := ctx.Event.Message[0]
-		firstMessage := first.Data["text"]
-		for _, prefix := range prefixes {
-			if strings.HasPrefix(firstMessage, prefix) {
-				ctx.State["prefix"] = prefix
-				arg := strings.TrimLeft(firstMessage[len(prefix):], " ")
-				if len(ctx.Event.Message) > 1 {
-					arg += ctx.Event.Message[1:].ExtractPlainText()
+		for _, msg := range ctx.Event.Message {
+			if msg.Type == "text" {
+				firstMessage := msg.Data["text"]
+				for _, prefix := range prefixes {
+					if strings.HasPrefix(firstMessage, prefix) {
+						extractPlainText := ctx.ExtractPlainText()
+						ctx.State["prefix"] = prefix
+						arg := strings.TrimLeft(extractPlainText[len(prefix):], " ")
+						ctx.State["args"] = arg
+						return true
+					}
 				}
-				ctx.State["args"] = arg
-				return true
+				// 只匹配第一个为txt类型的message
+				break
 			}
 		}
 		return false

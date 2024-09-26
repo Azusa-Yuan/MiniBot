@@ -20,9 +20,10 @@ type Ctx struct {
 	stop   bool // 用于终止会话
 
 	// lazy message
-	once    sync.Once
-	message string
-	Err     error
+	once       sync.Once
+	message    string
+	rawMessage string
+	Err        error
 }
 
 // func (ctx )
@@ -162,7 +163,13 @@ func (ctx *Ctx) ExtractPlainText() string {
 	if ctx == nil || ctx.Event == nil || ctx.Event.Message == nil {
 		return ""
 	}
-	return ctx.Event.Message.ExtractPlainText()
+	ctx.once.Do(func() {
+		if ctx.Event != nil && ctx.Event.Message != nil {
+			ctx.message = ctx.Event.Message.String()
+			ctx.rawMessage = ctx.Event.Message.ExtractPlainText()
+		}
+	})
+	return ctx.rawMessage
 }
 
 // Block 匹配成功后阻止后续触发
@@ -185,6 +192,7 @@ func (ctx *Ctx) MessageString() string {
 	ctx.once.Do(func() {
 		if ctx.Event != nil && ctx.Event.Message != nil {
 			ctx.message = ctx.Event.Message.String()
+			ctx.rawMessage = ctx.Event.Message.ExtractPlainText()
 		}
 	})
 	return ctx.message
