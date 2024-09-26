@@ -243,7 +243,9 @@ func InitMeme() error {
 	return nil
 }
 
-func fastJudge(path string, imgLen int, textLen int) bool {
+func fastJudge(path string, imgStrs []string, texts []string) bool {
+	imgLen := len(imgStrs)
+	textLen := len(texts)
 	if info, ok := emojiInfoMap[path]; ok {
 		if !(imgLen >= int(info.ParamsType.MinImages) && imgLen <= int(info.ParamsType.MaxImages)) {
 			log.Debug().Str("name", pluginName).Msgf("图片数量不对 actual:%d max:%d min:%d", imgLen, info.ParamsType.MinImages, info.ParamsType.MaxImages)
@@ -253,6 +255,10 @@ func fastJudge(path string, imgLen int, textLen int) bool {
 			return true
 		}
 		if textLen >= int(info.ParamsType.MinTexts) && textLen <= int(info.ParamsType.MaxTexts) {
+			return true
+		}
+		if textLen >= int(info.ParamsType.MaxTexts) {
+			texts = texts[:info.ParamsType.MaxTexts]
 			return true
 		}
 		log.Debug().Str("name", pluginName).Msgf("文字长度不对 actual:%d max:%d min:%d", imgLen, info.ParamsType.MinImages, info.ParamsType.MaxImages)

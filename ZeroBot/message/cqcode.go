@@ -61,5 +61,5 @@ func (m Message) ExtractPlainText() string {
 			sb.WriteString(val.Data["text"])
 		}
 	}
-	return sb.String()
+	return strings.TrimPrefix((sb.String()), " ")
 }
