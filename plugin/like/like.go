@@ -1,8 +1,13 @@
 package like
 
 import (
+	"MiniBot/service/book"
 	zero "ZeroBot"
 	"ZeroBot/message"
+	"time"
+
+	"github.com/fumiama/cron"
+	"github.com/rs/zerolog/log"
 )
 
 var (
@@ -26,4 +31,47 @@ func init() {
 			ctx.SendChain(message.At(ctx.Event.UserID), message.Text("好啦好啦,已经点赞10次啦"))
 		},
 	)
+
+	engine.OnFullMatch("订阅点赞", zero.OnlyPrivate).SetBlock(true).Handle(
+		func(ctx *zero.Ctx) {
+			bookInfo := &book.Book{
+				BotID:   ctx.Event.SelfID,
+				UserID:  ctx.Event.UserID,
+				GroupID: ctx.Event.GroupID,
+				Service: pluginName,
+			}
+			err := book.CreatOrUpdateBookInfo(bookInfo)
+			if err != nil {
+				ctx.SendError(err)
+				return
+			}
+			ctx.SendChain(message.At(ctx.Event.UserID), message.Text("点赞订阅成功"))
+		},
+	)
+
+	timeZone, _ := time.LoadLocation("Asia/Shanghai")
+	c := cron.New(cron.WithLocation(timeZone))
+	c.AddFunc("15 0 * * *", SendLike)
+	c.Start()
+}
+
+func SendLike() {
+	bookInfos, err := book.GetBookInfos(pluginName)
+	if err != nil {
+		log.Error().Str("name", pluginName).Err(err).Msg("")
+		return
+	}
+	for _, bookInfo := range bookInfos {
+		bot, err := zero.GetBot(bookInfo.BotID)
+		if err != nil {
+			log.Error().Str("name", pluginName).Err(err).Msg("")
+			continue
+		}
+		err = bot.SendLike(bookInfo.UserID, defaultTimes)
+		if err != nil {
+			bot.SendError(err)
+			continue
+		}
+		bot.SendChain(message.Text("今天的点赞成功啦"))
+	}
 }

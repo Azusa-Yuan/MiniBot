@@ -23,8 +23,9 @@ type DBInfo struct {
 }
 
 type Config struct {
-	DbType map[string]bool   `yaml:"db_type"`
-	DbMap  map[string]DBInfo `yaml:"db"`
+	Defalut string            `yaml:"defalut"`
+	DbType  map[string]bool   `yaml:"db_type"`
+	DbMap   map[string]DBInfo `yaml:"db"`
 }
 
 var DbConfig *Config
@@ -36,6 +37,10 @@ func (config *Config) GetDb(name string) *gorm.DB {
 	return nil
 }
 
+// 如果没有则是返回nil
+func GetDefalutDB() *gorm.DB {
+	return DbConfig.GetDb(DbConfig.Defalut)
+}
 func init() {
 	config := &Config{}
 	yamlPath := filepath.Join(path.ConfPath, "db.yaml")

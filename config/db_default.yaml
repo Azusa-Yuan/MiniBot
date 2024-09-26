@@ -9,3 +9,4 @@ db:
   mysql:
     dsn: "root:a123456@tcp(127.0.0.1:3306)/train?charset=utf8mb4&parseTime=True&loc=Local"
     type: "mysql"
+defalut: lulumu

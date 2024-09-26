@@ -30,6 +30,7 @@ require (
 	github.com/chromedp/chromedp v0.10.0
 	github.com/disintegration/imaging v1.6.2
 	github.com/ericpauley/go-quantize v0.0.0-20200331213906-ae555eb2afa4
+	github.com/fumiama/cron v1.3.0
 	github.com/fumiama/go-registry v0.2.7
 	github.com/gin-gonic/gin v1.10.0
 	github.com/golang/freetype v0.0.0-20170609003504-e2365dfdc4a0
@@ -77,7 +78,6 @@ require (
 	github.com/dgryski/go-rendezvous v0.0.0-20200823014737-9f7001d12a5f // indirect
 	github.com/fastly/go-utils v0.0.0-20180712184237-d95a45783239 // indirect
 	github.com/felixge/httpsnoop v1.0.4 // indirect
-	github.com/fumiama/cron v1.3.0 // indirect
 	github.com/fumiama/go-base16384 v1.7.0 // indirect
 	github.com/fumiama/go-simple-protobuf v0.2.0 // indirect
 	github.com/fumiama/gofastTEA v0.0.10 // indirect
