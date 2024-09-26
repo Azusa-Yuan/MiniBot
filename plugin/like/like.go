@@ -51,7 +51,7 @@ func init() {
 
 	timeZone, _ := time.LoadLocation("Asia/Shanghai")
 	c := cron.New(cron.WithLocation(timeZone))
-	c.AddFunc("15 0 * * *", SendLike)
+	c.AddFunc("25 0 * * *", SendLike)
 	c.Start()
 }
 
