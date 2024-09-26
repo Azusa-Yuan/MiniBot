@@ -167,10 +167,10 @@ func ReplyRule(messageID int64) Rule {
 	}
 }
 
-// KeywordRule check if the message has a keyword or keywords
+// KeywordRule check if the message has a keyword or keywords 用ExtractPlainText防止图片base64触发
 func KeywordRule(src ...string) Rule {
 	return func(ctx *Ctx) bool {
-		msg := ctx.MessageString()
+		msg := ctx.ExtractPlainText()
 		for _, str := range src {
 			if strings.Contains(msg, str) {
 				ctx.State["keyword"] = str

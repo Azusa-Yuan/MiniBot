@@ -21,9 +21,12 @@ type ConnConfig struct {
 
 // 对应config.json
 type MiniConfig struct {
-	Z   zero.Config  `json:"zero" yaml:"zero"`
-	WS  []ConnConfig `json:"ws" yaml:"ws"`
-	WSS []ConnConfig `json:"wss" yaml:"wss"`
+	Z             zero.Config  `json:"zero" yaml:"zero"`
+	NickName      []string     `json:"nickname"  yaml:"nickname"`            // 机器人名称
+	CommandPrefix string       `json:"command_prefix" yaml:"command_prefix"` // 触发命令
+	SuperUsers    []int64      `json:"super_users" yaml:"super_users"`       // 超级用户
+	WS            []ConnConfig `json:"ws" yaml:"ws"`
+	WSS           []ConnConfig `json:"wss" yaml:"wss"`
 	// C   []*driver.WSClient `json:"-" yaml:"-"`
 	// S   []*driver.WSServer `json:"-" yaml:"-"`
 }

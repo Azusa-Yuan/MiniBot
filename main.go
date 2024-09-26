@@ -4,7 +4,6 @@ package main
 import (
 	_ "MiniBot/utils/log"
 
-	"MiniBot/cmd"
 	"MiniBot/config"
 	"MiniBot/service/web"
 	"MiniBot/utils"
@@ -40,7 +39,6 @@ import (
 
 func init() {
 	manager.Initialize()
-	cmd.Execute()
 	config.ConfigInit()
 }
 
