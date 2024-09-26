@@ -258,7 +258,6 @@ func fastJudge(path string, imgStrs []string, texts []string) bool {
 			return true
 		}
 		if textLen >= int(info.ParamsType.MaxTexts) {
-			texts = texts[:info.ParamsType.MaxTexts]
 			return true
 		}
 		log.Debug().Str("name", pluginName).Msgf("文字长度不对 actual:%d max:%d min:%d", imgLen, info.ParamsType.MinImages, info.ParamsType.MaxImages)
