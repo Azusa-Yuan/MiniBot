@@ -48,11 +48,16 @@ func init() {
 			args := map[string]any{}
 			args["user_infos"] = []UserInfo{}
 
-			replyMsg := zero.Message{}
 			messageWithReply := ctx.Event.Message
 			if ctx.Event.Message[0].Type == "reply" {
-				replyMsg = ctx.GetMessage(ctx.Event.Message[0].Data["id"])
-				messageWithReply = append(replyMsg.Elements, ctx.Event.Message[1:]...)
+				replyMsg := ctx.GetMessage(ctx.Event.Message[0].Data["id"])
+				replyImg := message.Message{}
+				for _, segment := range replyMsg.Elements {
+					if segment.Type == "image" {
+						replyImg = append(replyImg, segment)
+					}
+				}
+				messageWithReply = append(replyImg, ctx.Event.Message[1:]...)
 			}
 
 			for _, segment := range messageWithReply {
