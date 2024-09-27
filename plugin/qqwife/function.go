@@ -105,19 +105,17 @@ func checkSingleDog(gid int64, uid int64, fiancee int64) (res bool, msg string) 
 // 注入判断 是否满足小三要求
 func checkMistress(ctx *zero.Ctx) (ok bool, targetInfo UserInfo) {
 
-	gid := ctx.Event.GroupID
-	uid := ctx.Event.UserID
-	fid := ctx.State["regex_matched"].([]string)
-	target, err := strconv.ParseInt(fid[3]+fid[4], 10, 64)
-	if err != nil {
-		target, err = strconv.ParseInt(fid[8]+fid[9], 10, 64)
-	}
-	if err != nil {
-		ctx.SendChain(message.Text("额,你的target好像不存在?"))
+	atInfos := ctx.GetAtInfos()
+	if len(atInfos) != 1 {
 		return
 	}
+
+	gid := ctx.Event.GroupID
+	uid := ctx.Event.UserID
+	target := atInfos[0].QQ
+
 	// 判断是否需要重置
-	err = qqwife.IfToday()
+	err := qqwife.IfToday()
 	if err != nil {
 		ctx.SendChain(message.Text("[ERROR]:", err))
 		return
