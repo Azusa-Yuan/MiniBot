@@ -92,8 +92,8 @@ func init() {
 			// Fields函数会将字符串按空格分割,并自动忽略连续的空格
 			texts := strings.Fields(extractPlainText)
 
-			// 做截断
-			imgStrs, texts = truncateList(path, imgStrs, texts)
+			// 做截断, 仅对img做截断更用户友好
+			imgStrs, _ = truncateList(path, imgStrs, texts)
 
 			if !fastJudge(path, imgStrs, texts) {
 				imgStrs = append([]string{strconv.FormatInt(ctx.Event.UserID, 10)}, imgStrs...)

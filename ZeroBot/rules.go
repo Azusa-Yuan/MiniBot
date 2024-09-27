@@ -62,6 +62,10 @@ func PrefixRule(prefixes ...string) Rule {
 		}
 		for _, msg := range ctx.Event.Message {
 			if msg.Type == "text" {
+				// 适配lag
+				if len(msg.Data["text"]) == 0 {
+					continue
+				}
 				firstMessage := strings.TrimLeft(msg.Data["text"], " ")
 				for _, prefix := range prefixes {
 					if strings.HasPrefix(firstMessage, prefix) {
@@ -72,7 +76,7 @@ func PrefixRule(prefixes ...string) Rule {
 						return true
 					}
 				}
-				// 只匹配第一个为txt类型的message
+				// 只匹配第一个为text类型的的非空message
 				break
 			}
 		}
