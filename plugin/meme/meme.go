@@ -49,13 +49,11 @@ func init() {
 			args["user_infos"] = []UserInfo{}
 
 			replyMsg := zero.Message{}
-			for _, segment := range ctx.Event.Message {
-				if segment.Type == "reply" {
-					replyMsg = ctx.GetMessage(segment.Data["id"])
-					fmt.Println(replyMsg)
-				}
+			messageWithReply := ctx.Event.Message
+			if ctx.Event.Message[0].Type == "reply" {
+				replyMsg = ctx.GetMessage(ctx.Event.Message[0].Data["id"])
+				messageWithReply = append(replyMsg.Elements, ctx.Event.Message[1:]...)
 			}
-			messageWithReply := append(replyMsg.Elements, ctx.Event.Message...)
 
 			for _, segment := range messageWithReply {
 				if segment.Type == "at" {
