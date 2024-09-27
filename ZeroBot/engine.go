@@ -134,10 +134,10 @@ func OnMetaEvent(rules ...Rule) *Matcher { return On("meta_event", rules...) }
 // OnMetaEvent 元事件触发器
 func (e *Engine) OnMetaEvent(rules ...Rule) *Matcher { return On("meta_event", rules...) }
 
-// OnPrefix 前缀触发器  ctx.State["args"]   ctx.State["prefix"]
+// OnPrefix 前缀触发器  ctx.State["args"] 纯文本   ctx.State["prefix"]
 func OnPrefix(prefix string, rules ...Rule) *Matcher { return defaultEngine.OnPrefix(prefix, rules...) }
 
-// OnPrefix 前缀触发器  ctx.State["args"]   ctx.State["prefix"]
+// OnPrefix 前缀触发器  ctx.State["args"] 纯文本   ctx.State["prefix"]
 func (e *Engine) OnPrefix(prefix string, rules ...Rule) *Matcher {
 	matcher := &Matcher{
 		Type:   Type("message"),

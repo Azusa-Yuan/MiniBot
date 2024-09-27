@@ -248,8 +248,8 @@ func OnlyGuild(ctx *Ctx) bool {
 	return ctx.Event.PostType == "message" && ctx.Event.DetailType == "guild"
 }
 
-func issu(id int64) bool {
-	for _, su := range BotConfig.SuperUsers {
+func issu(id int64, selfID int64) bool {
+	for _, su := range BotConfig.GetSuperUser(selfID) {
 		if su == id {
 			return true
 		}
@@ -259,7 +259,7 @@ func issu(id int64) bool {
 
 // SuperUserPermission only triggered by the bot's owner
 func SuperUserPermission(ctx *Ctx) bool {
-	return issu(ctx.Event.UserID)
+	return issu(ctx.Event.UserID, ctx.Event.SelfID)
 }
 
 // AdminPermission only triggered by the group admins or higher permission
@@ -305,7 +305,7 @@ func GroupHigherPermission(gettarget func(ctx *Ctx) int64) Rule {
 				ctx.SendError(err)
 				return false
 			}
-			return !issu(target) && info.Get("role").Str != "owner"
+			return !issu(target, ctx.Event.SelfID) && info.Get("role").Str != "owner"
 		}
 		if ctx.Event.Sender.Role == "admin" {
 			info, err := ctx.GetThisGroupMemberInfo(target, false)
@@ -314,7 +314,7 @@ func GroupHigherPermission(gettarget func(ctx *Ctx) int64) Rule {
 				return false
 			}
 			tgtrole := info.Get("role").Str
-			return !issu(target) && tgtrole != "owner" && tgtrole != "admin"
+			return !issu(target, ctx.Event.SelfID) && tgtrole != "owner" && tgtrole != "admin"
 		}
 		return false // member is the lowest
 	}

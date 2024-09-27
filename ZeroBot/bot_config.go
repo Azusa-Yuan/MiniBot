@@ -31,3 +31,10 @@ func (c Config) GetNickName(selfID int64) []string {
 	}
 	return c.NickName
 }
+
+func (c Config) GetSuperUser(selfID int64) []int64 {
+	if instance, ok := c.InstanceMap[selfID]; ok {
+		return instance.SuperUsers
+	}
+	return c.SuperUsers
+}
