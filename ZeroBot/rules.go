@@ -63,7 +63,7 @@ func PrefixRule(prefixes ...string) Rule {
 		for _, msg := range ctx.Event.Message {
 			if msg.Type == "text" {
 				// 适配lag
-				if len(msg.Data["text"]) == 0 {
+				if strings.TrimSpace(msg.Data["text"]) == "" {
 					continue
 				}
 				firstMessage := strings.TrimLeft(msg.Data["text"], " ")
