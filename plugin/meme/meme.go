@@ -48,7 +48,16 @@ func init() {
 			args := map[string]any{}
 			args["user_infos"] = []UserInfo{}
 
+			replyMsg := zero.Message{}
 			for _, segment := range ctx.Event.Message {
+				if segment.Type == "reply" {
+					replyMsg = ctx.GetMessage(segment.Data["id"])
+					fmt.Println(replyMsg)
+				}
+			}
+			messageWithReply := append(replyMsg.Elements, ctx.Event.Message...)
+
+			for _, segment := range messageWithReply {
 				if segment.Type == "at" {
 					qqStr := segment.Data["qq"]
 					qq, err := strconv.ParseInt(qqStr, 10, 64)
@@ -79,6 +88,9 @@ func init() {
 			}
 			// Fields函数会将字符串按空格分割,并自动忽略连续的空格
 			texts := strings.Fields(extractPlainText)
+
+			// 做截断
+			imgStrs, texts = truncateList(path, imgStrs, texts)
 
 			if !fastJudge(path, imgStrs, texts) {
 				imgStrs = append([]string{strconv.FormatInt(ctx.Event.UserID, 10)}, imgStrs...)

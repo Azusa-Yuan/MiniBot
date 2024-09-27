@@ -243,6 +243,20 @@ func InitMeme() error {
 	return nil
 }
 
+func truncateList(path string, imgStrs []string, texts []string) ([]string, []string) {
+	imgLen := len(imgStrs)
+	textLen := len(texts)
+	if info, ok := emojiInfoMap[path]; ok {
+		if imgLen > int(info.ParamsType.MaxImages) {
+			imgStrs = imgStrs[:int(info.ParamsType.MaxImages)]
+		}
+		if textLen > int(info.ParamsType.MaxTexts) {
+			texts = texts[:int(info.ParamsType.MaxTexts)]
+		}
+	}
+	return imgStrs, texts
+}
+
 func fastJudge(path string, imgStrs []string, texts []string) bool {
 	imgLen := len(imgStrs)
 	textLen := len(texts)
