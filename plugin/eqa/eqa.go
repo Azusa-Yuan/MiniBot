@@ -52,7 +52,8 @@ func init() {
 			index := strings.Index(tmpMessage[0].Data["text"], "回答")
 			question := tmpMessage[0].Data["text"][:index]
 
-			tmpMessage[0].Data["text"] = tmpMessage[0].Data["text"][index+len("回答"):]
+			tmpMessage[0].Data["text"] = tmpMessage[0].Data["text"][index:]
+			tmpMessage[0].Data["text"] = strings.TrimPrefix(tmpMessage[0].Data["text"], "回答")
 
 			answer := message.Message{}
 
@@ -60,7 +61,9 @@ func init() {
 
 				switch segment.Type {
 				case "text":
-					answer = append(answer, message.Text(segment.Data["text"]))
+					if segment.Data["text"] != "" {
+						answer = append(answer, message.Text(segment.Data["text"]))
+					}
 				case "image":
 					// 计算hash值
 					h := sha1.New()
