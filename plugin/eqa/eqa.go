@@ -22,7 +22,7 @@ import (
 )
 
 var (
-	messageMap map[string][]message.Message
+	messageMap = map[string][]message.Message{}
 	Lock       = sync.RWMutex{}
 	pluginName = "eqa"
 )
