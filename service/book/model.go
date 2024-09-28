@@ -6,8 +6,8 @@ type Book struct {
 	ID      int64  `gorm:"primaryKey"` // 自增主键
 	BotID   int64  `gorm:"column:bot_id; index"`
 	UserID  int64  `gorm:"column:user_id"`
-	GroupID int64  `grom:"column:group_id"`
-	Service string `grom:"column:service; index"`
+	GroupID int64  `gorm:"column:group_id"`
+	Service string `gorm:"column:service; index"`
 	Value   string `gorm:"column:value"`
 }
 

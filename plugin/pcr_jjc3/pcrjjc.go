@@ -8,6 +8,7 @@ import (
 	"path/filepath"
 	"regexp"
 	"strconv"
+	"strings"
 	"time"
 
 	"ZeroBot/extension"
@@ -56,10 +57,6 @@ func init() {
 
 	patternId := `\s*(\d{10})\s*`
 	reId := regexp.MustCompile(patternId)
-	patternAt := `\[CQ:at,qq=(\d+)\]`
-	reAt := regexp.MustCompile(patternAt)
-	patternOrder := `(\d+)`
-	reOrder := regexp.MustCompile(patternOrder)
 	engine := zero.NewTemplate(&zero.MetaData{
 		Name: pluginName,
 		Help: help,
@@ -68,9 +65,7 @@ func init() {
 		func(ctx *zero.Ctx) {
 			id := ""
 			uid := fmt.Sprint(ctx.Event.UserID)
-			model := extension.PrefixModel{}
-			_ = ctx.Parse(&model)
-			arg := model.Args
+			arg := ctx.State["args"].(string)
 
 			// 查找匹配
 			match := reId.FindStringSubmatch(arg)
@@ -80,15 +75,21 @@ func init() {
 
 			var msg string
 			if id == "" {
-				order := 0
-				match := reId.FindStringSubmatch(arg)
-				if len(match) == 2 {
-					uid = match[1]
-					reAt.ReplaceAllString(arg, "")
+				for _, segment := range ctx.Event.Message {
+					if segment.Type == "at" {
+						uid = segment.Data["qq"]
+					}
 				}
-				match = reOrder.FindStringSubmatch(arg)
-				if len(match) == 2 {
-					order, _ = strconv.Atoi(match[1])
+				order := 0
+				orderStr := strings.TrimSpace(arg)
+				if orderStr != "" {
+					order, err = strconv.Atoi(orderStr)
+					if err != nil {
+						return
+					}
+					if order > 100 {
+						return
+					}
 				}
 				userMap := userInfoManage.UserInfoMap
 				if userInfo, ok := userMap[uid]; ok {

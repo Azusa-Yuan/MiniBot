@@ -1,8 +1,6 @@
 package zero
 
 import (
-	"fmt"
-
 	"github.com/rs/zerolog/log"
 )
 
@@ -22,12 +20,14 @@ func printNoticeLog(e *Event) {
 	case e.SubType == "poke":
 		if e.GroupID == 0 {
 			log.Info().Str("name", "bot").Msgf("%v戳了戳%v", e.UserID, e.TargetID)
+			return
 		} else {
 			log.Info().Str("name", "bot").Msgf("%v在群%v戳了戳%v", e.UserID, e.GroupID, e.TargetID)
+			return
 		}
 	case e.NoticeType == "group_card":
 		log.Info().Str("name", "bot").Msgf("%v在群%v修改了群名片 %v → %v", e.UserID, e.GroupID, e.CardOld, e.CardNew)
-
+		return
 	}
-	fmt.Println(e.RawEvent.Raw)
+	log.Info().Str("name", "notice_test").Msgf(e.RawEvent.Raw)
 }

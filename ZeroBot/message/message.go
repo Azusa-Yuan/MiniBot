@@ -75,7 +75,6 @@ func UnescapeCQCodeText(str string) string {
 	return str
 }
 
-// CQCode 将数组消息转换为CQ码
 // 与 String 不同之处在于，对于
 // base64 的图片消息会将其哈希
 // 方便 log 打印，不可用作发送
@@ -84,7 +83,6 @@ func (m MessageSegment) CQCode() string {
 	sb.WriteString("[CQ:")
 	sb.WriteString(m.Type)
 	for k, v := range m.Data { // 消息参数
-		// sb.WriteString("," + k + "=" + escape(v))
 		sb.WriteByte(',')
 		sb.WriteString(k)
 		sb.WriteByte('=')
@@ -118,17 +116,17 @@ func (m MessageSegment) String() string {
 	sb := strings.Builder{}
 	sb.WriteString("[CQ:")
 	sb.WriteString(m.Type)
-	for k, v := range m.Data { // 消息参数
-		// sb.WriteString("," + k + "=" + escape(v))
-		sb.WriteByte(',')
-		sb.WriteString(k)
-		sb.WriteByte('=')
-		if m.Type == "node" {
-			sb.WriteString(v)
-		} else {
-			sb.WriteString(EscapeCQCodeText(v))
-		}
-	}
+	// for k, v := range m.Data { // 消息参数
+	// 	// sb.WriteString("," + k + "=" + escape(v))
+	// 	sb.WriteByte(',')
+	// 	sb.WriteString(k)
+	// 	sb.WriteByte('=')
+	// 	if m.Type == "node" {
+	// 		sb.WriteString(v)
+	// 	} else {
+	// 		sb.WriteString(EscapeCQCodeText(v))
+	// 	}
+	// }
 	sb.WriteByte(']')
 	return sb.String()
 }
@@ -156,6 +154,7 @@ func (m Message) String() string {
 		if media.Type != "text" {
 			sb.WriteString(media.String())
 		} else {
+			// 防止文本被误认为cq码
 			sb.WriteString(EscapeCQText(media.Data["text"]))
 		}
 	}

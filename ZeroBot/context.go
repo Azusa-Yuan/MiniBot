@@ -26,7 +26,6 @@ type Ctx struct {
 	Err        error
 }
 
-// func (ctx )
 func (ctx *Ctx) GetMatcherMetadata() MatcherMetadata {
 	meta := MatcherMetadata{
 		MatcherName: ctx.ma.Mark,
@@ -196,4 +195,21 @@ func (ctx *Ctx) MessageString() string {
 		}
 	})
 	return ctx.message
+}
+
+// 待完善
+func (ctx *Ctx) ReceptionToSend() message.Message {
+	if ctx.Event == nil || ctx.Event.Message == nil {
+		return nil
+	}
+	tmpMessage := ctx.Event.Message
+	for i, segment := range tmpMessage {
+		switch segment.Type {
+		case "image":
+			tmpMessage[i] = message.Image(segment.Data["url"])
+		case "text":
+			tmpMessage[i] = message.Text(segment.Data["text"])
+		}
+	}
+	return tmpMessage
 }
