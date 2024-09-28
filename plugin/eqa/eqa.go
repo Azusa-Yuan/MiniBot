@@ -48,7 +48,7 @@ func init() {
 		func(ctx *zero.Ctx) {
 			// 测试用
 			tmpMessage := ctx.Event.Message
-			tmpMessage[0].Data["text"] = strings.TrimPrefix(tmpMessage[0].Data["text"], "大家说")
+			tmpMessage[0].Data["text"] = strings.TrimPrefix(tmpMessage[0].Data["text"], "大家问")
 			index := strings.Index(tmpMessage[0].Data["text"], "回答")
 			question := tmpMessage[0].Data["text"][:index]
 
@@ -116,11 +116,10 @@ func init() {
 			}
 			Lock.RLock()
 			defer Lock.RUnlock()
-			resp := message.Message{}
 			if messageList, ok := messageMap[ctx.MessageString()]; ok {
-				resp = messageList[rand.IntN(len(messageList))]
+				resp := messageList[rand.IntN(len(messageList))]
+				ctx.SendChain(resp...)
 			}
-			ctx.SendChain(resp...)
 		},
 	)
 }
