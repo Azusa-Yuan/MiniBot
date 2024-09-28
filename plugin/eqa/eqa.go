@@ -44,7 +44,7 @@ func init() {
 
 	initData()
 	// 大家说只支持文本  回答支持多种格式
-	engine.OnRegex("^大家说.+回答.+", zero.SuperUserPermission).Handle(
+	engine.OnRegex("^大家问.+回答.+", zero.SuperUserPermission).Handle(
 		func(ctx *zero.Ctx) {
 			// 测试用
 			tmpMessage := ctx.Event.Message
@@ -127,6 +127,7 @@ func init() {
 
 func initData() {
 	db := database.GetDefalutDB()
+	db.AutoMigrate(&eqa{})
 	qas := []eqa{}
 	err := db.Find(&qas).Error
 	if err != nil {

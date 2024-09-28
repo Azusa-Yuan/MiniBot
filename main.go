@@ -16,6 +16,7 @@ import (
 	_ "MiniBot/plugin/bilibili"
 	_ "MiniBot/plugin/dnf"
 	_ "MiniBot/plugin/emojimix"
+	_ "MiniBot/plugin/eqa"
 	_ "MiniBot/plugin/genai"
 	_ "MiniBot/plugin/like"
 	_ "MiniBot/plugin/meme"
