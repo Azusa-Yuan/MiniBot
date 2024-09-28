@@ -52,7 +52,7 @@ func init() {
 			index := strings.Index(tmpMessage[0].Data["text"], "回答")
 			question := tmpMessage[0].Data["text"][:index]
 
-			tmpMessage[0].Data["text"] = tmpMessage[0].Data["text"][index+len("回答")+1:]
+			tmpMessage[0].Data["text"] = tmpMessage[0].Data["text"][index+len("回答"):]
 
 			answer := message.Message{}
 
