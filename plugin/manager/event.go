@@ -134,7 +134,6 @@ func init() {
 					log.Error().Err(err)
 					return
 				}
-				log.Info().Str("name", pluginName).Msg(qqinfo.Raw)
 				imgBytes, err := cache.GetAvatar(ctx.Event.UserID)
 				if err != nil {
 					log.Error().Err(err)

@@ -34,12 +34,16 @@ func init() {
 			)
 		})
 	// 礼物系统
-	engine.OnRegex(`^买礼物给\s?(\[CQ:at,qq=(\d+)\]|(\d+))`).SetBlock(true).
+	engine.OnPrefix("买礼物给").SetBlock(true).
 		Handle(func(ctx *zero.Ctx) {
+			atInfos := ctx.GetAtInfos()
+			if len(atInfos) != 1 {
+				return
+			}
 			gid := ctx.Event.GroupID
 			uid := ctx.Event.UserID
-			fiancee := ctx.State["regex_matched"].([]string)
-			gay, _ := strconv.ParseInt(fiancee[2]+fiancee[3], 10, 64)
+
+			gay := atInfos[0].QQ
 			if gay == uid {
 				ctx.Send(message.ReplyWithMessage(ctx.Event.MessageID, message.At(uid), message.Text("你想给自己买什么礼物呢?")))
 				return

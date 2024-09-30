@@ -87,8 +87,6 @@ type Event struct {
 	NativeMessage json.RawMessage `json:"message"`
 	IsToMe        bool            `json:"-"`
 	RawEvent      gjson.Result    `json:"-"` // raw event
-	CardNew       string          `json:"card_new"`
-	CardOld       string          `json:"card_old"`
 }
 
 // Message 消息

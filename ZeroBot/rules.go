@@ -189,6 +189,7 @@ func KeywordRule(src ...string) Rule {
 func FullMatchRule(src ...string) Rule {
 	return func(ctx *Ctx) bool {
 		msg := ctx.MessageString()
+		msg = strings.TrimSpace(msg)
 		for _, str := range src {
 			if str == msg {
 				ctx.State["matched"] = msg
