@@ -44,7 +44,7 @@ func init() {
 	engine.OnPrefixGroup([]string{"大家说", "群友说"}, zero.SuperUserPermission).Handle(
 		func(ctx *zero.Ctx) {
 			tmpMessage := ctx.Event.Message
-			prefix := ctx.State["args"].(string)
+			prefix := ctx.State["prefix"].(string)
 			tmpMessage[0].Data["text"] = strings.TrimPrefix(tmpMessage[0].Data["text"], prefix)
 			index := strings.Index(tmpMessage[0].Data["text"], "回答")
 			if index == -1 {
