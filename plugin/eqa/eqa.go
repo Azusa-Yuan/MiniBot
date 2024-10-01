@@ -149,6 +149,9 @@ func init() {
 						tmpMessageList = append(tmpMessageList, qa)
 					}
 				}
+				if len(tmpMessageList) == 0 {
+					return
+				}
 				respQA := messageList[rand.IntN(len(tmpMessageList))]
 				ctx.SendChain(respQA.MessageList...)
 			}
