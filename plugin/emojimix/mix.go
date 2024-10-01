@@ -2,82 +2,87 @@
 package emojimix
 
 import (
-	"fmt"
-	"net/http"
+	emoji_map "MiniBot/plugin/emojimix/proto"
+	"os"
 	"strconv"
 
 	zero "ZeroBot"
 
 	"ZeroBot/message"
+
+	"github.com/rs/zerolog/log"
+	"google.golang.org/protobuf/proto"
 )
 
-const bed = "https://www.gstatic.com/android/keyboard/emojikitchen/%d/u%x/u%x_u%x.png"
+var emojiMap = emoji_map.OuterMap{OuterMap: map[int64]*emoji_map.InnerMap{}}
+var pluginName = "emojimix"
+
+// const bed = "https://www.gstatic.com/android/keyboard/emojikitchen/%d/u%x/u%x_u%x.png"
 
 func init() {
+	inFile, err := os.Open("outer_map.bin")
+	if err != nil {
+		log.Error().Err(err).Str("name", pluginName)
+		return
+	}
+	defer inFile.Close()
+
+	data, err := os.ReadFile("outer_map.bin")
+	if err != nil {
+		log.Error().Err(err).Str("name", pluginName)
+		return
+	}
+	if err := proto.Unmarshal(data, &emojiMap); err != nil {
+		log.Error().Err(err).Str("name", pluginName)
+		return
+	}
 	zero.NewTemplate(&zero.MetaData{
 		Name: "合成emoji",
 		Help: "- [emoji][emoji]",
 	}).OnMessage(match).SetBlock(true).
 		Handle(func(ctx *zero.Ctx) {
-			r := ctx.State["emojimix"].([]rune)
-			r1, r2 := r[0], r[1]
-			u1 := fmt.Sprintf(bed, emojis[r1], r1, r1, r2)
-			u2 := fmt.Sprintf(bed, emojis[r2], r2, r2, r1)
-
-			resp1, err := http.Head(u1)
-			if err == nil {
-				resp1.Body.Close()
-				if resp1.StatusCode == http.StatusOK {
-					ctx.SendChain(message.Image(u1))
-					return
-				}
-			}
-			resp2, err := http.Head(u2)
-			if err == nil {
-				resp2.Body.Close()
-				if resp2.StatusCode == http.StatusOK {
-					ctx.SendChain(message.Image(u2))
-					return
-				}
-			}
+			ctx.SendChain(message.Image(ctx.State["emojimix"].(string)))
 		})
 }
 
 func match(ctx *zero.Ctx) bool {
 	if len(ctx.Event.Message) == 2 {
 		r1 := face2emoji(ctx.Event.Message[0])
-		if _, ok := emojis[r1]; !ok {
-			return false
-		}
 		r2 := face2emoji(ctx.Event.Message[1])
-		if _, ok := emojis[r2]; !ok {
-			return false
+		if setUrl(r1, r2, ctx) {
+			return true
 		}
-		ctx.State["emojimix"] = []rune{r1, r2}
-		return true
 	}
 
 	r := []rune(ctx.Event.RawMessage)
 	if len(r) == 2 {
-		if _, ok := emojis[r[0]]; !ok {
-			return false
+		r1 := int64(r[0])
+		r2 := int64(r[1])
+
+		if setUrl(r1, r2, ctx) {
+			return true
 		}
-		if _, ok := emojis[r[1]]; !ok {
-			return false
-		}
-		ctx.State["emojimix"] = r
-		return true
 	}
 	return false
 }
 
-func face2emoji(face message.MessageSegment) rune {
+func setUrl(i int64, j int64, ctx *zero.Ctx) bool {
+	if interMap, ok := emojiMap.OuterMap[i]; ok {
+		if url, ok := interMap.InnerMap[j]; ok {
+			ctx.State["emojimix"] = url
+			return true
+		}
+	}
+	return false
+}
+
+func face2emoji(face message.MessageSegment) int64 {
 	if face.Type == "text" {
 		r := []rune(face.Data["text"])
 		if len(r) != 1 {
 			return 0
 		}
-		return r[0]
+		return int64(r[0])
 	}
 	if face.Type != "face" {
 		return 0
