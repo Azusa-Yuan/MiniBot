@@ -101,8 +101,10 @@ func init() {
 	go func() {
 		for range time.NewTicker(180 * time.Second).C {
 			news, err := service.GetColgChange()
-			if err != nil || len(news) == 0 {
-				log.Error().Str("name", "dnf").Err(err).Msg("")
+			if len(news) == 0 {
+				if err != nil {
+					log.Error().Str("name", "dnf").Err(err).Msg("")
+				}
 				continue
 			}
 

@@ -3,7 +3,7 @@ module MiniBot
 go 1.22
 
 require (
-	ZeroBot v1.7.4-20240930
+	ZeroBot v1.7.4-20241001
 	gopkg.in/yaml.v2 v2.4.0
 	gorm.io/driver/postgres v1.5.9
 	gorm.io/gorm v1.25.11

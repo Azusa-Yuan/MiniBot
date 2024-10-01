@@ -61,7 +61,7 @@ func init() {
 		Name: pluginName,
 		Help: help,
 	})
-	engine.OnPrefixGroup([]string{"看看", "jjccx", "关注查询"}).SetBlock(true).Handle(
+	engine.OnPrefixGroup([]string{"看看", "jjccx", "关注查询"}).Handle(
 		func(ctx *zero.Ctx) {
 			id := ""
 			uid := fmt.Sprint(ctx.Event.UserID)
@@ -105,6 +105,7 @@ func init() {
 				}
 			}
 
+			ctx.Stop()
 			if id != "" {
 				msg, err = userQuery(id)
 				if err != nil {
