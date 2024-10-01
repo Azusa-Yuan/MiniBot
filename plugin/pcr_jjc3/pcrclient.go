@@ -82,7 +82,6 @@ func (p *pcrclient) createkey(str string) []byte {
 }
 
 func (p *pcrclient) _ivstring() string {
-	// return "83206083111718785322348355702973"
 	return string(p.createkey(alphabet))
 }
 

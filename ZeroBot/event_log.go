@@ -25,20 +25,24 @@ func printNoticeLog(e *Event) {
 			log.Info().Str("name", "bot").Msgf("%v在群%v戳了戳%v", e.UserID, e.GroupID, e.TargetID)
 			return
 		}
-	case e.NoticeType == "group_card":
+	case e.DetailType == "group_card":
 		log.Info().Str("name", "bot").Msgf("%v在群%v修改了群名片 %v → %v", e.UserID, e.GroupID, e.RawEvent.Get("card_old").String(), e.RawEvent.Get("card_new").String())
 		return
-	case e.NoticeType == "group_recall":
+	case e.DetailType == "group_recall":
 		log.Info().Str("name", "bot").Msgf("%d在群%d撤回了一条消息", e.OperatorID, e.GroupID)
 		return
-	case e.NoticeType == "group_upload":
+	case e.DetailType == "group_upload":
 		log.Info().Str("name", "bot").Msgf("%d在群%d上传了文件%v", e.UserID, e.GroupID, e.RawEvent.Get("file").Get("name").String())
 		return
-	case e.NoticeType == "group_increase":
+	case e.DetailType == "group_increase":
 		if e.SubType == "approve" {
 			log.Info().Str("name", "bot").Msgf("%d同意%d加入群聊%d", e.OperatorID, e.UserID, e.GroupID)
 		}
 		return
 	}
 	log.Info().Str("name", "notice_test").Msgf(e.RawEvent.Raw)
+}
+
+func printRequestLog(e *Event) {
+	log.Info().Str("name", "request_test").Msgf(e.RawEvent.Raw)
 }

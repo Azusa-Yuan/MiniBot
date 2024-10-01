@@ -15,7 +15,7 @@ func init() {
 		Name: "月慕galgame相关",
 		Help: "- galCG 随机发一张galCG\n- gal表情包 随机发一张gal表情包\n- galCG[xxx]\n- gal表情包[xxx]\n- 更新gal",
 	})
-	db := database.DbConfig.GetDb("lulumu")
+	db := database.GetDefalutDB()
 	db.AutoMigrate(&ymgal{})
 	gdb = (*ymgaldb)(db)
 
@@ -70,17 +70,8 @@ func sendYmgal(y ymgal, ctx *zero.Ctx) {
 		ctx.SendChain(message.Text(zero.BotConfig.NickName[0] + "暂时没有这样的图呢"))
 		return
 	}
-	// m := message.Message{message_tools.FakeSenderForwardNode(ctx, message.Text(y.Title))}
-	// if y.PictureDescription != "" {
-	// 	m = append(m, message_tools.FakeSenderForwardNode(ctx, message.Text(y.PictureDescription)))
-	// }
+
 	urlList := strings.Split(y.PictureList, ",")
 	url := urlList[rand.IntN(len(urlList))]
 	ctx.SendChain(message.Text(y.Title), message.Image(url))
-	// for _, v := range strings.Split(y.PictureList, ",") {
-	// 	m = append(m, message_tools.FakeSenderForwardNode(ctx, message.Image(v)))
-	// }
-	// if id := ctx.Send(m).ID(); id == 0 {
-	// 	ctx.SendChain(message.Text("ERROR: 可能被风控了"))
-	// }
 }

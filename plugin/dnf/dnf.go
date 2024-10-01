@@ -2,10 +2,9 @@ package dnf
 
 import (
 	"MiniBot/plugin/dnf/service"
+	"MiniBot/service/book"
 	zero "ZeroBot"
 	"ZeroBot/message"
-	"slices"
-	"strconv"
 	"time"
 
 	"github.com/rs/zerolog/log"
@@ -14,7 +13,9 @@ import (
 func init() {
 	engine := zero.NewTemplate(&zero.MetaData{
 		Name: "dnf",
-		Help: "比例 跨二",
+		Help: `查询DNF金币或者矛盾价格  实例指令 比例跨二  矛盾跨二
+查看colg资讯 指令 colg资讯
+订阅colg资讯 指令 订阅colg资讯`,
 	})
 
 	engine.OnPrefixGroup([]string{"比例", "金币", "游戏币"}).SetBlock(true).Handle(
@@ -36,7 +37,11 @@ func init() {
 			arg := ctx.State["args"].(string)
 			data, url, err := service.Screenshot(arg, "maodun")
 			if err != nil {
-				ctx.SendError(err)
+				ctx.SendError(err, message.Text("网络不稳定喵，请点链接查看"), message.Text(url))
+			}
+
+			if data == nil {
+				return
 			}
 			ctx.SendChain(message.At(ctx.Event.UserID), message.ImageBytes(data), message.Text(url))
 		})
@@ -53,28 +58,20 @@ func init() {
 
 	engine.OnFullMatch("订阅colg资讯", zero.UserOrGrpAdmin).SetBlock(true).Handle(
 		func(ctx *zero.Ctx) {
-			users, err := service.GetColgUser()
-			if err != nil {
-				ctx.SendError(err)
-			}
+			uid := ctx.Event.UserID
 			if ctx.Event.GroupID != 0 {
-				groupStr := strconv.FormatInt(ctx.Event.GroupID, 10)
-				if slices.Index(users.Group, groupStr) != -1 {
-					ctx.SendChain(message.At(ctx.Event.UserID), message.Text("已经订阅过啦"))
-					return
-				}
-				users.Group = append(users.Group, strconv.FormatInt(ctx.Event.GroupID, 10))
-			} else {
-				qqStr := strconv.FormatInt(ctx.Event.UserID, 10)
-				if slices.Index(users.QQ, qqStr) != -1 {
-					ctx.SendChain(message.At(ctx.Event.UserID), message.Text("已经订阅过啦"))
-					return
-				}
-				users.QQ = append(users.QQ, qqStr)
+				uid = 0
 			}
-			err = users.SaveBinds()
+			err := book.CreatOrUpdateBookInfo(&book.Book{
+				BotID:   ctx.Event.SelfID,
+				UserID:  uid,
+				GroupID: ctx.Event.GroupID,
+				Service: "colg",
+			})
+
 			if err != nil {
 				ctx.SendError(err)
+				return
 			}
 			ctx.SendChain(message.At(ctx.Event.UserID), message.Text("订阅成功"))
 		},
@@ -82,26 +79,28 @@ func init() {
 
 	go func() {
 		for range time.NewTicker(180 * time.Second).C {
-			users, err := service.GetColgUser()
-			if err != nil {
-				log.Fatal().Str("name", "dnf").Err(err).Msg("")
-			}
-			bot, err := zero.GetBot(741433361)
-			if err != nil {
+			news, err := service.GetColgChange()
+			if err != nil || len(news) == 0 {
+				log.Error().Str("name", "dnf").Err(err).Msg("")
 				continue
 			}
-			news, err := users.GetChange()
+
+			bookInfos, err := book.GetBookInfos("colg")
 			if err != nil {
-				continue
+				log.Error().Str("name", "dnf").Err(err).Msg("")
 			}
+
 			for _, new := range news {
-				for _, gidStr := range users.Group {
-					gid, _ := strconv.ParseInt(gidStr, 10, 64)
-					bot.SendGroupMessage(gid, message.Text(new))
-				}
-				for _, uidStr := range users.QQ {
-					uid, _ := strconv.ParseInt(uidStr, 10, 64)
-					bot.SendPrivateMessage(uid, message.Text(new))
+				for _, bookInfo := range bookInfos {
+					bot, err := zero.GetBot(bookInfo.BotID)
+					if err != nil {
+						continue
+					}
+					if bookInfo.GroupID != 0 {
+						bot.SendGroupMessage(bookInfo.GroupID, message.Text(new))
+					} else {
+						bot.SendPrivateMessage(bookInfo.UserID, message.Text(new))
+					}
 				}
 			}
 		}

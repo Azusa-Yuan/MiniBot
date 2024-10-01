@@ -236,8 +236,8 @@ func InitMeme() error {
 
 	for _, path := range pathList {
 		ch <- path
-
 	}
+
 	close(ch)
 	wg.Wait()
 	return nil

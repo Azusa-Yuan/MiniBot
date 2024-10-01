@@ -65,9 +65,9 @@ func Run(op *Config) {
 		log.Warn().Str("name", "bot").Msg("已忽略重复调用的 Run")
 	}
 	runinit(op)
-	// linkf 两种不同的处理消息策略，linkf就是ws收到消息进行处理的方式
+	// listenCallback 有两种不同的处理上报event策略
 	// 第一种是收到onebot消息直接处理
-	// 另一种是收到消息放到事件环形数切片池处理
+	// 另一种是收到消息放到事件管道里处理
 	listenCallback := op.directlink
 	if op.RingLen != 0 {
 		listenCallback = evchan.processEvent
@@ -199,6 +199,7 @@ func processEventAsync(response []byte, caller APICaller, maxwait time.Duration)
 		printNoticeLog(&event)
 	case "request":
 		event.DetailType = event.RequestType
+		printRequestLog(&event)
 	}
 	if event.PostType == "message" {
 		preprocessMessageEvent(&event)
@@ -456,7 +457,6 @@ func preprocessNoticeEvent(e *Event) {
 	} else {
 		e.IsToMe = e.UserID == e.SelfID
 	}
-
 }
 
 // GetBot 获取指定的bot (Ctx)实例

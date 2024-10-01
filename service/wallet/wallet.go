@@ -25,7 +25,7 @@ type Wallet struct {
 
 var (
 	sdb = &Storage{
-		db: database.DbConfig.GetDb("lulumu"),
+		db: database.GetDefalutDB(),
 	}
 )
 

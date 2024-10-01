@@ -1,16 +1,11 @@
 package service
 
 import (
-	"MiniBot/utils/path"
-	"encoding/json"
 	"fmt"
 	"net/http"
-	"os"
-	"path/filepath"
 	"strings"
 
 	"github.com/PuerkitoBio/goquery"
-	"github.com/rs/zerolog/log"
 	"github.com/xrash/smetrics"
 )
 
@@ -23,62 +18,8 @@ var (
 	keyWords   = []string{"韩服", "爆料", "国服", "前瞻", "韩测"}
 	limit      = 6
 	// 缓存不同作者的同一个消息
-	preHead     []string
-	defaultUser *user
-	userPath    = filepath.Join(path.GetPluginDataPath(), "user.json")
+	preHead []string
 )
-
-type user struct {
-	Group []string `json:"group"`
-	QQ    []string `json:"qq"`
-}
-
-func GetColgUser() (*user, error) {
-
-	if defaultUser != nil {
-		return defaultUser, nil
-	}
-
-	users := user{
-		[]string{},
-		[]string{},
-	}
-
-	// 检查文件是否存在
-	if _, err := os.Stat(userPath); err == nil {
-		// 读取文件内容
-		data, err := os.ReadFile(userPath)
-		if err != nil {
-			log.Error().Str("name", "colg").Err(err).Msg("")
-			return nil, err
-		}
-
-		// 解析 JSON 数据
-		err = json.Unmarshal(data, &users)
-		if err != nil {
-			log.Error().Str("name", "colg").Err(err).Msg("")
-			return nil, err
-		}
-	}
-
-	defaultUser = &users
-	return &users, nil
-}
-
-func (user *user) SaveBinds() error {
-	// 序列化 JSON 数据
-	data, err := json.MarshalIndent(user, "", "  ")
-	if err != nil {
-		return err
-	}
-
-	// 写入文件
-	err = os.WriteFile(userPath, data, 0644)
-	if err != nil {
-		return err
-	}
-	return nil
-}
 
 func fetchContent(url string) (string, string, error) {
 	res, err := http.Get(url)
@@ -127,7 +68,7 @@ func ColgNews() (string, error) {
 	return context.String(), nil
 }
 
-func (user) GetChange() ([]string, error) {
+func GetColgChange() ([]string, error) {
 	var newList []string
 
 	if len(preHead) == 0 {

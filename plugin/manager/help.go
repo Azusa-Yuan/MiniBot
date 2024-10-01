@@ -6,6 +6,7 @@ import (
 	"ZeroBot/extension"
 	"ZeroBot/message"
 	"fmt"
+	"slices"
 	"strconv"
 )
 
@@ -35,6 +36,14 @@ func init() {
 			uidKey := bidWithuid(bid, uid)
 			gidKey := bidWithgid(bid, gid)
 			bidKey := strconv.FormatInt(bid, 10)
+			// 判断权限等级是否足够
+			levels := []uint{}
+			levels = append(levels, managers.GetLevel(uidKey))
+			if gid != 0 {
+				levels = append(levels, managers.GetLevel(gidKey))
+			}
+			// 取最大值
+			level := slices.Max(levels)
 			if managers.IsBlocked(uidKey) || managers.IsBlocked(gidKey) {
 				resp := fmt.Sprintf(zero.BotConfig.NickName[0], "睡着了")
 				ctx.SendChain(message.Text(resp))
@@ -45,6 +54,13 @@ func init() {
 			defer plugin.CM.RUnlock()
 			for _, c := range plugin.CM.ControlMap {
 				if c.IsEnabled("0") && c.IsEnabled(bidKey) && c.IsEnabled(gidKey) && c.IsEnabled(uidKey) {
+					// 屏蔽权限等级不足的功能
+					controlLevel := c.MetaDate.Level
+					if controlLevel > 0 {
+						if level < controlLevel {
+							continue
+						}
+					}
 					resp += "\n" + c.MetaDate.Name
 				}
 			}

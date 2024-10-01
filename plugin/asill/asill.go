@@ -4,7 +4,7 @@ import (
 	"MiniBot/utils/path"
 	zero "ZeroBot"
 	"encoding/json"
-	"math/rand"
+	"math/rand/v2"
 	"os"
 	"path/filepath"
 	"strings"
@@ -52,11 +52,21 @@ func init() {
 
 	engine.OnPrefix(`发病`).SetBlock(true).Handle(func(ctx *zero.Ctx) {
 		name := ctx.NickName()
-		n := rand.Intn(len(data))
+		n := rand.IntN(len(data))
 		asilldata := data[n]
 		asillText := asilldata.Text
 		asillText = strings.Replace(asillText, asilldata.Person, name, -1)
 
 		ctx.SendChain(message.Reply(ctx.Event.MessageID), message.Text(asillText))
 	})
+
+	// engine.OnPrefix(`病情查重`).SetBlock(true).Handle(func(ctx *zero.Ctx) {
+	// 	name := ctx.NickName()
+	// 	n := rand.IntN(len(data))
+	// 	asilldata := data[n]
+	// 	asillText := asilldata.Text
+	// 	asillText = strings.Replace(asillText, asilldata.Person, name, -1)
+
+	// 	ctx.SendChain(message.Reply(ctx.Event.MessageID), message.Text(asillText))
+	// })
 }

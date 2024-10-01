@@ -22,7 +22,7 @@ import (
 )
 
 var (
-	messageMap = map[string][]message.Message{}
+	messageMap = map[string][]eqa{}
 	Lock       = sync.RWMutex{}
 	pluginName = "eqa"
 )
@@ -44,12 +44,15 @@ func init() {
 
 	initData()
 	// 大家说只支持文本  回答支持多种格式
-	engine.OnRegex("^大家问.+回答.+", zero.SuperUserPermission).Handle(
+	engine.OnPrefixGroup([]string{"大家说", "群友说"}, zero.SuperUserPermission).Handle(
 		func(ctx *zero.Ctx) {
-			// 测试用
 			tmpMessage := ctx.Event.Message
-			tmpMessage[0].Data["text"] = strings.TrimPrefix(tmpMessage[0].Data["text"], "大家问")
+			prefix := ctx.State["args"].(string)
+			tmpMessage[0].Data["text"] = strings.TrimPrefix(tmpMessage[0].Data["text"], prefix)
 			index := strings.Index(tmpMessage[0].Data["text"], "回答")
+			if index == -1 {
+				return
+			}
 			question := tmpMessage[0].Data["text"][:index]
 
 			tmpMessage[0].Data["text"] = tmpMessage[0].Data["text"][index:]
@@ -58,7 +61,6 @@ func init() {
 			answer := message.Message{}
 
 			for _, segment := range tmpMessage {
-
 				switch segment.Type {
 				case "text":
 					if segment.Data["text"] != "" {
@@ -92,8 +94,13 @@ func init() {
 				return
 			}
 
+			var gid int64 = 0
+			if prefix == "群友说" {
+				gid = ctx.Event.GroupID
+			}
 			db := database.GetDefalutDB()
-			err = db.Create(&eqa{Key: question, Value: utils.BytesToString(data)}).Error
+			qa := eqa{Key: question, Value: utils.BytesToString(data), GID: gid}
+			err = db.Create(&qa).Error
 			if err != nil {
 				ctx.SendError(err)
 				return
@@ -101,14 +108,30 @@ func init() {
 
 			Lock.Lock()
 			if messageList, ok := messageMap[question]; ok {
-				messageMap[question] = append(messageList, answer)
+				messageMap[question] = append(messageList, qa)
 			} else {
-				messageMap[question] = []message.Message{answer}
+				messageMap[question] = []eqa{qa}
 			}
 			Lock.Unlock()
 
 			msg := fmt.Sprintf("设置问题%s成功,回答为%s", question, utils.BytesToString(data))
 			ctx.SendChain(message.Text(msg))
+		},
+	)
+
+	engine.OnPrefixGroup([]string{"不要回答"}, zero.SuperUserPermission).Handle(
+		func(ctx *zero.Ctx) {
+			q := ctx.State["prefix"].(string)
+			Lock.Lock()
+			defer Lock.Unlock()
+			if _, ok := messageMap[q]; ok {
+				delete(messageMap, q)
+				db := database.GetDefalutDB()
+				db.Where("value", q).Delete(&eqa{})
+				ctx.SendChain(message.Text("该问题已删除"))
+			} else {
+				ctx.SendChain(message.Text("没有该问题"))
+			}
 		},
 	)
 
@@ -120,8 +143,14 @@ func init() {
 			Lock.RLock()
 			defer Lock.RUnlock()
 			if messageList, ok := messageMap[ctx.MessageString()]; ok {
-				resp := messageList[rand.IntN(len(messageList))]
-				ctx.SendChain(resp...)
+				tmpMessageList := []eqa{}
+				for _, qa := range messageList {
+					if qa.GID == 0 || qa.GID == ctx.Event.GroupID {
+						tmpMessageList = append(tmpMessageList, qa)
+					}
+				}
+				respQA := messageList[rand.IntN(len(tmpMessageList))]
+				ctx.SendChain(respQA.MessageList...)
 			}
 		},
 	)
@@ -142,14 +171,15 @@ func initData() {
 	for _, qa := range qas {
 		msg := message.Message{}
 		err := json.Unmarshal(utils.StringToBytes(qa.Value), &msg)
+		qa.MessageList = msg
 		if err != nil {
 			log.Error().Str("name", pluginName).Err(err).Msg("")
 		}
 
 		if messageList, ok := messageMap[qa.Key]; ok {
-			messageMap[qa.Key] = append(messageList, msg)
+			messageMap[qa.Key] = append(messageList, qa)
 		} else {
-			messageMap[qa.Key] = []message.Message{msg}
+			messageMap[qa.Key] = []eqa{qa}
 		}
 	}
 }
