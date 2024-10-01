@@ -8,6 +8,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"regexp"
+	"slices"
 	"strconv"
 	"strings"
 
@@ -15,7 +16,11 @@ import (
 	"golang.org/x/exp/maps"
 )
 
-var pluginName = "表情包制作"
+var (
+	pluginName = "表情包制作"
+	pattern    = `--(\S+)\s+(\S+)`
+	reArgs     = regexp.MustCompile(pattern)
+)
 
 func init() {
 	err := InitMeme()
@@ -39,97 +44,12 @@ func init() {
 		},
 	)
 
-	pattern := `--(\S+)\s+(\S+)`
-	reArgs := regexp.MustCompile(pattern)
-	engine.OnPrefixGroup(maps.Keys(emojiMap)).Handle(
-		func(ctx *zero.Ctx) {
-			path := emojiMap[ctx.State["prefix"].(string)]
-			imgStrs := []string{}
-			args := map[string]any{}
-			args["user_infos"] = []UserInfo{}
-
-			messageWithReply := ctx.Event.Message
-			if ctx.Event.Message[0].Type == "reply" {
-				replyMsg := ctx.GetMessage(ctx.Event.Message[0].Data["id"])
-				replyImg := message.Message{}
-				for _, segment := range replyMsg.Elements {
-					if segment.Type == "image" {
-						replyImg = append(replyImg, segment)
-					}
-				}
-				messageWithReply = append(replyImg, ctx.Event.Message[1:]...)
-			}
-
-			for _, segment := range messageWithReply {
-				if segment.Type == "at" {
-					qqStr := segment.Data["qq"]
-					qq, err := strconv.ParseInt(qqStr, 10, 64)
-					if err != nil {
-						log.Error().Str("name", pluginName).Err(err).Msg("")
-						continue
-					}
-					args["user_infos"] = append(args["user_infos"].([]UserInfo),
-						UserInfo{
-							Name:   ctx.CardOrNickName(qq),
-							Gender: "female",
-						})
-					imgStrs = append(imgStrs, qqStr)
-				}
-				if segment.Type == "image" {
-					imgStrs = append(imgStrs, segment.Data["url"])
-				}
-			}
-
-			// 正则匹配所有args
-			extractPlainText := ctx.State["args"].(string)
-			matchs := reArgs.FindAllStringSubmatch(extractPlainText, -1)
-			if len(matchs) > 0 {
-				for _, match := range matchs {
-					args[match[1]] = match[2]
-				}
-				extractPlainText = reArgs.ReplaceAllString(extractPlainText, "")
-			}
-			// Fields函数会将字符串按空格分割,并自动忽略连续的空格
-			texts := strings.Fields(extractPlainText)
-
-			// 做截断, 仅对img做截断更用户友好
-			imgStrs, _ = truncateList(path, imgStrs, texts)
-
-			if !fastJudge(path, imgStrs, texts) {
-				imgStrs = append([]string{strconv.FormatInt(ctx.Event.UserID, 10)}, imgStrs...)
-				args["user_infos"] = append(args["user_infos"].([]UserInfo),
-					UserInfo{
-						Name:   ctx.CardOrNickName(ctx.Event.UserID),
-						Gender: "female",
-					})
-				if !fastJudge(path, imgStrs, texts) {
-					return
-				}
-			}
-
-			// 表情包占用前缀太多 匹配上了才阻止后续
-			ctx.Stop()
-
-			images, err := dealImgStr(imgStrs...)
-			if err != nil {
-				ctx.SendChain(message.Text(fmt.Sprint("[meme]", err)))
-				return
-			}
-
-			argsBytes, err := json.Marshal(args)
-			if err != nil {
-				ctx.SendChain(message.Text(fmt.Sprint("[meme]", err)))
-				return
-			}
-
-			emojiData, err := CreateEmoji(path, images, texts, string(argsBytes))
-			if err != nil {
-				ctx.SendChain(message.Text(fmt.Sprint("[meme]", err)))
-				return
-			}
-			ctx.SendChain(message.At(ctx.Event.UserID), message.ImageBytes(emojiData))
-		},
-	)
+	// 优先匹配前缀长的
+	keys := maps.Keys(emojiMap)
+	slices.SortFunc(keys, func(i, j string) int {
+		return len(j) - len(i)
+	})
+	engine.OnPrefixGroup(keys).Handle(dealmeme)
 
 	engine.OnPrefix("查看表情信息").SetBlock(true).Handle(
 		func(ctx *zero.Ctx) {
@@ -155,4 +75,92 @@ func dealImgStr(imgStrs ...string) ([][]byte, error) {
 		images = append(images, data)
 	}
 	return images, nil
+}
+
+func dealmeme(ctx *zero.Ctx) {
+	path := emojiMap[ctx.State["prefix"].(string)]
+	imgStrs := []string{}
+	args := map[string]any{}
+	args["user_infos"] = []UserInfo{}
+
+	messageWithReply := ctx.Event.Message
+	if ctx.Event.Message[0].Type == "reply" {
+		replyMsg := ctx.GetMessage(ctx.Event.Message[0].Data["id"])
+		replyImg := message.Message{}
+		for _, segment := range replyMsg.Elements {
+			if segment.Type == "image" {
+				replyImg = append(replyImg, segment)
+			}
+		}
+		messageWithReply = append(replyImg, ctx.Event.Message[1:]...)
+	}
+
+	for _, segment := range messageWithReply {
+		if segment.Type == "at" {
+			qqStr := segment.Data["qq"]
+			qq, err := strconv.ParseInt(qqStr, 10, 64)
+			if err != nil {
+				log.Error().Str("name", pluginName).Err(err).Msg("")
+				continue
+			}
+			args["user_infos"] = append(args["user_infos"].([]UserInfo),
+				UserInfo{
+					Name:   ctx.CardOrNickName(qq),
+					Gender: "female",
+				})
+			imgStrs = append(imgStrs, qqStr)
+		}
+		if segment.Type == "image" {
+			imgStrs = append(imgStrs, segment.Data["url"])
+		}
+	}
+
+	// 正则匹配所有args
+	extractPlainText := ctx.State["args"].(string)
+	matchs := reArgs.FindAllStringSubmatch(extractPlainText, -1)
+	if len(matchs) > 0 {
+		for _, match := range matchs {
+			args[match[1]] = match[2]
+		}
+		extractPlainText = reArgs.ReplaceAllString(extractPlainText, "")
+	}
+	// Fields函数会将字符串按空格分割,并自动忽略连续的空格
+	texts := strings.Fields(extractPlainText)
+
+	// 做截断, 仅对img做截断更用户友好
+	imgStrs, _ = truncateList(path, imgStrs, texts)
+
+	if !fastJudge(path, imgStrs, texts) {
+		imgStrs = append([]string{strconv.FormatInt(ctx.Event.UserID, 10)}, imgStrs...)
+		args["user_infos"] = append(args["user_infos"].([]UserInfo),
+			UserInfo{
+				Name:   ctx.CardOrNickName(ctx.Event.UserID),
+				Gender: "female",
+			})
+		if !fastJudge(path, imgStrs, texts) {
+			return
+		}
+	}
+
+	// 表情包占用前缀太多 匹配上了才阻止后续
+	ctx.Stop()
+
+	images, err := dealImgStr(imgStrs...)
+	if err != nil {
+		ctx.SendChain(message.Text(fmt.Sprint("[meme]", err)))
+		return
+	}
+
+	argsBytes, err := json.Marshal(args)
+	if err != nil {
+		ctx.SendChain(message.Text(fmt.Sprint("[meme]", err)))
+		return
+	}
+
+	emojiData, err := CreateEmoji(path, images, texts, string(argsBytes))
+	if err != nil {
+		ctx.SendChain(message.Text(fmt.Sprint("[meme]", err)))
+		return
+	}
+	ctx.SendChain(message.At(ctx.Event.UserID), message.ImageBytes(emojiData))
 }
