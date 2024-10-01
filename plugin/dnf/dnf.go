@@ -77,6 +77,27 @@ func init() {
 		},
 	)
 
+	engine.OnFullMatch("取消订阅colg资讯", zero.UserOrGrpAdmin).SetBlock(true).Handle(
+		func(ctx *zero.Ctx) {
+			uid := ctx.Event.UserID
+			if ctx.Event.GroupID != 0 {
+				uid = 0
+			}
+			err := book.DeleteBookInfo(&book.Book{
+				BotID:   ctx.Event.SelfID,
+				UserID:  uid,
+				GroupID: ctx.Event.GroupID,
+				Service: "colg",
+			})
+
+			if err != nil {
+				ctx.SendError(err)
+				return
+			}
+			ctx.SendChain(message.At(ctx.Event.UserID), message.Text("删除订阅成功"))
+		},
+	)
+
 	go func() {
 		for range time.NewTicker(180 * time.Second).C {
 			news, err := service.GetColgChange()

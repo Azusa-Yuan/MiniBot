@@ -19,7 +19,7 @@ func TestColgNew(t *testing.T) {
 	fmt.Println(res)
 }
 
-func TestCreate(t *testing.T) {
-	res, _ := service.GetColgUser()
-	fmt.Println(res)
-}
+// func TestCreate(t *testing.T) {
+// 	res, _ := service.GetColgUser()
+// 	fmt.Println(res)
+// }

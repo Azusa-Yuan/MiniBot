@@ -412,16 +412,26 @@ func preprocessMessageEvent(e *Event) {
 
 	processAt := func() { // 处理是否at机器人
 		e.IsToMe = false
-		for i, m := range e.Message {
+		tmpMessage := message.Message{}
+		for _, m := range e.Message {
 			if m.Type == "at" {
 				qq, _ := strconv.ParseInt(m.Data["qq"], 10, 64)
 				if qq == e.SelfID {
-					e.IsToMe = true
-					e.Message = append(e.Message[:i], e.Message[i+1:]...)
-					return
+					if !e.IsToMe {
+						e.IsToMe = true
+						continue
+					}
 				}
 			}
+			// 去除空text
+			if m.Type == "text" {
+				if strings.TrimSpace(m.Data["text"]) == "" {
+					continue
+				}
+			}
+			tmpMessage = append(tmpMessage, m)
 		}
+		e.Message = tmpMessage
 		if len(e.Message) == 0 || e.Message[0].Type != "text" {
 			return
 		}

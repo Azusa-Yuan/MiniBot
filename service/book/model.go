@@ -27,12 +27,52 @@ func CreatOrUpdateBookInfo(bookInfo *Book) error {
 	tx := db.Begin()
 
 	oldInfo := Book{}
-	tx.Where("bot_id = ? AND user_id = ? AND group_id = ? AND service = ?", bookInfo.BotID, bookInfo.UserID, bookInfo.GroupID, bookInfo.Service).
-		Find(&oldInfo)
+	err := tx.Where("bot_id = ? AND user_id = ? AND group_id = ? AND service = ?", bookInfo.BotID, bookInfo.UserID, bookInfo.GroupID, bookInfo.Service).
+		Find(&oldInfo).Error
+	if err != nil {
+		tx.Rollback()
+		return err
+	}
+
 	if oldInfo.ID > 0 {
 		bookInfo.ID = oldInfo.ID
 	}
 
-	err := db.Save(&bookInfo).Error
-	return err
+	err = tx.Save(&bookInfo).Error
+	if err != nil {
+		tx.Rollback()
+		return err
+	}
+
+	tx.Commit()
+	return nil
+}
+
+func DeleteBookInfo(bookInfo *Book) error {
+	tx := db.Begin()
+
+	oldInfo := Book{}
+	err := tx.Where("bot_id = ? AND user_id = ? AND group_id = ? AND service = ?", bookInfo.BotID, bookInfo.UserID, bookInfo.GroupID, bookInfo.Service).
+		Delete(&oldInfo).Error
+	if err != nil {
+		tx.Rollback()
+		return err
+	}
+
+	tx.Commit()
+	return nil
+}
+
+func DeleteBookInfoByID(id int64) error {
+	tx := db.Begin()
+
+	oldInfo := Book{}
+	err := tx.Where("id = ?", id).Delete(&oldInfo).Error
+	if err != nil {
+		tx.Rollback()
+		return err
+	}
+
+	tx.Commit()
+	return nil
 }

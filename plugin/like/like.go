@@ -2,11 +2,11 @@ package like
 
 import (
 	"MiniBot/service/book"
+	"MiniBot/utils/schedule"
 	zero "ZeroBot"
 	"ZeroBot/message"
 	"time"
 
-	"github.com/fumiama/cron"
 	"github.com/rs/zerolog/log"
 )
 
@@ -49,10 +49,7 @@ func init() {
 		},
 	)
 
-	timeZone, _ := time.LoadLocation("Asia/Shanghai")
-	c := cron.New(cron.WithLocation(timeZone))
-	c.AddFunc("25 0 * * *", SendLike)
-	c.Start()
+	schedule.Cron.AddFunc("25 0 * * *", SendLike)
 }
 
 func SendLike() {
@@ -73,5 +70,6 @@ func SendLike() {
 			continue
 		}
 		bot.SendPrivateMessage(bookInfo.UserID, message.Text("今天的点赞成功啦"))
+		time.Sleep(5 * time.Second)
 	}
 }

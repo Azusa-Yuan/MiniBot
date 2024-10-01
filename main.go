@@ -3,6 +3,7 @@ package main
 
 import (
 	_ "MiniBot/utils/log"
+	"MiniBot/utils/schedule"
 
 	"MiniBot/config"
 	"MiniBot/service/web"
@@ -41,6 +42,7 @@ import (
 func init() {
 	manager.Initialize()
 	config.ConfigInit()
+	schedule.Cron.Start()
 }
 
 func main() {

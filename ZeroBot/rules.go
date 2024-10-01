@@ -38,10 +38,6 @@ func PrefixRule(prefixes ...string) Rule {
 		}
 		for _, msg := range ctx.Event.Message {
 			if msg.Type == "text" {
-				// 适配lag
-				if strings.TrimSpace(msg.Data["text"]) == "" {
-					continue
-				}
 				firstMessage := strings.TrimLeft(msg.Data["text"], " ")
 				for _, prefix := range prefixes {
 					if strings.HasPrefix(firstMessage, prefix) {
