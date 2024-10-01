@@ -3,7 +3,9 @@ package emojimix
 
 import (
 	emoji_map "MiniBot/plugin/emojimix/proto"
+	"MiniBot/utils/path"
 	"os"
+	"path/filepath"
 	"strconv"
 
 	zero "ZeroBot"
@@ -16,20 +18,14 @@ import (
 
 var emojiMap = emoji_map.OuterMap{OuterMap: map[int64]*emoji_map.InnerMap{}}
 var pluginName = "emojimix"
+var dataPath = path.GetPluginDataPath()
 
 // const bed = "https://www.gstatic.com/android/keyboard/emojikitchen/%d/u%x/u%x_u%x.png"
 
 func init() {
-	inFile, err := os.Open("outer_map.bin")
+	data, err := os.ReadFile(filepath.Join(dataPath, "outer_map.bin"))
 	if err != nil {
-		log.Error().Err(err).Str("name", pluginName)
-		return
-	}
-	defer inFile.Close()
-
-	data, err := os.ReadFile("outer_map.bin")
-	if err != nil {
-		log.Error().Err(err).Str("name", pluginName)
+		log.Error().Err(err).Str("name", pluginName).Msg("")
 		return
 	}
 	if err := proto.Unmarshal(data, &emojiMap); err != nil {
