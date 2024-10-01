@@ -12,11 +12,12 @@ import (
 
 	"ZeroBot/message"
 
+	emoji "github.com/Andrew-M-C/go.emoji"
 	"github.com/rs/zerolog/log"
 	"google.golang.org/protobuf/proto"
 )
 
-var emojiMap = emoji_map.OuterMap{OuterMap: map[int64]*emoji_map.InnerMap{}}
+var emojiMap = emoji_map.OuterMap{OuterMap: map[string]*emoji_map.InnerMap{}}
 var pluginName = "emojimix"
 var dataPath = path.GetPluginDataPath()
 
@@ -50,19 +51,25 @@ func match(ctx *zero.Ctx) bool {
 		}
 	}
 
-	r := []rune(ctx.Event.RawMessage)
-	if len(r) == 2 {
-		r1 := int64(r[0])
-		r2 := int64(r[1])
-
-		if setUrl(r1, r2, ctx) {
+	emojis := []string{}
+	i := 0
+	emoji.ReplaceAllEmojiFunc(ctx.Event.RawMessage, func(emoji string) string {
+		if i < 2 {
+			emojis = append(emojis, emoji)
+		}
+		i++
+		return ""
+	})
+	if i == 2 {
+		if setUrl(emojis[0], emojis[1], ctx) {
 			return true
 		}
 	}
+
 	return false
 }
 
-func setUrl(i int64, j int64, ctx *zero.Ctx) bool {
+func setUrl(i string, j string, ctx *zero.Ctx) bool {
 	if interMap, ok := emojiMap.OuterMap[i]; ok {
 		if url, ok := interMap.InnerMap[j]; ok {
 			ctx.State["emojimix"] = url
@@ -72,23 +79,31 @@ func setUrl(i int64, j int64, ctx *zero.Ctx) bool {
 	return false
 }
 
-func face2emoji(face message.MessageSegment) int64 {
+func face2emoji(face message.MessageSegment) string {
 	if face.Type == "text" {
-		r := []rune(face.Data["text"])
-		if len(r) != 1 {
-			return 0
+		singleEmoji := ""
+		i := 0
+		emoji.ReplaceAllEmojiFunc(face.Data["text"], func(emoji string) string {
+			if i < 1 {
+				singleEmoji = emoji
+			}
+			i++
+			return ""
+		})
+		if i == 1 {
+			return singleEmoji
 		}
-		return int64(r[0])
+		return ""
 	}
 	if face.Type != "face" {
-		return 0
+		return ""
 	}
 	id, err := strconv.Atoi(face.Data["id"])
 	if err != nil {
-		return 0
+		return ""
 	}
-	if r, ok := qqface[id]; ok {
+	if r, ok := QQfaceString[id]; ok {
 		return r
 	}
-	return 0
+	return ""
 }

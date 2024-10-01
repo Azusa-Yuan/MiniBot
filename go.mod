@@ -61,6 +61,7 @@ require (
 	cloud.google.com/go/auth/oauth2adapt v0.2.4 // indirect
 	cloud.google.com/go/compute/metadata v0.5.0 // indirect
 	cloud.google.com/go/longrunning v0.5.7 // indirect
+	github.com/Andrew-M-C/go.emoji v1.1.2 // indirect
 	github.com/FloatTech/ttl v0.0.0-20230307105452-d6f7b2b647d1 // indirect
 	github.com/RomiChan/syncx v0.0.0-20240418144900-b7402ffdebc7 // indirect
 	github.com/RomiChan/websocket v1.4.3-0.20220227141055-9b2c6168c9c5 // indirect
