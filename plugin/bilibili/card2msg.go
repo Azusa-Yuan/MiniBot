@@ -1,6 +1,7 @@
 package bilibili
 
 import (
+	"MiniBot/utils"
 	"encoding/json"
 	"fmt"
 	"time"
@@ -8,7 +9,6 @@ import (
 	"ZeroBot/message"
 
 	bz "github.com/FloatTech/AnimeAPI/bilibili"
-	"github.com/FloatTech/floatbox/binary"
 	"github.com/FloatTech/floatbox/web"
 )
 
@@ -36,12 +36,12 @@ func dynamicCard2msg(dynamicCard *bz.DynamicCard) (msg []message.MessageSegment,
 	)
 	msg = make([]message.MessageSegment, 0, 16)
 	// 初始化结构体
-	err = json.Unmarshal(binary.StringToBytes(dynamicCard.Card), &card)
+	err = json.Unmarshal(utils.StringToBytes(dynamicCard.Card), &card)
 	if err != nil {
 		return
 	}
 	if dynamicCard.Extension.Vote != "" {
-		err = json.Unmarshal(binary.StringToBytes(dynamicCard.Extension.Vote), &vote)
+		err = json.Unmarshal(utils.StringToBytes(dynamicCard.Extension.Vote), &vote)
 		if err != nil {
 			return
 		}

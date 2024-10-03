@@ -14,7 +14,6 @@ import (
 	"ZeroBot/message"
 
 	bz "github.com/FloatTech/AnimeAPI/bilibili"
-	"github.com/FloatTech/floatbox/binary"
 	"github.com/FloatTech/floatbox/web"
 	"github.com/FloatTech/zbputils/img/text"
 	"github.com/pkg/errors"
@@ -287,7 +286,7 @@ func getUserDynamicCard(buid int64, cookiecfg *bz.CookieConfig) (cardList []gjso
 	if err != nil {
 		return
 	}
-	cardList = gjson.Get(binary.BytesToString(data), "data.cards").Array()
+	cardList = gjson.GetBytes(data, "data.cards").Array()
 	return
 }
 

@@ -42,6 +42,7 @@ func (n *FutureEvent) Next() <-chan *Ctx {
 		Handler: func(ctx *Ctx) {
 			ch <- ctx
 			close(ch)
+			ctx.Stop()
 		},
 	})
 	return ch
@@ -63,6 +64,7 @@ func (n *FutureEvent) Repeat() (recv <-chan *Ctx, cancel func()) {
 			Engine:   defaultEngine,
 			Handler: func(ctx *Ctx) {
 				in <- ctx
+				ctx.Stop()
 			},
 		})
 		for {
