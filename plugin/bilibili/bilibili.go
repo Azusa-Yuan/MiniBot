@@ -552,7 +552,7 @@ func init() {
 			ctx.SendChain(message.Text("少女祈祷中..."))
 			err := updateVup()
 			if err != nil {
-				ctx.SendChain(message.Text("ERROR: ", err))
+				ctx.SendError(err)
 				return
 			}
 			ctx.SendChain(message.Text("vup已更新"))

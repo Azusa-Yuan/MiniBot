@@ -60,7 +60,7 @@ func init() {
 	en.OnFullMatch(`开启艾特全体`, zero.UserOrGrpAdmin, zero.OnlyGroup).SetBlock(true).Handle(func(ctx *zero.Ctx) {
 		gid := ctx.Event.GroupID
 		if err := changeAtAll(gid, 1); err != nil {
-			ctx.SendChain(message.Text("ERROR: ", err))
+			ctx.SendError(err)
 			return
 		}
 		ctx.SendChain(message.Text("已开启艾特全体Oo"))
@@ -69,7 +69,7 @@ func init() {
 	en.OnFullMatch(`关闭艾特全体`, zero.UserOrGrpAdmin, zero.OnlyGroup).SetBlock(true).Handle(func(ctx *zero.Ctx) {
 		gid := ctx.Event.GroupID
 		if err := changeAtAll(gid, 0); err != nil {
-			ctx.SendChain(message.Text("ERROR: ", err))
+			ctx.SendError(err)
 			return
 		}
 		ctx.SendChain(message.Text("已关闭艾特全体Oo"))
@@ -192,11 +192,10 @@ func init() {
 }
 
 func changeAtAll(gid int64, b int) (err error) {
-	bpMap := map[string]any{
-		"group_id": gid,
-		"at_all":   b,
-	}
-	return bdb.updateAtAll(bpMap)
+	return bdb.updateAtAll(bilibiliAt{
+		GroupID: gid,
+		AtAll:   b,
+	})
 }
 
 // 取得uid的名字

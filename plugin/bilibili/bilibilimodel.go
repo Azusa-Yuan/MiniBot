@@ -41,11 +41,7 @@ func (vdb *vupdb) insertVupByMid(mid int64, uname string, roomid int64) (err err
 		Uname:  uname,
 		Roomid: roomid,
 	}
-	if err = db.Model(&vup{}).First(&v, "mid = ? ", mid).Error; err != nil {
-		if err == gorm.ErrRecordNotFound {
-			err = db.Model(&vup{}).Create(&v).Error
-		}
-	}
+	err = db.Model(&vup{}).Save(&v).Error
 	return
 }
 

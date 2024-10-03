@@ -130,7 +130,7 @@ func (ctx *Ctx) SendChain(msg ...message.MessageSegment) message.MessageID {
 func (ctx *Ctx) SendError(err error, msgs ...message.MessageSegment) message.MessageID {
 	ctx.Err = err
 	metadata := ctx.GetMatcherMetadata()
-	log.Error().Str("name", metadata.PluginName).Str("controller", metadata.MatcherName).Err(err).Msg("")
+	log.Error().CallerSkipFrame(1).Str("name", metadata.PluginName).Str("controller", metadata.MatcherName).Err(err).Msg("")
 	msgs = append(message.Message{message.At(ctx.Event.UserID), message.Text(err)}, msgs...)
 	return ctx.SendChain(msgs...)
 }

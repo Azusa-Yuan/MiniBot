@@ -38,7 +38,7 @@ func (bilibiliup) TableName() string {
 
 type bilibiliAt struct {
 	GroupID int64 `gorm:"column:group_id;primary_key" json:"group_id"`
-	AtAll   int64 `gorm:"column:at_all;default:0" json:"at_all"`
+	AtAll   int   `gorm:"column:at_all;default:0" json:"at_all"`
 }
 
 func (bilibiliAt) TableName() string {
@@ -144,7 +144,7 @@ func (bdb *bilibilipushdb) getAllPushByGroup(groupID int64) (bpl []bilibilipush)
 	return
 }
 
-func (bdb *bilibilipushdb) getAtAll(groupID int64) (res int64) {
+func (bdb *bilibilipushdb) getAtAll(groupID int64) (res int) {
 	db := (*gorm.DB)(bdb)
 	var bpl bilibiliAt
 	db.Model(&bilibilipush{}).Find(&bpl, "group_id = ?", groupID)
@@ -152,24 +152,9 @@ func (bdb *bilibilipushdb) getAtAll(groupID int64) (res int64) {
 	return
 }
 
-func (bdb *bilibilipushdb) updateAtAll(bpMap map[string]any) (err error) {
+func (bdb *bilibilipushdb) updateAtAll(bp bilibiliAt) (err error) {
 	db := (*gorm.DB)(bdb)
-	bp := bilibiliAt{}
-	data, err := json.Marshal(&bpMap)
-	if err != nil {
-		return
-	}
-	err = json.Unmarshal(data, &bp)
-	if err != nil {
-		return
-	}
-	if err = db.Model(&bilibiliAt{}).First(&bp, "group_id = ?", bp.GroupID).Error; err != nil {
-		if err == gorm.ErrRecordNotFound {
-			err = db.Model(&bilibiliAt{}).Create(&bp).Error
-		}
-	} else {
-		err = db.Model(&bilibiliAt{}).Where("group_id = ?", bp.GroupID).Updates(bpMap).Error
-	}
+	err = db.Save(&bp).Error
 	return
 }
 
