@@ -148,7 +148,7 @@ func (bdb *bilibilipushdb) insertBilibiliUp(buid int64, name string) {
 		BilibiliUID: buid,
 		Name:        name,
 	}
-	db.Model(&bilibiliup{}).Create(bu)
+	db.Save(&bu)
 }
 
 func (bdb *bilibilipushdb) updateAllUp() {
