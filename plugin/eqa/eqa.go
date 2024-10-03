@@ -124,7 +124,7 @@ func init() {
 			if _, ok := messageMap[q]; ok {
 				delete(messageMap, q)
 				db := database.GetDefalutDB()
-				db.Where("value", q).Delete(&eqa{})
+				db.Where("key = ?", q).Delete(&eqa{})
 				ctx.SendChain(message.Text("该问题已删除"))
 			} else {
 				ctx.SendChain(message.Text("没有该问题"))
