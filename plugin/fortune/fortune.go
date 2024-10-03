@@ -27,6 +27,7 @@ import (
 
 	"github.com/FloatTech/gg" // 注册了 jpg png gif
 	"github.com/rs/zerolog/log"
+	"gorm.io/gorm/clause"
 )
 
 var (
@@ -89,15 +90,20 @@ func init() {
 			}
 			_, ok := index[ctx.State["regex_matched"].([]string)[1]]
 			if ok {
-				err = db.Save(&fortune{
+				fortuneInfo := fortune{
 					GroupID: gid,
 					BotID:   ctx.Event.SelfID,
 					Value:   ctx.State["regex_matched"].([]string)[1],
-				}).Error
-				if err != nil {
-					ctx.SendError(err)
-					return
 				}
+				if row := db.Clauses(clause.Insert{Modifier: "IGNORE"}).Create(&fortuneInfo).RowsAffected; row == 0 {
+					err := db.Model(&fortune{}).Where("gid = ? AND bid = ?", gid, ctx.Event.SelfID).
+						Update("value", fortuneInfo.Value).Error
+					if err != nil {
+						ctx.SendError(err)
+						return
+					}
+				}
+
 				ctx.SendChain(message.Text("设置成功~"))
 				return
 			}
