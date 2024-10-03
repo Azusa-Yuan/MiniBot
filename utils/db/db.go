@@ -56,6 +56,10 @@ func init() {
 	if err != nil {
 		log.Error().Str("name", utilsName).Err(err).Msg("")
 	}
+	logLevel := logger.Silent
+	if log_utils.LogLevel == "debug" {
+		logLevel = logger.Info
+	}
 	gormLogger := &log_utils.GormLogger{Logger: log.Logger}
 	for k, v := range config.DbMap {
 		//	ok2代表是否有该数据库，ok1代表是否开启该数据库，实际上不用的话，可以直接将数据库删除
@@ -63,7 +67,7 @@ func init() {
 			switch {
 			case v.Type == "pgsql":
 				v.Db, err = gorm.Open(postgres.Open(v.Dsn), &gorm.Config{
-					Logger: gormLogger.LogMode(logger.Silent),
+					Logger: gormLogger.LogMode(logLevel),
 				})
 
 				if err != nil {
@@ -73,7 +77,7 @@ func init() {
 				log.Info().Str("name", utilsName).Msgf("success open database %v", k)
 			case v.Type == "mysql":
 				v.Db, err = gorm.Open(mysql.Open(v.Dsn), &gorm.Config{
-					Logger: gormLogger.LogMode(logger.Error),
+					Logger: gormLogger.LogMode(logLevel),
 				})
 				if err != nil {
 					log.Error().Str("name", utilsName).Err(err).Msgf("Error open database %v", k)

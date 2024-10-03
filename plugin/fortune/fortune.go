@@ -49,7 +49,7 @@ var (
 type fortune struct {
 	GroupID int64  `gorm:"column:gid; uniqueIndex:gid_bid"`
 	BotID   int64  `gorm:"column:bid; uniqueIndex:gid_bid"`
-	Value   string `gorm:"column:value; uniqueIndex:gid_bid"`
+	Value   string `gorm:"column:value"`
 }
 
 func init() {
@@ -69,6 +69,17 @@ func init() {
 		index[s] = uint8(i)
 	}
 
+	data, err := os.ReadFile(omikujson)
+	if err != nil {
+		log.Error().Err(err).Str("name", pluginName).Msg("")
+		return
+	}
+	err = json.Unmarshal(data, &omikujis)
+	if err != nil {
+		log.Error().Err(err).Str("name", pluginName).Msg("")
+		return
+	}
+
 	en.OnRegex(`^设置底图\s?(.*)`).SetBlock(true).
 		Handle(func(ctx *zero.Ctx) {
 			gid := ctx.Event.GroupID
@@ -84,7 +95,7 @@ func init() {
 					Value:   ctx.State["regex_matched"].([]string)[1],
 				}).Error
 				if err != nil {
-					ctx.SendChain(message.Text("设置失败:", err))
+					ctx.SendError(err)
 					return
 				}
 				ctx.SendChain(message.Text("设置成功~"))
@@ -93,16 +104,6 @@ func init() {
 			ctx.SendChain(message.Text("没有这个底图哦～"))
 		})
 
-	data, err := os.ReadFile(omikujson)
-	if err != nil {
-		log.Error().Err(err).Str("name", pluginName).Msg("")
-		return
-	}
-	err = json.Unmarshal(data, &omikujis)
-	if err != nil {
-		log.Error().Err(err).Str("name", pluginName).Msg("")
-		return
-	}
 	en.OnFullMatchGroup([]string{"运势", "抽签"}).SetBlock(true).
 		Handle(func(ctx *zero.Ctx) {
 

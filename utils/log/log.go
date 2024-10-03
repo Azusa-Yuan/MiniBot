@@ -18,9 +18,11 @@ import (
 )
 
 var logSourceDir string
+var LogLevel string
 
 func init() {
-	if os.Getenv("LogLevel") == "debug" {
+	LogLevel = os.Getenv("LogLevel")
+	if LogLevel == "debug" {
 		log.Info().Msg("目前处于debug等级，请注意打印日志的等级")
 		zerolog.SetGlobalLevel(zerolog.DebugLevel)
 	} else {
