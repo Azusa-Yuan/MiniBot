@@ -48,7 +48,7 @@ func ToBase64(img image.Image) (base64Bytes []byte, err error) {
 // ToBytes img 内容转为 []byte
 func ToBytes(img image.Image) (data []byte, err error) {
 	buffer := bytes.NewBuffer(make([]byte, 0, 1024*1024*4)) // 4MB
-	err = jpeg.Encode(buffer, img, &jpeg.Options{Quality: 70})
+	err = jpeg.Encode(buffer, img, &jpeg.Options{Quality: 100})
 	data = buffer.Bytes()
 	return
 }
