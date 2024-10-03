@@ -4,6 +4,7 @@ import (
 	"MiniBot/utils/path"
 	zero "ZeroBot"
 	"encoding/json"
+	"fmt"
 	"math/rand/v2"
 	"os"
 	"path/filepath"
@@ -12,6 +13,7 @@ import (
 	"ZeroBot/message"
 
 	"github.com/rs/zerolog/log"
+	"github.com/xrash/smetrics"
 )
 
 var (
@@ -21,7 +23,8 @@ var (
 [病情查重 小作文] 对一篇小作文进行查重
 `
 
-// [<回复一个小作文> 病情查重] 同上
+	// [<回复一个小作文> 病情查重] 同上
+	pluginName = "asill"
 )
 
 type asillData struct {
@@ -46,11 +49,11 @@ func init() {
 	}
 
 	engine := zero.NewTemplate(&zero.MetaData{
-		Name: "asill",
+		Name: pluginName,
 		Help: help,
 	})
 
-	engine.OnPrefix(`发病`).SetBlock(true).Handle(func(ctx *zero.Ctx) {
+	engine.OnPrefix("发病").SetBlock(true).Handle(func(ctx *zero.Ctx) {
 		name := ctx.NickName()
 		n := rand.IntN(len(data))
 		asilldata := data[n]
@@ -60,13 +63,47 @@ func init() {
 		ctx.SendChain(message.Reply(ctx.Event.MessageID), message.Text(asillText))
 	})
 
-	// engine.OnPrefix(`病情查重`).SetBlock(true).Handle(func(ctx *zero.Ctx) {
-	// 	name := ctx.NickName()
-	// 	n := rand.IntN(len(data))
-	// 	asilldata := data[n]
-	// 	asillText := asilldata.Text
-	// 	asillText = strings.Replace(asillText, asilldata.Person, name, -1)
+	engine.OnPrefix("病情查重").SetBlock(true).Handle(func(ctx *zero.Ctx) {
+		msg := ctx.State["args"].(string)
+		if ctx.Event.Message[0].Type == "reply" {
+			replyMsg := ctx.GetMessage(ctx.Event.Message[0].Data["id"])
+			msg = replyMsg.Elements.ExtractPlainText()
+		}
 
-	// 	ctx.SendChain(message.Reply(ctx.Event.MessageID), message.Text(asillText))
-	// })
+		for _, unit := range data {
+			rate := smetrics.Jaro(unit.Text, msg)
+			if rate > 0.6 {
+				ctx.SendChain(message.Text(fmt.Sprintf("在本文库中，总文字复制比：%f \n相似小作文：\n%s", 100*rate, unit.Text)))
+				return
+			}
+		}
+		ctx.SendChain(message.Text("文库内没有相似的小作文"))
+	})
+
+	engine.OnPrefix("病情加重", zero.SuperUserPermission).SetBlock(true).Handle(
+		func(ctx *zero.Ctx) {
+			msg := ctx.State["args"].(string)
+			msgs := strings.Split(msg, "/")
+			if len(msgs) != 2 {
+				ctx.SendChain(message.Text("请发送[病情加重 对象/小作文]（必须带“/”）~"))
+				return
+			}
+			keyWord := msgs[0]
+			data = append(data, asillData{
+				Person: keyWord,
+				Text:   msgs[1],
+			})
+			rawdata, err = json.MarshalIndent(data, "", " ")
+			if err != nil {
+				ctx.SendError(err)
+				return
+			}
+			err := os.WriteFile(dataPath, rawdata, 0555)
+			if err != nil {
+				ctx.SendError(err)
+				return
+			}
+			ctx.SendChain(message.Text("病情已添加"))
+		},
+	)
 }
