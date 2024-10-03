@@ -17,8 +17,8 @@ type bilibilipush struct {
 	BilibiliUID    int64 `gorm:"column:bilibili_uid;index:idx_buid_gid" json:"bilibili_uid"`
 	GroupID        int64 `gorm:"column:group_id;index:idx_buid_gid" json:"group_id"`
 	BotID          int64 `gorm:"column:bot_id;index:idx_buid_gid" json:"bot_id"`
-	LiveDisable    bool  `gorm:"column:live_disable;default:0" json:"live_disable"`
-	DynamicDisable bool  `gorm:"column:dynamic_disable;default:0" json:"dynamic_disable"`
+	LiveDisable    int   `gorm:"column:live_disable;default:0" json:"live_disable"`
+	DynamicDisable int   `gorm:"column:dynamic_disable;default:0" json:"dynamic_disable"`
 }
 
 // TableName ...

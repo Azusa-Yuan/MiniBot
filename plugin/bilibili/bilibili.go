@@ -613,7 +613,7 @@ func getPara(ctx *zero.Ctx) bool {
 			} else if num == 1 {
 				searchRes, err := bz.SearchUser(cfg, keyword)
 				if err != nil {
-					ctx.SendChain(message.Text("ERROR: ", err))
+					ctx.SendError(err)
 					return false
 				}
 				ctx.State["uid"] = strconv.FormatInt(searchRes[0].Mid, 10)

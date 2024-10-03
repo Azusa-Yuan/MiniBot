@@ -82,7 +82,7 @@ func init() {
 			gid = -ctx.Event.UserID
 		}
 		if err := subscribe(buid, gid, ctx.Event.SelfID); err != nil {
-			ctx.SendChain(message.Text("ERROR: ", err))
+			ctx.SendError(err)
 			return
 		}
 		ctx.SendChain(message.Text("已添加" + name + "的订阅"))
@@ -152,13 +152,13 @@ func init() {
 				bdb.updateAllUp()
 			}
 			msg += fmt.Sprintf("\nuid:%-12d 动态：", v.BilibiliUID)
-			if !v.DynamicDisable {
+			if v.DynamicDisable == 0 {
 				msg += "●"
 			} else {
 				msg += "○"
 			}
 			msg += " 直播："
-			if !v.LiveDisable {
+			if v.LiveDisable == 0 {
 				msg += "●"
 			} else {
 				msg += "○"
