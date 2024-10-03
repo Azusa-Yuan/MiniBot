@@ -62,7 +62,7 @@ func (ctx *Ctx) CallAction(action string, params Params) (APIResponse, error) {
 	if err == nil && resp.RetCode != 0 {
 		respBytes, _ := json.Marshal(&resp)
 		err = fmt.Errorf("调用 %s 时出现错误, %s", action, utils.BytesToString(respBytes))
-		log.Error().Str("name", "api").Err(err).Msg("")
+		log.Error().Str("name", "api").Err(err).Msgf("%v", req)
 	}
 	return resp, err
 }
