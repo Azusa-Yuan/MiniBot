@@ -4,6 +4,7 @@ package fortune
 import (
 	"MiniBot/utils"
 	"MiniBot/utils/cache"
+	database "MiniBot/utils/db"
 	"MiniBot/utils/imgfactory"
 	"MiniBot/utils/path"
 	"archive/zip"
@@ -45,13 +46,20 @@ var (
 	fontdata, _ = cache.GetDefaultFont()
 )
 
+type fortune struct {
+	GroupID int64  `gorm:"column:gid; uniqueIndex:gid_bid"`
+	BotID   int64  `gorm:"column:bid; uniqueIndex:gid_bid"`
+	Value   string `gorm:"column:value; uniqueIndex:gid_bid"`
+}
+
 func init() {
 	en := zero.NewTemplate(&zero.MetaData{
 		Name: pluginName,
 		Help: "- 运势 | 抽签\n" +
 			"- 设置底图[车万 | DC4 | 爱因斯坦 | 星空列车 | 樱云之恋 | 富婆妹 | 李清歌 | 公主连结 | 原神 | 明日方舟 | 碧蓝航线 | 碧蓝幻想 | 战双 | 阴阳师 | 赛马娘 | 东方归言录 | 奇异恩典 | 夏日口袋 | ASoul | Hololive]",
 	})
-
+	db := database.GetDefalutDB()
+	db.AutoMigrate(&fortune{})
 	_ = os.RemoveAll(cacheImg)
 	err := os.MkdirAll(cacheImg, 0755)
 	if err != nil {
@@ -60,25 +68,30 @@ func init() {
 	for i, s := range table {
 		index[s] = uint8(i)
 	}
-	// en.OnRegex(`^设置底图\s?(.*)`).SetBlock(true).
-	// 	Handle(func(ctx *zero.Ctx) {
-	// 		gid := ctx.Event.GroupID
-	// 		if gid <= 0 {
-	// 			// 个人用户设为负数
-	// 			gid = -ctx.Event.UserID
-	// 		}
-	// 		_, ok := index[ctx.State["regex_matched"].([]string)[1]]
-	// 		if ok {
-	// 			if err != nil {
-	// 				ctx.SendChain(message.Text("设置失败:", err))
-	// 				return
-	// 			}
-	// 			ctx.SendChain(message.Text("设置成功~"))
-	// 			ctx.SendChain(message.Text("设置失败: 找不到插件"))
-	// 			return
-	// 		}
-	// 		ctx.SendChain(message.Text("没有这个底图哦～"))
-	// 	})
+
+	en.OnRegex(`^设置底图\s?(.*)`).SetBlock(true).
+		Handle(func(ctx *zero.Ctx) {
+			gid := ctx.Event.GroupID
+			if gid <= 0 {
+				// 个人用户设为负数
+				gid = -ctx.Event.UserID
+			}
+			_, ok := index[ctx.State["regex_matched"].([]string)[1]]
+			if ok {
+				err = db.Save(&fortune{
+					GroupID: gid,
+					BotID:   ctx.Event.SelfID,
+					Value:   ctx.State["regex_matched"].([]string)[1],
+				}).Error
+				if err != nil {
+					ctx.SendChain(message.Text("设置失败:", err))
+					return
+				}
+				ctx.SendChain(message.Text("设置成功~"))
+				return
+			}
+			ctx.SendChain(message.Text("没有这个底图哦～"))
+		})
 
 	data, err := os.ReadFile(omikujson)
 	if err != nil {
@@ -95,13 +108,19 @@ func init() {
 
 			// 获取该群背景类型，默认车万
 			kind := "公主连结"
-			// gid := ctx.Event.GroupID
-			// if gid <= 0 {
-			// 	// 个人用户设为负数
-			// 	gid = -ctx.Event.UserID
-			// }
+			gid := ctx.Event.GroupID
+			if gid <= 0 {
+				// 个人用户设为负数
+				gid = -ctx.Event.UserID
+			}
 
-			zipfile := images + kind + ".zip"
+			fortuneInfo := fortune{}
+			db.Where("gid = ? AND bid = ?", gid, ctx.Event.SelfID).First(&fortuneInfo)
+			if fortuneInfo.Value != "" {
+				kind = fortuneInfo.Value
+			}
+
+			zipfile := filepath.Join(images, kind+".zip")
 
 			// 随机获取背景
 			background, index, err := randimage(zipfile, ctx)
