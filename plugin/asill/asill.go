@@ -72,8 +72,8 @@ func init() {
 
 		for _, unit := range data {
 			rate := smetrics.Jaro(unit.Text, msg)
-			if rate > 0.6 {
-				ctx.SendChain(message.Text(fmt.Sprintf("在本文库中，总文字复制比：%f \n相似小作文：\n%s", 100*rate, unit.Text)))
+			if rate > 0.7 {
+				ctx.SendChain(message.Text(fmt.Sprintf("在本文库中，总文字复制比：%f%% \n相似小作文：\n%s", 100*rate, unit.Text)))
 				return
 			}
 		}
