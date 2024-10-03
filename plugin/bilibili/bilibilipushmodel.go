@@ -66,12 +66,12 @@ func (bdb *bilibilipushdb) insertOrUpdateLiveAndDynamic(bpMap map[string]any) (e
 	if err != nil {
 		return
 	}
-	if err = db.Where("bilibili_uid = ? and group_id = ? and bot_id = ?", bp.BilibiliUID, bp.GroupID).First(&bp).Error; err != nil {
+	if err = db.Where("bilibili_uid = ? and group_id = ? and bot_id = ?", bp.BilibiliUID, bp.GroupID, bp.BotID).First(&bp).Error; err != nil {
 		if err == gorm.ErrRecordNotFound {
 			err = db.Model(&bilibilipush{}).Create(&bp).Error
 		}
 	} else {
-		err = db.Model(&bilibilipush{}).Where("bilibili_uid = ? and group_id = ? and bot_id = ?", bp.BilibiliUID, bp.GroupID).Updates(bpMap).Error
+		err = db.Model(&bilibilipush{}).Where("bilibili_uid = ? and group_id = ? and bot_id = ?", bp.BilibiliUID, bp.GroupID, bp.BotID).Updates(bpMap).Error
 	}
 	return
 }
