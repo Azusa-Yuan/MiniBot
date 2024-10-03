@@ -2,9 +2,8 @@ package bilibili
 
 import (
 	database "MiniBot/utils/db"
+	"MiniBot/utils/net_tools"
 
-	"github.com/FloatTech/floatbox/binary"
-	"github.com/FloatTech/floatbox/web"
 	"github.com/tidwall/gjson"
 	"gorm.io/gorm"
 )
@@ -41,7 +40,7 @@ func (vdb *vupdb) insertVupByMid(mid int64, uname string, roomid int64) (err err
 		Uname:  uname,
 		Roomid: roomid,
 	}
-	err = db.Model(&vup{}).Save(&v).Error
+	err = db.Save(&v).Error
 	return
 }
 
@@ -56,11 +55,11 @@ func (vdb *vupdb) filterVup(ids []int64) (vups []vup, err error) {
 
 func updateVup() error {
 	for _, v := range vtbURLs {
-		data, err := web.GetData(v)
+		data, err := net_tools.Download(v)
 		if err != nil {
 			return err
 		}
-		gjson.Get(binary.BytesToString(data), "@this").ForEach(func(_, value gjson.Result) bool {
+		gjson.GetBytes(data, "@this").ForEach(func(_, value gjson.Result) bool {
 			mid := value.Get("mid").Int()
 			uname := value.Get("uname").String()
 			roomid := value.Get("roomid").Int()
