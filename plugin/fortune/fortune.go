@@ -116,8 +116,7 @@ func init() {
 	en.OnFullMatchGroup([]string{"运势", "抽签"}).SetBlock(true).
 		Handle(func(ctx *zero.Ctx) {
 
-			// 获取该群背景类型，默认车万
-			kind := "公主连结"
+			kind := "碧蓝航线"
 			gid := ctx.Event.GroupID
 			if gid <= 0 {
 				// 个人用户设为负数
