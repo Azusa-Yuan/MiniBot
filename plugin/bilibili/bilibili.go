@@ -24,10 +24,10 @@ import (
 	"ZeroBot/message"
 
 	bz "github.com/FloatTech/AnimeAPI/bilibili"
-	fcext "github.com/FloatTech/floatbox/ctxext"
 	"github.com/FloatTech/floatbox/web"
 	"github.com/FloatTech/gg"
 	"github.com/FloatTech/imgfactory"
+	"github.com/rs/zerolog/log"
 )
 
 var (
@@ -61,15 +61,10 @@ func init() {
 	cachePath := filepath.Join(minipath.GetPluginDataPath(), "cache/")
 	_ = os.RemoveAll(cachePath)
 	_ = os.MkdirAll(cachePath, 0755)
-	var getdb = fcext.DoOnceOnSuccess(func(ctx *zero.Ctx) bool {
-		var err error
-		vdb, err = initializeVup()
-		if err != nil {
-			ctx.SendChain(message.Text("ERROR: ", err))
-			return false
-		}
-		return true
-	})
+	vdb, err := initializeVup()
+	if err != nil {
+		log.Error().Err(err).Str("name", engine.MetaData.Name).Msg("")
+	}
 	engine.OnRegex(`^>user info\s?(.{1,25})$`, getPara).SetBlock(true).
 		Handle(func(ctx *zero.Ctx) {
 			id := ctx.State["uid"].(string)
@@ -111,7 +106,7 @@ func init() {
 			))
 		})
 
-	engine.OnRegex(`^查成分\s?(.{1,25})$`, getPara, getdb).SetBlock(true).
+	engine.OnRegex(`^查成分\s?(.{1,25})$`, getPara).SetBlock(true).
 		Handle(func(ctx *zero.Ctx) {
 			id := ctx.State["uid"].(string)
 			today := time.Now().Format("20060102")
@@ -541,7 +536,7 @@ func init() {
 			cookie := ctx.State["regex_matched"].([]string)[1]
 			err := cfg.Set(cookie)
 			if err != nil {
-				ctx.SendChain(message.Text("ERROR: ", err))
+				ctx.SendError(err)
 				return
 			}
 			ctx.SendChain(message.Text("成功设置b站cookie为" + cookie))
@@ -585,7 +580,7 @@ func getPara(ctx *zero.Ctx) bool {
 	if !re.MatchString(keyword) {
 		searchRes, err := bz.SearchUser(cfg, keyword)
 		if err != nil {
-			ctx.SendChain(message.Text("ERROR: ", err))
+			ctx.SendError(err)
 			return false
 		}
 		ctx.State["uid"] = strconv.FormatInt(searchRes[0].Mid, 10)

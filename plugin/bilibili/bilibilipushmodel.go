@@ -3,9 +3,9 @@ package bilibili
 import (
 	database "MiniBot/utils/db"
 	"encoding/json"
-	"os"
 
 	"github.com/rs/zerolog/log"
+	"golang.org/x/exp/maps"
 	"gorm.io/gorm"
 )
 
@@ -46,16 +46,8 @@ func (bilibiliAt) TableName() string {
 }
 
 // initializePush 初始化bilibilipushdb数据库
-func initializePush(dbpath string) *bilibilipushdb {
-	var err error
-	if _, err = os.Stat(dbpath); err != nil || os.IsNotExist(err) {
-		// 生成文件
-		f, err := os.Create(dbpath)
-		if err != nil {
-			return nil
-		}
-		defer f.Close()
-	}
+func initializePush() *bilibilipushdb {
+
 	gdb := database.GetDefalutDB()
 
 	gdb.AutoMigrate(&bilibilipush{}, &bilibiliup{}, &bilibiliAt{})
@@ -90,12 +82,9 @@ func (bdb *bilibilipushdb) getAllBuidByLive() (buidList []int64) {
 	db.Model(&bilibilipush{}).Find(&bpl, "live_disable = 0")
 	temp := make(map[int64]bool)
 	for _, v := range bpl {
-		_, ok := temp[v.BilibiliUID]
-		if !ok {
-			buidList = append(buidList, v.BilibiliUID)
-			temp[v.BilibiliUID] = true
-		}
+		temp[v.BilibiliUID] = true
 	}
+	buidList = maps.Keys(temp)
 	return
 }
 
@@ -105,37 +94,32 @@ func (bdb *bilibilipushdb) getAllBuidByDynamic() (buidList []int64) {
 	db.Model(&bilibilipush{}).Find(&bpl, "dynamic_disable = 0")
 	temp := make(map[int64]bool)
 	for _, v := range bpl {
-		_, ok := temp[v.BilibiliUID]
-		if !ok {
-			buidList = append(buidList, v.BilibiliUID)
-			temp[v.BilibiliUID] = true
-		}
+		temp[v.BilibiliUID] = true
 	}
+	buidList = maps.Keys(temp)
 	return
 }
 
-func (bdb *bilibilipushdb) getAllGroupByBuidAndLive(buid int64) (groupList []int64) {
+func (bdb *bilibilipushdb) getInfoByBuidAndLive(buid int64) []bilibilipush {
 	db := (*gorm.DB)(bdb)
 	var bpl []bilibilipush
-	db.Model(&bilibilipush{}).Find(&bpl, "bilibili_uid = ? and live_disable = 0", buid)
-	for _, v := range bpl {
-		groupList = append(groupList, v.GroupID)
+	err := db.Where("bilibili_uid = ? and live_disable = 0", buid).Find(&bpl).Error
+	if err != nil {
+		log.Error().Err(err).Msg("")
+		return nil
 	}
-	return
+	return bpl
 }
 
-func (bdb *bilibilipushdb) getAllGroupByBuidAndDynamic(buid int64) (groupList []int64) {
+func (bdb *bilibilipushdb) getInfoByBuidAndDynamic(buid int64) []bilibilipush {
 	db := (*gorm.DB)(bdb)
 	var bpl []bilibilipush
 	err := db.Where("bilibili_uid = ? and dynamic_disable = 0", buid).Find(&bpl).Error
 	if err != nil {
 		log.Error().Err(err).Msg("")
-		return
+		return nil
 	}
-	for _, v := range bpl {
-		groupList = append(groupList, v.GroupID)
-	}
-	return
+	return bpl
 }
 
 func (bdb *bilibilipushdb) getAllPushByGroup(groupID int64) (bpl []bilibilipush) {

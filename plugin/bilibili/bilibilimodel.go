@@ -9,7 +9,7 @@ import (
 )
 
 var (
-	vtbURLs = [...]string{"https://api.vtbs.moe/v1/short", "https://api.tokyo.vtbs.moe/v1/short", "https://vtbs.musedash.moe/v1/short"}
+	vtbURLs = [...]string{"https://api.vtbs.moe/v1/short"}
 	vdb     *vupdb
 )
 
@@ -28,7 +28,7 @@ func (vup) TableName() string {
 
 // initializeVup 初始化vup数据库
 func initializeVup() (*vupdb, error) {
-	gdb := database.DbConfig.GetDb("lulumu")
+	gdb := database.GetDefalutDB()
 	gdb.AutoMigrate(&vup{})
 	return (*vupdb)(gdb), nil
 }

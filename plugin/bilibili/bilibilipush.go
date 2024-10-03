@@ -2,8 +2,7 @@
 package bilibili
 
 import (
-	"MiniBot/plugin/manager/plugin"
-	"MiniBot/utils/path"
+	"MiniBot/utils"
 	"bytes"
 	"encoding/json"
 	"fmt"
@@ -19,6 +18,7 @@ import (
 	"github.com/FloatTech/floatbox/web"
 	"github.com/FloatTech/zbputils/img/text"
 	"github.com/pkg/errors"
+	"github.com/rs/zerolog/log"
 	"github.com/tidwall/gjson"
 )
 
@@ -46,17 +46,12 @@ func init() {
 			"- 取消b站直播订阅[uid|name]\n" +
 			"- b站推送列表\n" +
 			"- [开启|关闭]艾特全体\n" +
-			"Tips: 需要先在 bilibili 插件中设置cookie\n" +
-			"需要配合 job 插件一起使用, 全局只需要设置一个, 无视响应状态推送, 下为例子\n" +
-			"记录在\"@every 5m\"触发的指令\n" +
-			"拉取b站推送",
+			"Tips: 需要先在 bilibili 插件中设置cookie\n",
 		Level: 2,
 	})
 
 	// 加载bilibili推送数据库
-	dbpath := path.GetPluginDataPath()
-	dbfile := dbpath + "push.db"
-	bdb = initializePush(dbfile)
+	bdb = initializePush()
 	en.OnFullMatch(`开启艾特全体`, zero.UserOrGrpAdmin, zero.OnlyGroup).SetBlock(true).Handle(func(ctx *zero.Ctx) {
 		gid := ctx.Event.GroupID
 		if err := changeAtAll(gid, 1); err != nil {
@@ -97,7 +92,7 @@ func init() {
 		buid, _ := strconv.ParseInt(ctx.State["uid"].(string), 10, 64)
 		name, err := getName(buid, cfg)
 		if err != nil {
-			ctx.SendChain(message.Text("ERROR: ", err))
+			ctx.SendError(err)
 			return
 		}
 		gid := ctx.Event.GroupID
@@ -105,7 +100,7 @@ func init() {
 			gid = -ctx.Event.UserID
 		}
 		if err := unsubscribe(buid, gid, ctx.Event.SelfID); err != nil {
-			ctx.SendChain(message.Text("ERROR: ", err))
+			ctx.SendError(err)
 			return
 		}
 		ctx.SendChain(message.Text("已取消" + name + "的订阅"))
@@ -114,7 +109,7 @@ func init() {
 		buid, _ := strconv.ParseInt(ctx.State["uid"].(string), 10, 64)
 		name, err := getName(buid, cfg)
 		if err != nil {
-			ctx.SendChain(message.Text("ERROR: ", err))
+			ctx.SendError(err)
 			return
 		}
 		gid := ctx.Event.GroupID
@@ -122,7 +117,7 @@ func init() {
 			gid = -ctx.Event.UserID
 		}
 		if err := unsubscribeDynamic(buid, gid, ctx.Event.SelfID); err != nil {
-			ctx.SendChain(message.Text("ERROR: ", err))
+			ctx.SendError(err)
 			return
 		}
 		ctx.SendChain(message.Text("已取消" + name + "的动态订阅"))
@@ -175,20 +170,22 @@ func init() {
 			ctx.SendChain(message.Text("ERROR: ", err))
 			return
 		}
-		if id := ctx.SendChain(message.Image("base64://" + binary.BytesToString(data))); id.ID() == 0 {
-			ctx.SendChain(message.Text("ERROR: 可能被风控了"))
-		}
+		ctx.SendChain(message.ImageBytes(data))
 	})
-	en.OnRegex(`拉取[B|b]站推送$`).SetBlock(true).Handle(func(ctx *zero.Ctx) {
-		err := sendDynamic(ctx)
-		if err != nil {
-			ctx.SendPrivateMessage(ctx.Event.UserID, message.Text("Error: bilibilipush,", err))
+
+	// 定时任务
+	go func() {
+		for range time.NewTicker(120 * time.Second).C {
+			err := sendDynamic()
+			if err != nil {
+				log.Error().Str("name", "b站推送").Err(err).Msg("")
+			}
+			err = sendLive()
+			if err != nil {
+				log.Error().Str("name", "b站推送").Err(err).Msg("")
+			}
 		}
-		err = sendLive(ctx)
-		if err != nil {
-			ctx.SendPrivateMessage(ctx.Event.UserID, message.Text("Error: bilibilipush,", err))
-		}
-	})
+	}()
 }
 
 func changeAtAll(gid int64, b int) (err error) {
@@ -217,12 +214,13 @@ func getName(buid int64, cookiecfg *bz.CookieConfig) (name string, err error) {
 		if err != nil {
 			return "", err
 		}
-		status := int(gjson.Get(binary.BytesToString(data), "code").Int())
+		dataJson := gjson.ParseBytes(data)
+		status := dataJson.Get("code").Int()
 		if status != 0 {
-			err = errors.New(gjson.Get(binary.BytesToString(data), "message").String())
+			err = errors.New(dataJson.Get("message").String())
 			return "", err
 		}
-		name = gjson.Get(binary.BytesToString(data), "data.name").String()
+		name = dataJson.Get("data.name").String()
 		bdb.insertBilibiliUp(buid, name)
 		upMap[buid] = name
 	}
@@ -304,10 +302,10 @@ func getLiveList(uids ...int64) (string, error) {
 	if err != nil {
 		return "", err
 	}
-	return binary.BytesToString(data), nil
+	return utils.BytesToString(data), nil
 }
 
-func sendDynamic(ctx *zero.Ctx) error {
+func sendDynamic() error {
 	uids := bdb.getAllBuidByDynamic()
 	for _, buid := range uids {
 		time.Sleep(2 * time.Second)
@@ -328,29 +326,28 @@ func sendDynamic(ctx *zero.Ctx) error {
 			ct := cardList[i].Get("desc.timestamp").Int()
 			if ct > t && ct > time.Now().Unix()-600 {
 				lastTime[buid] = ct
-				m, ok := plugin.CM.Lookup("bilibilipush")
-				if ok {
-					groupList := bdb.getAllGroupByBuidAndDynamic(buid)
-					dc, err := bz.LoadDynamicDetail(cardList[i].Raw)
+				infoList := bdb.getInfoByBuidAndDynamic(buid)
+				dc, err := bz.LoadDynamicDetail(cardList[i].Raw)
+				if err != nil {
+					err = errors.Errorf("动态%v的解析有问题,%v", cardList[i].Get("desc.dynamic_id_str"), err)
+					return err
+				}
+				msg, err := dynamicCard2msg(&dc)
+				if err != nil {
+					err = errors.Errorf("动态%v的解析有问题,%v", cardList[i].Get("desc.dynamic_id_str"), err)
+					return err
+				}
+				for _, info := range infoList {
+					time.Sleep(time.Millisecond * 100)
+					bot, err := zero.GetBot(info.BotID)
 					if err != nil {
-						err = errors.Errorf("动态%v的解析有问题,%v", cardList[i].Get("desc.dynamic_id_str"), err)
-						return err
+						log.Error().Str("name", "b站推送").Err(err).Msg("")
 					}
-					msg, err := dynamicCard2msg(&dc)
-					if err != nil {
-						err = errors.Errorf("动态%v的解析有问题,%v", cardList[i].Get("desc.dynamic_id_str"), err)
-						return err
-					}
-					for _, gid := range groupList {
-						if m.IsEnabled(strconv.FormatInt(gid, 10)) {
-							time.Sleep(time.Millisecond * 100)
-							switch {
-							case gid > 0:
-								ctx.SendGroupMessage(gid, msg)
-							case gid < 0:
-								ctx.SendPrivateMessage(-gid, msg)
-							}
-						}
+					switch {
+					case info.GroupID > 0:
+						bot.SendGroupMessage(info.GroupID, msg)
+					case info.GroupID < 0:
+						bot.SendPrivateMessage(-info.GroupID, msg)
 					}
 				}
 			}
@@ -359,7 +356,7 @@ func sendDynamic(ctx *zero.Ctx) error {
 	return nil
 }
 
-func sendLive(ctx *zero.Ctx) error {
+func sendLive() error {
 	uids := bdb.getAllBuidByLive()
 	ll, err := getLiveList(uids...)
 	if err != nil {
@@ -377,38 +374,37 @@ func sendLive(ctx *zero.Ctx) error {
 		oldStatus := liveStatus[key.Int()]
 		if newStatus != oldStatus && newStatus == 1 {
 			liveStatus[key.Int()] = newStatus
-			m, ok := plugin.CM.Lookup("bilibilipush")
-			if ok {
-				groupList := bdb.getAllGroupByBuidAndLive(key.Int())
-				roomID := value.Get("short_id").Int()
-				if roomID == 0 {
-					roomID = value.Get("room_id").Int()
+			infoList := bdb.getInfoByBuidAndLive(key.Int())
+			roomID := value.Get("short_id").Int()
+			if roomID == 0 {
+				roomID = value.Get("room_id").Int()
+			}
+			lURL := bz.LiveURL + strconv.FormatInt(roomID, 10)
+			lName := value.Get("uname").String()
+			lTitle := value.Get("title").String()
+			lCover := value.Get("cover_from_user").String()
+			if lCover == "" {
+				lCover = value.Get("keyframe").String()
+			}
+			var msg []message.MessageSegment
+			msg = append(msg, message.Text(lName+" 正在直播：\n"))
+			msg = append(msg, message.Text(lTitle))
+			msg = append(msg, message.Image(lCover))
+			msg = append(msg, message.Text("直播链接：", lURL))
+
+			for _, info := range infoList {
+				bot, err := zero.GetBot(info.BotID)
+				if err != nil {
+					log.Error().Str("name", "b站推送").Err(err).Msg("")
 				}
-				lURL := bz.LiveURL + strconv.FormatInt(roomID, 10)
-				lName := value.Get("uname").String()
-				lTitle := value.Get("title").String()
-				lCover := value.Get("cover_from_user").String()
-				if lCover == "" {
-					lCover = value.Get("keyframe").String()
-				}
-				var msg []message.MessageSegment
-				msg = append(msg, message.Text(lName+" 正在直播：\n"))
-				msg = append(msg, message.Text(lTitle))
-				msg = append(msg, message.Image(lCover))
-				msg = append(msg, message.Text("直播链接：", lURL))
-				for _, gid := range groupList {
-					if m.IsEnabled(strconv.FormatInt(gid, 10)) {
-						time.Sleep(time.Millisecond * 100)
-						switch {
-						case gid > 0:
-							if res := bdb.getAtAll(gid); res == 1 {
-								msg = append([]message.MessageSegment{message.AtAll()}, msg...)
-							}
-							ctx.SendGroupMessage(gid, msg)
-						case gid < 0:
-							ctx.SendPrivateMessage(-gid, msg)
-						}
+				switch {
+				case info.GroupID > 0:
+					if res := bdb.getAtAll(info.GroupID); res == 1 {
+						msg = append([]message.MessageSegment{message.AtAll()}, msg...)
 					}
+					bot.SendGroupMessage(info.GroupID, msg)
+				case info.GroupID < 0:
+					bot.SendPrivateMessage(-info.GroupID, msg)
 				}
 			}
 		} else if newStatus != oldStatus {

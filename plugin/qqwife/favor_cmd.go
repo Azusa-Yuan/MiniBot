@@ -51,12 +51,12 @@ func init() {
 			// 获取CD
 			groupInfo, err := qqwife.GetGroupInfo(gid)
 			if err != nil {
-				ctx.SendChain(message.Text("[ERROR]:", err))
+				ctx.SendError(err)
 				return
 			}
 			ok, err := qqwife.JudgeCD(gid, uid, "买礼物", groupInfo.CDtime)
 			if err != nil {
-				ctx.SendChain(message.Text("[ERROR]:", err))
+				ctx.SendError(err)
 				return
 			}
 			if !ok {
@@ -66,7 +66,7 @@ func init() {
 			// 获取好感度
 			favor, err := qqwife.GetFavorability(uid, gay)
 			if err != nil {
-				ctx.SendChain(message.Text("[ERROR]:好感度库发生问题力\n", err))
+				ctx.SendError(err)
 				return
 			}
 			// 对接小熊饼干
@@ -93,12 +93,12 @@ func init() {
 			// 记录结果
 			err = wallet.UpdateWalletByCtx(ctx, -moneyToFavor)
 			if err != nil {
-				ctx.SendChain(message.Text("[ERROR]:钱包坏掉力:\n", err))
+				ctx.SendError(err)
 				return
 			}
 			lastfavor, err := qqwife.UpdateFavorability(uid, gay, newFavor)
 			if err != nil {
-				ctx.SendChain(message.Text("[ERROR]:好感度数据库发生问题力\n", err))
+				ctx.SendError(err)
 				return
 			}
 			// 写入CD

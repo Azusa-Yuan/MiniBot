@@ -92,7 +92,8 @@ func (ctx *Ctx) Parse(model interface{}) (err error) {
 func (ctx *Ctx) CheckSession() Rule {
 	return func(ctx2 *Ctx) bool {
 		return ctx.Event.UserID == ctx2.Event.UserID &&
-			ctx.Event.GroupID == ctx2.Event.GroupID // 私聊时GroupID为0，也相等
+			ctx.Event.GroupID == ctx2.Event.GroupID &&
+			ctx.Event.SelfID == ctx2.Event.SelfID // 私聊时GroupID为0，也相等
 	}
 }
 

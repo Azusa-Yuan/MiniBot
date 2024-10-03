@@ -23,7 +23,7 @@ var (
 )
 
 func init() {
-	db = database.DbConfig.GetDb("lulumu")
+	db = database.GetDefalutDB()
 	qqwife.db = db
 	err := db.AutoMigrate(&GroupInfo{}, &CdSheet{}, &Favorability{}, &PigInfo{}, &UserInfo{})
 	if err != nil {

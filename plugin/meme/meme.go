@@ -33,7 +33,7 @@ func init() {
 		Help: "发送 表情包列表 查看所有表情指令 \n发送 查看表情信息xx 查看表情详细参数",
 	}
 	engine := zero.NewTemplate(&metaData)
-	engine.OnFullMatch("表情包列表").SetBlock(true).Handle(
+	engine.OnFullMatchGroup([]string{"表情包列表", "头像表情包"}).SetBlock(true).Handle(
 		func(ctx *zero.Ctx) {
 			data, err := GetHelp()
 			if err != nil {
