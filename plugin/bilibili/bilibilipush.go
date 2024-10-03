@@ -79,14 +79,14 @@ func init() {
 		buid, _ := strconv.ParseInt(ctx.State["uid"].(string), 10, 64)
 		name, err := getName(buid, cfg)
 		if err != nil || name == "" {
-			ctx.SendChain(message.Text("ERROR: ", err))
+			ctx.SendError(err)
 			return
 		}
 		gid := ctx.Event.GroupID
 		if gid == 0 {
 			gid = -ctx.Event.UserID
 		}
-		if err := subscribe(buid, gid); err != nil {
+		if err := subscribe(buid, gid, ctx.Event.SelfID); err != nil {
 			ctx.SendChain(message.Text("ERROR: ", err))
 			return
 		}
@@ -104,7 +104,7 @@ func init() {
 		if gid == 0 {
 			gid = -ctx.Event.UserID
 		}
-		if err := unsubscribe(buid, gid); err != nil {
+		if err := unsubscribe(buid, gid, ctx.Event.SelfID); err != nil {
 			ctx.SendChain(message.Text("ERROR: ", err))
 			return
 		}
@@ -121,7 +121,7 @@ func init() {
 		if gid == 0 {
 			gid = -ctx.Event.UserID
 		}
-		if err := unsubscribeDynamic(buid, gid); err != nil {
+		if err := unsubscribeDynamic(buid, gid, ctx.Event.SelfID); err != nil {
 			ctx.SendChain(message.Text("ERROR: ", err))
 			return
 		}
@@ -138,7 +138,7 @@ func init() {
 			ctx.SendChain(message.Text("ERROR: ", err))
 			return
 		}
-		if err := unsubscribeLive(buid, gid); err != nil {
+		if err := unsubscribeLive(buid, gid, ctx.Event.SelfID); err != nil {
 			ctx.SendChain(message.Text("ERROR: ", err))
 			return
 		}
@@ -157,13 +157,13 @@ func init() {
 				bdb.updateAllUp()
 			}
 			msg += fmt.Sprintf("\nuid:%-12d 动态：", v.BilibiliUID)
-			if v.DynamicDisable == 0 {
+			if !v.DynamicDisable {
 				msg += "●"
 			} else {
 				msg += "○"
 			}
 			msg += " 直播："
-			if v.LiveDisable == 0 {
+			if !v.LiveDisable {
 				msg += "●"
 			} else {
 				msg += "○"
@@ -231,41 +231,45 @@ func getName(buid int64, cookiecfg *bz.CookieConfig) (name string, err error) {
 }
 
 // subscribe 订阅
-func subscribe(buid, groupid int64) (err error) {
+func subscribe(buid, groupid, SelfID int64) (err error) {
 	bpMap := map[string]any{
 		"bilibili_uid":    buid,
 		"group_id":        groupid,
 		"live_disable":    0,
 		"dynamic_disable": 0,
+		"bot_id":          SelfID,
 	}
 	return bdb.insertOrUpdateLiveAndDynamic(bpMap)
 }
 
 // unsubscribe 取消订阅
-func unsubscribe(buid, groupid int64) (err error) {
+func unsubscribe(buid, groupid int64, SelfID int64) (err error) {
 	bpMap := map[string]any{
 		"bilibili_uid":    buid,
 		"group_id":        groupid,
 		"live_disable":    1,
 		"dynamic_disable": 1,
+		"bot_id":          SelfID,
 	}
 	return bdb.insertOrUpdateLiveAndDynamic(bpMap)
 }
 
-func unsubscribeDynamic(buid, groupid int64) (err error) {
+func unsubscribeDynamic(buid, groupid int64, SelfID int64) (err error) {
 	bpMap := map[string]any{
 		"bilibili_uid":    buid,
 		"group_id":        groupid,
 		"dynamic_disable": 1,
+		"bot_id":          SelfID,
 	}
 	return bdb.insertOrUpdateLiveAndDynamic(bpMap)
 }
 
-func unsubscribeLive(buid, groupid int64) (err error) {
+func unsubscribeLive(buid, groupid int64, SelfID int64) (err error) {
 	bpMap := map[string]any{
 		"bilibili_uid": buid,
 		"group_id":     groupid,
 		"live_disable": 1,
+		"bot_id":       SelfID,
 	}
 	return bdb.insertOrUpdateLiveAndDynamic(bpMap)
 }

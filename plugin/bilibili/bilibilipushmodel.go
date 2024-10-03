@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"os"
 
+	"github.com/rs/zerolog/log"
 	"gorm.io/gorm"
 )
 
@@ -15,8 +16,9 @@ type bilibilipush struct {
 	ID             int64 `gorm:"column:id;primary_key" json:"id"`
 	BilibiliUID    int64 `gorm:"column:bilibili_uid;index:idx_buid_gid" json:"bilibili_uid"`
 	GroupID        int64 `gorm:"column:group_id;index:idx_buid_gid" json:"group_id"`
-	LiveDisable    int64 `gorm:"column:live_disable;default:0" json:"live_disable"`
-	DynamicDisable int64 `gorm:"column:dynamic_disable;default:0" json:"dynamic_disable"`
+	BotID          int64 `gorm:"column:bot_id;index:idx_buid_gid" json:"bot_id"`
+	LiveDisable    bool  `gorm:"column:live_disable;default:0" json:"live_disable"`
+	DynamicDisable bool  `gorm:"column:dynamic_disable;default:0" json:"dynamic_disable"`
 }
 
 // TableName ...
@@ -54,7 +56,7 @@ func initializePush(dbpath string) *bilibilipushdb {
 		}
 		defer f.Close()
 	}
-	gdb := database.DbConfig.GetDb("lulumu")
+	gdb := database.GetDefalutDB()
 
 	gdb.AutoMigrate(&bilibilipush{}, &bilibiliup{}, &bilibiliAt{})
 	return (*bilibilipushdb)(gdb)
@@ -72,12 +74,12 @@ func (bdb *bilibilipushdb) insertOrUpdateLiveAndDynamic(bpMap map[string]any) (e
 	if err != nil {
 		return
 	}
-	if err = db.Model(&bilibilipush{}).First(&bp, "bilibili_uid = ? and group_id = ?", bp.BilibiliUID, bp.GroupID).Error; err != nil {
-		if err != gorm.ErrRecordNotFound {
+	if err = db.Where("bilibili_uid = ? and group_id = ? and bot_id = ?", bp.BilibiliUID, bp.GroupID).First(&bp).Error; err != nil {
+		if err == gorm.ErrRecordNotFound {
 			err = db.Model(&bilibilipush{}).Create(&bp).Error
 		}
 	} else {
-		err = db.Model(&bilibilipush{}).Where("bilibili_uid = ? and group_id = ?", bp.BilibiliUID, bp.GroupID).Updates(bpMap).Error
+		err = db.Model(&bilibilipush{}).Where("bilibili_uid = ? and group_id = ? and bot_id = ?", bp.BilibiliUID, bp.GroupID).Updates(bpMap).Error
 	}
 	return
 }
@@ -125,7 +127,11 @@ func (bdb *bilibilipushdb) getAllGroupByBuidAndLive(buid int64) (groupList []int
 func (bdb *bilibilipushdb) getAllGroupByBuidAndDynamic(buid int64) (groupList []int64) {
 	db := (*gorm.DB)(bdb)
 	var bpl []bilibilipush
-	db.Model(&bilibilipush{}).Find(&bpl, "bilibili_uid = ? and dynamic_disable = 0", buid)
+	err := db.Where("bilibili_uid = ? and dynamic_disable = 0", buid).Find(&bpl).Error
+	if err != nil {
+		log.Error().Err(err).Msg("")
+		return
+	}
 	for _, v := range bpl {
 		groupList = append(groupList, v.GroupID)
 	}
@@ -134,7 +140,7 @@ func (bdb *bilibilipushdb) getAllGroupByBuidAndDynamic(buid int64) (groupList []
 
 func (bdb *bilibilipushdb) getAllPushByGroup(groupID int64) (bpl []bilibilipush) {
 	db := (*gorm.DB)(bdb)
-	db.Model(&bilibilipush{}).Find(&bpl, "group_id = ? and (live_disable = 0 or dynamic_disable = 0)", groupID)
+	db.Where("group_id = ? and (live_disable = 0 or dynamic_disable = 0)", groupID).Find(&bpl)
 	return
 }
 

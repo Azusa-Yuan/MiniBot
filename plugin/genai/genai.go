@@ -24,7 +24,7 @@ func init() {
 目前支持的人格:露露姆,伊蕾娜,爱莉希雅,白洲梓`,
 	}
 	engine := zero.NewTemplate(&metaData)
-	engine.OnMessage(zero.OnlyToMe).SetPriority(10).Handle(
+	engine.OnMessage(zero.OnlyToMe).SetPriority(999).Handle(
 		func(ctx *zero.Ctx) {
 			// 私聊的时候每个qq独立的会话，群聊的时候一个群一个会话
 			key := transform.BidWithuidInt64(ctx)

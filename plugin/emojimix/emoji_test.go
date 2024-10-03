@@ -7,8 +7,6 @@ import (
 	"net/http"
 	"os"
 	"path/filepath"
-	"strconv"
-	"strings"
 	"testing"
 
 	emoji "github.com/Andrew-M-C/go.emoji"
@@ -24,11 +22,8 @@ func TestUnicode(t *testing.T) {
 	// fmt.Println(isEmoji(runes[0]))
 	fmt.Println(len(runes))
 	fmt.Println(runes)
-	fmt.Println(strconv.ParseInt("1f62e-200d-1f4a8", 16, 64))
-	unicodes := strings.Split("1f62e-200d-1f4a8", "-")
-	fmt.Println(unicodes)
-	i := 0
 
+	i := 0
 	final := emoji.ReplaceAllEmojiFunc(r, func(emoji string) string {
 		i++
 		fmt.Printf("%d - %s - len %d\n", i, emoji, len(emoji))

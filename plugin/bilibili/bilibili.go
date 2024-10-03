@@ -591,13 +591,13 @@ func getPara(ctx *zero.Ctx) bool {
 		ctx.State["uid"] = strconv.FormatInt(searchRes[0].Mid, 10)
 		return true
 	}
-	next := zero.NewFutureEvent("message", 999, false, ctx.CheckSession())
+	next := zero.NewFutureEvent("message", 998, false, ctx.CheckSession())
 	recv, cancel := next.Repeat()
 	defer cancel()
 	ctx.SendChain(message.Text("输入为纯数字, 请选择查询uid还是用户名, 输入对应序号：\n0. 查询uid\n1. 查询用户名"))
 	for {
 		select {
-		case <-time.After(time.Second * 10):
+		case <-time.After(time.Second * 20):
 			ctx.SendChain(message.Text("时间太久啦！", zero.BotConfig.GetNickName(ctx.Event.SelfID)[0], "帮你选择查询uid"))
 			ctx.State["uid"] = keyword
 			return true

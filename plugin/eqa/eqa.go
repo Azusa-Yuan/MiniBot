@@ -118,7 +118,7 @@ func init() {
 
 	engine.OnPrefixGroup([]string{"不要回答"}, zero.SuperUserPermission).Handle(
 		func(ctx *zero.Ctx) {
-			q := ctx.State["prefix"].(string)
+			q := ctx.State["args"].(string)
 			Lock.Lock()
 			defer Lock.Unlock()
 			if _, ok := messageMap[q]; ok {
