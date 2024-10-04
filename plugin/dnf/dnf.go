@@ -18,8 +18,9 @@ func init() {
 订阅colg资讯 指令 订阅colg资讯`,
 	})
 
-	engine.OnPrefixGroup([]string{"比例", "金币", "游戏币"}).SetBlock(true).Handle(
+	engine.OnPrefixGroup([]string{"比例", "金币", "游戏币"}, IfSever).SetBlock(true).Handle(
 		func(ctx *zero.Ctx) {
+			ctx.SendChain(message.Text(zero.BotConfig.GetNickName(ctx.Event.SelfID)[0] + "在查了在查了。。。"))
 			arg := ctx.State["args"].(string)
 			data, url, err := service.Screenshot(arg, "youxibi")
 			if err != nil {
@@ -32,8 +33,9 @@ func init() {
 			ctx.SendChain(message.At(ctx.Event.UserID), message.ImageBytes(data), message.Text(url))
 		})
 
-	engine.OnPrefixGroup([]string{"矛盾"}).SetBlock(true).Handle(
+	engine.OnPrefixGroup([]string{"矛盾"}, IfSever).SetBlock(true).Handle(
 		func(ctx *zero.Ctx) {
+			ctx.SendChain(message.Text(zero.BotConfig.GetNickName(ctx.Event.SelfID)[0] + "在查了在查了。。。"))
 			arg := ctx.State["args"].(string)
 			data, url, err := service.Screenshot(arg, "maodun")
 			if err != nil {
@@ -128,4 +130,9 @@ func init() {
 			}
 		}
 	}()
+}
+
+func IfSever(ctx *zero.Ctx) bool {
+	_, ok := service.ReportRegions[ctx.State["args"].(string)]
+	return ok
 }
