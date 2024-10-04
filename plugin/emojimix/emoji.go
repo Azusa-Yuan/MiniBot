@@ -1,6 +1,8 @@
 // Package emojimix 合成emoji
 package emojimix
 
+var base_url = "https://www.gstatic.com/android/keyboard/emojikitchen/"
+
 // var emojis = map[int64]int64{
 // 	128516: 20201001, // 😄 grinning face with smiling eyes
 // 	128512: 20201001, // 😀 grinning face

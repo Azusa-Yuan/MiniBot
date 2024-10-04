@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"os"
 	"path/filepath"
+	"strings"
 	"testing"
 
 	emoji "github.com/Andrew-M-C/go.emoji"
@@ -58,7 +59,7 @@ func TestGenerateMap(t *testing.T) {
 			if cur != leftEmoji {
 				leftEmoji, rightEmoji = rightEmoji, leftEmoji
 			}
-			outer.OuterMap[leftEmoji].InnerMap[rightEmoji] = emojiFirst.Get("gStaticUrl").String()
+			outer.OuterMap[leftEmoji].InnerMap[rightEmoji] = strings.TrimLeft(emojiFirst.Get("gStaticUrl").String(), base_url)
 		}
 	}
 	outFile, err := os.Create(filepath.Join(dataPath, "outer_map.bin"))

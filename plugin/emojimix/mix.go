@@ -38,7 +38,7 @@ func init() {
 		Help: "- [emoji][emoji]",
 	}).OnMessage(match).SetBlock(true).
 		Handle(func(ctx *zero.Ctx) {
-			ctx.SendChain(message.Image(ctx.State["emojimix"].(string)))
+			ctx.SendChain(message.Image(base_url + ctx.State["emojimix"].(string)))
 		})
 }
 
