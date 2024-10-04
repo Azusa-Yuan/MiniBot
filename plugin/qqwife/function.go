@@ -136,7 +136,7 @@ func checkMistress(ctx *zero.Ctx) (ok bool, targetInfo UserInfo) {
 		ctx.SendChain(message.Text("[ERROR]:", err))
 		return
 	case timeMin > 0:
-		ctx.SendChain(message.Text(fmt.Sprintf("黄毛小子在休息%d分钟吧", timeMin)))
+		ctx.SendChain(message.Text(fmt.Sprintf("黄毛小子再休息%d分钟吧", timeMin)))
 		return
 	}
 	// 获取用户信息
