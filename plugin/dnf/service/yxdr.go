@@ -5,7 +5,6 @@ import (
 	"fmt"
 
 	"github.com/chromedp/chromedp"
-	"github.com/chromedp/chromedp/device"
 )
 
 var (
@@ -45,10 +44,6 @@ var (
 	ScCtx       = context.WithoutCancel(TemCtx)
 )
 
-func init() {
-	chromedp.Emulate(device.Reset)
-}
-
 func Screenshot(server string, productType string) ([]byte, string, error) {
 
 	if _, ok := ReportRegions[server]; !ok {
@@ -60,10 +55,9 @@ func Screenshot(server string, productType string) ([]byte, string, error) {
 	// url := "https://www.baidu.com"
 	url := fmt.Sprintf("https://www.yxdr.com/bijiaqi/dnf/%s/kua%s", productType, ReportRegions[server])
 	err := chromedp.Run(ScCtx,
-		chromedp.EmulateViewport(1000, 1500),
 		chromedp.Navigate(url),
 		chromedp.WaitVisible("#right_m"),
-		chromedp.CaptureScreenshot(&buf),
+		chromedp.FullScreenshot(&buf, 100),
 	)
 	if err != nil {
 		return nil, url, err
