@@ -54,13 +54,14 @@ func init() {
 				ctx.SendError(err)
 				return
 			}
-			ok, err := qqwife.JudgeCD(gid, uid, "买礼物", groupInfo.CDtime)
+			timeMin, err := qqwife.JudgeCD(gid, uid, "买礼物", groupInfo.CDtime)
 			if err != nil {
 				ctx.SendError(err)
 				return
 			}
-			if !ok {
-				ctx.SendChain(message.Text("舔狗，今天你已经送过礼物了。"))
+
+			if timeMin > 0 {
+				ctx.SendChain(message.Text(fmt.Sprintf("舔狗，今天你已经送过礼物了。等%d分钟再舔吧", timeMin)))
 				return
 			}
 			// 获取好感度

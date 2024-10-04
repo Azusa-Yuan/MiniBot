@@ -52,15 +52,15 @@ func checkSingleDog(gid int64, uid int64, fiancee int64) (res bool, msg string) 
 		return
 	}
 	// JudgeCD
-	ok, err := qqwife.JudgeCD(gid, uid, "嫁娶", dbinfo.CDtime)
+	timeMin, err := qqwife.JudgeCD(gid, uid, "嫁娶", dbinfo.CDtime)
 
 	if err != nil {
 		msg = fmt.Sprint("[ERROR]:", err)
 		return
 	}
 
-	if !ok {
-		msg = "你的技能还在CD中..."
+	if timeMin > 0 {
+		msg = fmt.Sprintf("你的技能CD还有%d分钟", timeMin)
 		return
 	}
 
@@ -130,13 +130,13 @@ func checkMistress(ctx *zero.Ctx) (ok bool, targetInfo UserInfo) {
 		return
 	}
 	// JudgeCD
-	cdOK, err := qqwife.JudgeCD(gid, uid, "NTR", groupInfo.CDtime)
+	timeMin, err := qqwife.JudgeCD(gid, uid, "NTR", groupInfo.CDtime)
 	switch {
 	case err != nil:
 		ctx.SendChain(message.Text("[ERROR]:", err))
 		return
-	case !cdOK:
-		ctx.SendChain(message.Text("你的技能还在CD中..."))
+	case timeMin > 0:
+		ctx.SendChain(message.Text(fmt.Sprintf("黄毛小子在休息%d分钟吧", timeMin)))
 		return
 	}
 	// 获取用户信息
@@ -185,13 +185,13 @@ func checkDivorce(ctx *zero.Ctx) bool {
 		ctx.SendChain(message.Text("[ERROR]:", err))
 		return false
 	}
-	ok, err := qqwife.JudgeCD(gid, uid, "离婚", groupInfo.CDtime)
+	timeMin, err := qqwife.JudgeCD(gid, uid, "离婚", groupInfo.CDtime)
 	switch {
 	case err != nil:
 		ctx.SendChain(message.Text("[ERROR]:", err))
 		return false
-	case !ok:
-		ctx.SendChain(message.Text("你的技能还在CD中..."))
+	case timeMin > 0:
+		ctx.SendChain(message.Text(fmt.Sprintf("你的技能CD还有%d分钟", timeMin)))
 		return false
 	}
 	return true
@@ -240,13 +240,13 @@ func checkMatchmaker(ctx *zero.Ctx) bool {
 		ctx.SendChain(message.Text("[ERROR]:", err))
 		return false
 	}
-	ok, err := qqwife.JudgeCD(gid, uid, "做媒", groupInfo.CDtime)
+	timeMin, err := qqwife.JudgeCD(gid, uid, "做媒", groupInfo.CDtime)
 	switch {
 	case err != nil:
 		ctx.SendChain(message.Text("[ERROR]:", err))
 		return false
-	case !ok:
-		ctx.SendChain(message.Text("你的技能还在CD中..."))
+	case timeMin > 0:
+		ctx.SendChain(message.Text(fmt.Sprintf("你的技能CD还有%d分钟", timeMin)))
 		return false
 	}
 	qqwife.RLock()

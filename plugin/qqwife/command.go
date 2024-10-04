@@ -579,20 +579,20 @@ func init() {
 			// 去qqwife登记
 			err = qqwife.SaveMarriageInfo(gid, gayOne, gayZero, ctx.CardOrNickName(gayOne), ctx.CardOrNickName(gayZero))
 			if err != nil {
-				ctx.SendChain(message.Text("[ERROR]:", err))
+				ctx.SendError(err)
 				return
 			}
 			_, err = qqwife.UpdateFavorability(uid, gayOne, 1)
 			if err != nil {
-				ctx.SendChain(message.Text("[ERROR]:", err))
+				ctx.SendError(err)
 			}
 			_, err = qqwife.UpdateFavorability(uid, gayZero, 1)
 			if err != nil {
-				ctx.SendChain(message.Text("[ERROR]:", err))
+				ctx.SendError(err)
 			}
 			_, err = qqwife.UpdateFavorability(gayOne, gayZero, 1)
 			if err != nil {
-				ctx.SendChain(message.Text("[ERROR]:", err))
+				ctx.SendError(err)
 			}
 			// 请大家吃席
 			go func() {

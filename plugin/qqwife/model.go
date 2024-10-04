@@ -236,24 +236,26 @@ func (sql *QQWife) GetAllInfo(gid int64) (list []UserInfo, err error) {
 // 	}
 // }
 
-func (sql *QQWife) JudgeCD(gid, uid int64, mode string, cdtime float64) (ok bool, err error) {
+func (sql *QQWife) JudgeCD(gid, uid int64, mode string, cdtime float64) (timeMin int, err error) {
 
 	cdinfo := CdSheet{}
 	res := sql.db.Where("gid = ? AND uid = ? AND mode_id = ?", gid, uid, mode).First(&cdinfo)
 	if res.RowsAffected == 0 {
 		// 没有记录即不用比较
-		return true, nil
+		return -1, nil
 	}
 
-	if time.Since(time.Unix(cdinfo.Time, 0)).Hours() > cdtime {
+	timeMin = int(60 * (cdtime - time.Since(time.Unix(cdinfo.Time, 0)).Hours()))
+
+	if timeMin < 0 {
 		// 如果CD已过就删除
 		err = sql.db.Delete(&cdinfo).Error
 		if err != nil {
-			return false, err
+			return
 		}
-		return true, nil
+		return
 	}
-	return false, nil
+	return
 }
 
 func (sql *QQWife) SaveCD(gid, uid int64, mode string) error {
