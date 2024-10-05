@@ -6,6 +6,7 @@ import (
 	"ZeroBot/extension"
 	"ZeroBot/message"
 	"fmt"
+	"math"
 	"slices"
 	"strconv"
 )
@@ -38,6 +39,9 @@ func init() {
 			bidKey := strconv.FormatInt(bid, 10)
 			// 判断权限等级是否足够
 			levels := []uint{}
+			if zero.SuperUserPermission(ctx) {
+				levels = append(levels, math.MaxInt)
+			}
 			levels = append(levels, managers.GetLevel(uidKey))
 			if gid != 0 {
 				levels = append(levels, managers.GetLevel(gidKey))
