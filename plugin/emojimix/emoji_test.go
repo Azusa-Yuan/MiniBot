@@ -1,7 +1,7 @@
 package emojimix
 
 import (
-	emoji_map "MiniBot/plugin/emojimix/proto"
+	"encoding/json"
 	"fmt"
 	"io"
 	"net/http"
@@ -13,7 +13,6 @@ import (
 	emoji "github.com/Andrew-M-C/go.emoji"
 	"github.com/rs/zerolog/log"
 	"github.com/tidwall/gjson"
-	"google.golang.org/protobuf/proto"
 )
 
 func TestUnicode(t *testing.T) {
@@ -45,35 +44,28 @@ func TestGenerateMap(t *testing.T) {
 	}
 
 	datas := gjson.ParseBytes(body).Get("data").Map()
-	outer := &emoji_map.OuterMap{OuterMap: map[string]*emoji_map.InnerMap{}}
+	keyMap := map[string]string{}
 
 	for _, data := range datas {
 		collections := data.Get("combinations").Map()
-		cur := data.Get("emoji").String()
-		outer.OuterMap[cur] = &emoji_map.InnerMap{InnerMap: map[string]string{}}
 		for _, endData := range collections {
 			// 只取第一个
 			emojiFirst := endData.Array()[0]
-			leftEmoji := emojiFirst.Get("leftEmoji").String()
-			rightEmoji := emojiFirst.Get("rightEmoji").String()
-			if cur != leftEmoji {
-				leftEmoji, rightEmoji = rightEmoji, leftEmoji
-			}
-			outer.OuterMap[leftEmoji].InnerMap[rightEmoji] = strings.TrimLeft(emojiFirst.Get("gStaticUrl").String(), base_url)
+			addValue(keyMap, emojiFirst.Get("leftEmoji").String(), emojiFirst.Get("rightEmoji").String(),
+				strings.TrimLeft(emojiFirst.Get("gStaticUrl").String(), base_url))
 		}
 	}
-	outFile, err := os.Create(filepath.Join(dataPath, "outer_map.bin"))
+	outFile, err := os.Create(filepath.Join(dataPath, "key_map.json"))
 	if err != nil {
 		log.Error().Err(err).Msg("")
 		return
 	}
 	defer outFile.Close()
 
-	data, err := proto.Marshal(outer)
+	data, err := json.MarshalIndent(&keyMap, "", " ")
 	if err != nil {
 		log.Error().Err(err).Msg("")
 		return
 	}
 	outFile.Write(data)
-
 }

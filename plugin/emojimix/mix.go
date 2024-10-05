@@ -2,8 +2,8 @@
 package emojimix
 
 import (
-	emoji_map "MiniBot/plugin/emojimix/proto"
 	"MiniBot/utils/path"
+	"encoding/json"
 	"os"
 	"path/filepath"
 	"strconv"
@@ -14,22 +14,19 @@ import (
 
 	emoji "github.com/Andrew-M-C/go.emoji"
 	"github.com/rs/zerolog/log"
-	"google.golang.org/protobuf/proto"
 )
 
-var emojiMap = emoji_map.OuterMap{OuterMap: map[string]*emoji_map.InnerMap{}}
+var emojiMap = map[string]string{}
 var pluginName = "emojimix"
 var dataPath = path.GetPluginDataPath()
 
-// const bed = "https://www.gstatic.com/android/keyboard/emojikitchen/%d/u%x/u%x_u%x.png"
-
 func init() {
-	data, err := os.ReadFile(filepath.Join(dataPath, "outer_map.bin"))
+	data, err := os.ReadFile(filepath.Join(dataPath, "key_map.json"))
 	if err != nil {
 		log.Error().Err(err).Str("name", pluginName).Msg("")
 		return
 	}
-	if err := proto.Unmarshal(data, &emojiMap); err != nil {
+	if err := json.Unmarshal(data, &emojiMap); err != nil {
 		log.Error().Err(err).Str("name", pluginName)
 		return
 	}
@@ -70,11 +67,10 @@ func match(ctx *zero.Ctx) bool {
 }
 
 func setUrl(i string, j string, ctx *zero.Ctx) bool {
-	if interMap, ok := emojiMap.OuterMap[i]; ok {
-		if url, ok := interMap.InnerMap[j]; ok {
-			ctx.State["emojimix"] = url
-			return true
-		}
+	url := getValue(emojiMap, i, j)
+	if url != "" {
+		ctx.State["emojimix"] = url
+		return true
 	}
 	return false
 }
