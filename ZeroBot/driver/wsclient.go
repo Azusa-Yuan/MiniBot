@@ -150,7 +150,7 @@ func (ws *WSClient) CallApi(req zero.APIRequest) (zero.APIResponse, error) {
 	data, _ := json.Marshal(&req)
 	// send message
 	ws.mu.Lock() // websocket write is not goroutine safe
-	err := ws.conn.WriteMessage(websocket.BinaryMessage, data)
+	err := ws.conn.WriteMessage(websocket.TextMessage, data)
 	ws.mu.Unlock()
 	if err != nil {
 		log.Warn().Str("name", "ws").Err(err).Msg("向WebsocketServer发送API请求失败: ")

@@ -221,7 +221,7 @@ func (wssc *WSSCaller) CallApi(req zero.APIRequest) (zero.APIResponse, error) {
 	data, _ := json.Marshal(&req)
 	// send message
 	wssc.mu.Lock() // websocket write is not goroutine safe
-	err := wssc.conn.WriteMessage(websocket.BinaryMessage, data)
+	err := wssc.conn.WriteMessage(websocket.TextMessage, data)
 	wssc.mu.Unlock()
 	if err != nil {
 		log.Warn().Str("name", "wss").Err(err).Msg("向WebsocketServer发送API请求失败")
