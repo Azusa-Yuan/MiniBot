@@ -1,6 +1,7 @@
 package service
 
 import (
+	"MiniBot/utils/resource"
 	"context"
 	"fmt"
 
@@ -39,10 +40,19 @@ var (
 		chromedp.ProxyServer("http://127.0.0.1:10809"),
 	)
 
-	allocCtx, _ = chromedp.NewExecAllocator(context.Background(), opts...)
-	TemCtx, _   = chromedp.NewContext(allocCtx)
-	ScCtx       = context.WithoutCancel(TemCtx)
+	allocCtx, cancel1 = chromedp.NewExecAllocator(context.Background(), opts...)
+	Ctx, cancel2      = chromedp.NewContext(allocCtx)
 )
+
+func init() {
+	resource.ResourceManager.Register(
+		func(ctx context.Context) error {
+			cancel2()
+			cancel1()
+			return nil
+		},
+	)
+}
 
 func Screenshot(server string, productType string) ([]byte, string, error) {
 
@@ -53,7 +63,7 @@ func Screenshot(server string, productType string) ([]byte, string, error) {
 	// 导航到指定的URL
 	var buf []byte
 	url := fmt.Sprintf("https://www.yxdr.com/bijiaqi/dnf/%s/kua%s", productType, ReportRegions[server])
-	err := chromedp.Run(ScCtx,
+	err := chromedp.Run(Ctx,
 		chromedp.Navigate(url),
 		chromedp.WaitVisible("#right_m"),
 		chromedp.FullScreenshot(&buf, 100),
