@@ -5,6 +5,8 @@ import (
 	"MiniBot/utils/path"
 	zero "ZeroBot"
 	"ZeroBot/message"
+	"archive/zip"
+	"io"
 	"math/rand/v2"
 	"os"
 	"path/filepath"
@@ -13,7 +15,7 @@ import (
 var (
 	pluginName    = "poke"
 	dataPath      = path.GetPluginDataPath()
-	lulumuPath    = filepath.Join(dataPath, "lulumu")
+	imagePath     = filepath.Join(dataPath, "image")
 	dinggongPath  = filepath.Join(dataPath, "dinggong")
 	replyMessages = []string{
 		"lsp你再戳？",
@@ -46,14 +48,13 @@ func init() {
 		func(ctx *zero.Ctx) {
 			r := rand.Float64()
 			if r <= 0.3 {
-				files, err := os.ReadDir(lulumuPath)
+				tmpPath := filepath.Join(imagePath, zero.BotConfig.GetNickName(ctx.Event.SelfID)[0]+".zip")
+				imgBytes, err := randimage(tmpPath)
 				if err != nil {
 					ctx.SendError(err)
 					return
 				}
-				index := rand.IntN(len(files))
-				filePath := filepath.Join(lulumuPath, files[index].Name())
-				ctx.SendChain(message.ImagePath(filePath))
+				ctx.SendChain(message.ImageBytes(imgBytes))
 				return
 			} else if r <= 0.6 {
 				files, err := os.ReadDir(dinggongPath)
@@ -71,4 +72,22 @@ func init() {
 			}
 		},
 	)
+}
+
+func randimage(path string) (imBytes []byte, err error) {
+	reader, err := zip.OpenReader(path)
+	if err != nil {
+		return
+	}
+	defer reader.Close()
+
+	file := reader.File[rand.IntN(len(reader.File))]
+	f, err := file.Open()
+	if err != nil {
+		return
+	}
+	defer f.Close()
+
+	imBytes, err = io.ReadAll(f)
+	return
 }
