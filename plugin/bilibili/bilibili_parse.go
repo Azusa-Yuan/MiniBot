@@ -13,13 +13,17 @@ import (
 
 	bz "github.com/FloatTech/AnimeAPI/bilibili"
 	"github.com/FloatTech/floatbox/web"
+	"github.com/rs/zerolog/log"
+	"github.com/tidwall/gjson"
 )
 
 var (
+	searchUrl        = `((b23|acg).tv|bili2233.cn)/[0-9a-zA-Z]+`
 	searchVideo      = `bilibili.com\\?/video\\?/(?:av(\d+)|([bB][vV][0-9a-zA-Z]+))`
 	searchDynamic    = `(t.bilibili.com|m.bilibili.com\\?/dynamic)\\?/(\d+)`
 	searchArticle    = `bilibili.com\\?/read\\?/(?:cv|mobile\\?/)(\d+)`
 	searchLiveRoom   = `live.bilibili.com\\?/(\d+)`
+	searchUrlRe      = regexp.MustCompile(searchUrl)
 	searchVideoRe    = regexp.MustCompile(searchVideo)
 	searchDynamicRe  = regexp.MustCompile(searchDynamic)
 	searchArticleRe  = regexp.MustCompile(searchArticle)
@@ -31,7 +35,8 @@ func init() {
 	en := zero.NewTemplate(&zero.MetaData{
 		Name: "B站链接解析",
 	})
-	en.OnRegex(`((b23|acg).tv|bili2233.cn)/[0-9a-zA-Z]+`).SetBlock(true).
+
+	en.OnMessage(bilibiliParseRule).SetBlock(true).
 		Handle(func(ctx *zero.Ctx) {
 			url := ctx.State["regex_matched"].([]string)[0]
 			realurl, err := bz.GetRealURL("https://" + url)
@@ -58,6 +63,32 @@ func init() {
 	en.OnRegex(searchDynamic).SetBlock(true).Handle(handleDynamic)
 	en.OnRegex(searchArticle).SetBlock(true).Handle(handleArticle)
 	en.OnRegex(searchLiveRoom).SetBlock(true).Handle(handleLive)
+}
+
+func bilibiliParseRule(ctx *zero.Ctx) bool {
+	// 消息正则匹配
+	msg := ctx.MessageString()
+	if matched := searchUrlRe.FindStringSubmatch(msg); matched != nil {
+		ctx.State["regex_matched"] = matched
+		return true
+	}
+	// 解析小程序
+	for _, message := range ctx.Event.Message {
+		if message.Type == "json" {
+			log.Info().Str("name", "bilibili_parse").Msg(fmt.Sprint(message.Data))
+			meta := message.Data["meta"]
+			log.Info().Str("name", "bilibili_parse").Msg(meta)
+			metaJson := gjson.Parse(meta)
+			url := metaJson.Get("detail_1").Get("qqdocurl").String()
+			log.Info().Str("name", "bilibili_parse").Msg(url)
+			if matched := searchUrlRe.FindStringSubmatch(url); matched != nil {
+				ctx.State["regex_matched"] = matched
+				return true
+			}
+		}
+	}
+
+	return false
 }
 
 func handleVideo(ctx *zero.Ctx) {
