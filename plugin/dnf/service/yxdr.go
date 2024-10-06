@@ -66,7 +66,7 @@ func Screenshot(server string, productType string) ([]byte, string, error) {
 	err := chromedp.Run(Ctx,
 		chromedp.Navigate(url),
 		chromedp.WaitVisible("#right_m"),
-		chromedp.FullScreenshot(&buf, 100),
+		chromedp.FullScreenshot(&buf, 90),
 	)
 	if err != nil {
 		return nil, url, err

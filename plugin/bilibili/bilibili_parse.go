@@ -2,6 +2,9 @@
 package bilibili
 
 import (
+	"encoding/json"
+	"fmt"
+	"net/http"
 	"regexp"
 
 	zero "ZeroBot"
@@ -9,6 +12,7 @@ import (
 	"ZeroBot/message"
 
 	bz "github.com/FloatTech/AnimeAPI/bilibili"
+	"github.com/FloatTech/floatbox/web"
 )
 
 var (
@@ -71,7 +75,7 @@ func handleVideo(ctx *zero.Ctx) {
 		ctx.SendChain(message.Text("ERROR: ", err))
 		return
 	}
-	summaryMsg, err := getVideoSummary(card)
+	summaryMsg, err := getVideoSummary(cfg, card)
 	if err != nil {
 		ctx.SendChain(message.Text("ERROR: ", err))
 		return
@@ -105,4 +109,39 @@ func handleLive(ctx *zero.Ctx) {
 		return
 	}
 	ctx.SendChain(liveCard2msg(card)...)
+}
+
+// getVideoSummary AI视频总结
+func getVideoSummary(cookiecfg *bz.CookieConfig, card bz.Card) (msg []message.MessageSegment, err error) {
+	var (
+		data         []byte
+		videoSummary bz.VideoSummary
+	)
+	data, err = web.RequestDataWithHeaders(web.NewDefaultClient(), bz.SignURL(fmt.Sprintf(bz.VideoSummaryURL, card.BvID, card.CID, card.Owner.Mid)), "GET", func(req *http.Request) error {
+		if cookiecfg != nil {
+			cookie := ""
+			cookie, err = cookiecfg.Load()
+			if err != nil {
+				return err
+			}
+			req.Header.Add("cookie", cookie)
+		}
+		req.Header.Set("User-Agent", ua)
+		return nil
+	}, nil)
+	if err != nil {
+		return
+	}
+	err = json.Unmarshal(data, &videoSummary)
+	msg = make([]message.MessageSegment, 0, 16)
+	msg = append(msg, message.Text("已为你生成视频总结\n\n"))
+	msg = append(msg, message.Text(videoSummary.Data.ModelResult.Summary, "\n\n"))
+	for _, v := range videoSummary.Data.ModelResult.Outline {
+		msg = append(msg, message.Text("● ", v.Title, "\n"))
+		for _, p := range v.PartOutline {
+			msg = append(msg, message.Text(fmt.Sprintf("%d:%d %s\n", p.Timestamp/60, p.Timestamp%60, p.Content)))
+		}
+		msg = append(msg, message.Text("\n"))
+	}
+	return
 }

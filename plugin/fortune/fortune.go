@@ -5,7 +5,6 @@ import (
 	"MiniBot/utils"
 	"MiniBot/utils/cache"
 	database "MiniBot/utils/db"
-	"MiniBot/utils/imgfactory"
 	"MiniBot/utils/path"
 	"archive/zip"
 	"context"
@@ -20,6 +19,8 @@ import (
 	"strconv"
 	"time"
 	"unsafe"
+
+	"github.com/FloatTech/imgfactory"
 
 	zero "ZeroBot"
 

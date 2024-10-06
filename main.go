@@ -60,18 +60,19 @@ func main() {
 			ctx.SendChain(message.Text("发送lssv , 插件列表 或 服务列表 查看 bot 开放插件\n发送\"帮助 插件\"查看插件帮助"))
 		})
 
+	zero.Run(&config.Config.Z)
+
 	if web.On {
 		go func() {
 			r := web.GetWebEngine()
 			r.Run("127.0.0.1:8888")
 		}()
 	}
-	zero.Run(&config.Config.Z)
 
 	// 优雅关闭
 	// 创建一个 channel 用于监听退出信号
 	quit := make(chan os.Signal, 1)
-	signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)
+	signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM, syscall.SIGQUIT)
 	// 等待接收到退出信号
 	<-quit
 	log.Info().Str("name", "main").Msg("Shutting down server...")

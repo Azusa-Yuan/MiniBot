@@ -13,8 +13,9 @@ import (
 	"time"
 
 	"MiniBot/utils/cache"
-	"MiniBot/utils/imgfactory"
 	"MiniBot/utils/text"
+
+	"github.com/FloatTech/imgfactory"
 
 	"github.com/FloatTech/gg"
 	"github.com/FloatTech/rendercard"

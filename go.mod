@@ -19,7 +19,8 @@ require (
 )
 
 require (
-	github.com/FloatTech/AnimeAPI v1.7.0
+	github.com/Andrew-M-C/go.emoji v1.1.2
+	github.com/FloatTech/AnimeAPI v1.7.1-0.20240826120833-9bf54389aadb
 	github.com/FloatTech/floatbox v0.0.0-20240505082030-226ec6713e14
 	github.com/FloatTech/gg v1.1.3
 	github.com/FloatTech/imgfactory v0.2.2-0.20230315152233-49741fc994f9
@@ -29,7 +30,6 @@ require (
 	github.com/antchfx/htmlquery v1.2.5
 	github.com/chromedp/chromedp v0.10.0
 	github.com/disintegration/imaging v1.6.2
-	github.com/ericpauley/go-quantize v0.0.0-20200331213906-ae555eb2afa4
 	github.com/fumiama/cron v1.3.0
 	github.com/fumiama/go-registry v0.2.7
 	github.com/gin-gonic/gin v1.10.0
@@ -50,7 +50,6 @@ require (
 	golang.org/x/exp v0.0.0-20240823005443-9b4947da3948
 	golang.org/x/time v0.6.0
 	google.golang.org/api v0.194.0
-	google.golang.org/protobuf v1.34.2
 	gorm.io/driver/mysql v1.5.7
 )
 
@@ -61,7 +60,6 @@ require (
 	cloud.google.com/go/auth/oauth2adapt v0.2.4 // indirect
 	cloud.google.com/go/compute/metadata v0.5.0 // indirect
 	cloud.google.com/go/longrunning v0.5.7 // indirect
-	github.com/Andrew-M-C/go.emoji v1.1.2 // indirect
 	github.com/FloatTech/ttl v0.0.0-20230307105452-d6f7b2b647d1 // indirect
 	github.com/RomiChan/syncx v0.0.0-20240418144900-b7402ffdebc7 // indirect
 	github.com/RomiChan/websocket v1.4.3-0.20220227141055-9b2c6168c9c5 // indirect
@@ -78,13 +76,13 @@ require (
 	github.com/cloudwego/iasm v0.2.0 // indirect
 	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/dgryski/go-rendezvous v0.0.0-20200823014737-9f7001d12a5f // indirect
+	github.com/ericpauley/go-quantize v0.0.0-20200331213906-ae555eb2afa4 // indirect
 	github.com/fastly/go-utils v0.0.0-20180712184237-d95a45783239 // indirect
 	github.com/felixge/httpsnoop v1.0.4 // indirect
 	github.com/fumiama/go-base16384 v1.7.0 // indirect
 	github.com/fumiama/go-simple-protobuf v0.2.0 // indirect
 	github.com/fumiama/gofastTEA v0.0.10 // indirect
 	github.com/fumiama/imgsz v0.0.2 // indirect
-	github.com/fumiama/jieba v0.0.0-20221203025406-36c17a10b565 // indirect
 	github.com/fumiama/terasu v0.0.0-20240502091919-c887e26289a8 // indirect
 	github.com/gabriel-vasile/mimetype v1.4.3 // indirect
 	github.com/gin-contrib/sse v0.1.0 // indirect
@@ -150,6 +148,7 @@ require (
 	google.golang.org/genproto/googleapis/api v0.0.0-20240725223205-93522f1f2a9f // indirect
 	google.golang.org/genproto/googleapis/rpc v0.0.0-20240814211410-ddb44dafa142 // indirect
 	google.golang.org/grpc v1.65.0 // indirect
+	google.golang.org/protobuf v1.34.2 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 )
 

@@ -11,7 +11,8 @@ import (
 
 	"MiniBot/service/wallet"
 	"MiniBot/utils/cache"
-	"MiniBot/utils/imgfactory"
+
+	"github.com/FloatTech/imgfactory"
 
 	"github.com/FloatTech/gg"
 )

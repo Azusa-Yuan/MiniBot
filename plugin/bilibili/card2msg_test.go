@@ -51,7 +51,7 @@ func TestGetVideoSummary(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	t.Log(getVideoSummary(card))
+	t.Log(getVideoSummary(cfg, card))
 }
 
 func TestLiveRoomInfo(t *testing.T) {
