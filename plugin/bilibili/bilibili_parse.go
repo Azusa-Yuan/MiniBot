@@ -76,10 +76,10 @@ func bilibiliParseRule(ctx *zero.Ctx) bool {
 	for _, message := range ctx.Event.Message {
 		if message.Type == "json" {
 			log.Info().Str("name", "bilibili_parse").Msg(fmt.Sprint(message.Data))
-			meta := message.Data["meta"]
-			log.Info().Str("name", "bilibili_parse").Msg(meta)
-			metaJson := gjson.Parse(meta)
-			url := metaJson.Get("detail_1").Get("qqdocurl").String()
+			data := message.Data["data"]
+			log.Info().Str("name", "bilibili_parse").Msg(data)
+			datajson := gjson.Parse(data)
+			url := datajson.Get("meta").Get("detail_1").Get("qqdocurl").String()
 			log.Info().Str("name", "bilibili_parse").Msg(url)
 			if matched := searchUrlRe.FindStringSubmatch(url); matched != nil {
 				ctx.State["regex_matched"] = matched
