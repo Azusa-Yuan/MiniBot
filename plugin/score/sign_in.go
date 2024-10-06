@@ -343,12 +343,12 @@ func initPic(picFile string, uid int64) (avatar []byte, err error) {
 		data, err = os.ReadFile(filepath.Join(cachePath, selectedFile.Name()))
 	} else {
 		data, err = io.ReadAll(response.Body)
+		response.Body.Close()
 	}
 
 	if err != nil {
 		return
 	}
-	response.Body.Close()
 
 	return avatar, os.WriteFile(picFile, data, 0644)
 }
