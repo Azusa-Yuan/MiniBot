@@ -27,8 +27,9 @@ import (
 
 	"MiniBot/service/wallet"
 	"MiniBot/utils/file"
-	"MiniBot/utils/imgfactory"
 	"MiniBot/utils/text"
+
+	"github.com/FloatTech/imgfactory"
 
 	"github.com/golang/freetype"
 	"github.com/wcharczuk/go-chart/v2"
