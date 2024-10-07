@@ -46,7 +46,7 @@ func init() {
 				ctx.SendChain(message.At(ctx.Event.SelfID), message.Text("订阅githu参数错误"))
 				return
 			}
-			_, resp, err := client.Repositories.ListCommits(context.Background(), params[0], params[2], nil)
+			_, resp, err := client.Repositories.ListCommits(context.Background(), params[0], params[1], nil)
 			if err != nil {
 				ctx.SendError(err)
 				return
@@ -133,7 +133,7 @@ func sendChange() {
 	repos := maps.Keys(githubMap)
 	for _, repo := range repos {
 		params := strings.Split(repo, "/")
-		commits, resp, err := client.Repositories.ListCommits(context.Background(), params[0], params[2], nil)
+		commits, resp, err := client.Repositories.ListCommits(context.Background(), params[0], params[1], nil)
 		if err != nil {
 			log.Error().Str("name", pluginName).Err(err).Msg("")
 			continue
