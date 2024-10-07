@@ -106,14 +106,14 @@ func init() {
 				}
 				msg := "订阅了以下仓库:"
 				for order, repo := range githubRepos {
-					msg += fmt.Sprint("\n", order, repo)
+					msg += fmt.Sprint("\n", order, ": "+repo)
 				}
 				ctx.SendChain(message.At(ctx.Event.UserID), message.Text(msg))
 			}
 		},
 	)
 
-	schedule.Cron.AddFunc(fmt.Sprintf("5 */%d * * *", interval), sendChange)
+	schedule.Cron.AddFunc(fmt.Sprintf("15 */%d * * *", interval), sendChange)
 }
 
 func CreateOrUpdate(userInfo book.Book, param string) error {
@@ -205,8 +205,8 @@ func sendChange() {
 					continue
 				}
 				if commit.Commit.Author.GetDate().After(timeStamp) {
-					commitInfo := fmt.Sprintf(commit.Commit.Author.GetDate().Format("2006-01-02 15:04:05") + commit.Commit.GetAuthor().GetName() + "在仓库" + repo + "进行了commit " +
-						commit.Commit.GetMessage() + "\n" + commit.GetHTMLURL())
+					commitInfo := fmt.Sprintf(commit.Commit.Author.GetDate().Local().Format("2006-01-02 15:04:05") + "  " + commit.Commit.GetAuthor().GetName() + "在仓库" + repo + "进行了commit " + "\n" +
+						"comment:" + commit.Commit.GetMessage() + "\n" + commit.GetHTMLURL())
 
 					if info.GroupID != 0 {
 						bot.SendGroupMessage(info.GroupID, commitInfo)
