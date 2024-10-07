@@ -76,7 +76,44 @@ func init() {
 		},
 	)
 
-	schedule.Cron.AddFunc("0 * * * *", sendChange)
+	engine.OnFullMatch("查看github订阅").SetBlock(true).Handle(
+		func(ctx *zero.Ctx) {
+			gid := ctx.Event.GroupID
+			uid := ctx.Event.UserID
+			bid := ctx.Event.SelfID
+			if gid != 0 {
+				uid = 0
+			}
+			githubLock.RLock()
+			defer githubLock.RUnlock()
+			userInfo, err := book.GetUserBookInfo(&book.Book{
+				UserID:  uid,
+				BotID:   bid,
+				GroupID: gid,
+				Service: pluginName,
+			})
+			if err != nil {
+				ctx.SendError(err)
+				return
+			}
+			if userInfo.Value == "" {
+				ctx.SendChain(message.Text("还没订阅任何仓库"))
+			} else {
+				githubRepos := []string{}
+				err := json.Unmarshal(utils.StringToBytes(userInfo.Value), &githubRepos)
+				if err != nil {
+					ctx.SendError(err)
+				}
+				msg := "订阅了以下仓库:"
+				for order, repo := range githubRepos {
+					msg += fmt.Sprint("\n", order, repo)
+				}
+				ctx.SendChain(message.At(ctx.Event.UserID), message.Text(msg))
+			}
+		},
+	)
+
+	schedule.Cron.AddFunc(fmt.Sprintf("5 */%d * * *", interval), sendChange)
 }
 
 func CreateOrUpdate(userInfo book.Book, param string) error {
@@ -168,7 +205,7 @@ func sendChange() {
 					continue
 				}
 				if commit.Commit.Author.GetDate().After(timeStamp) {
-					commitInfo := fmt.Sprintf(commit.Commit.GetAuthor().GetName() + "在仓库" + repo + "进行了commit " +
+					commitInfo := fmt.Sprintf(commit.Commit.Author.GetDate().Format("2006-01-02 15:04:05") + commit.Commit.GetAuthor().GetName() + "在仓库" + repo + "进行了commit " +
 						commit.Commit.GetMessage() + "\n" + commit.GetHTMLURL())
 
 					if info.GroupID != 0 {

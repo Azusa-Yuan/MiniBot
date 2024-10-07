@@ -10,7 +10,7 @@ import (
 
 var (
 	// 时间间隔 单位小时
-	interval = 12
+	interval = 1
 	client   = github.NewClient(nil)
 )
 
