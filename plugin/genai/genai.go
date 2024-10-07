@@ -15,7 +15,7 @@ import (
 )
 
 func init() {
-	metaData := zero.MetaData{
+	metaData := zero.Metadata{
 		Name: "genai",
 		Help: `基于Google大模型Gemini的ai对话插件,快和露露姆进行ai对话
 指令:

@@ -16,7 +16,7 @@ import (
 )
 
 var (
-	metaData = zero.MetaData{
+	metaData = zero.Metadata{
 		Name: "qqwife",
 		// - 重置花名册\n- 重置所有花名册(用于清除所有群数据及其设置)\n- GetFavorability[对方Q号|@对方QQ]\n-
 		Help: "- 娶群友或今日老婆\n- 群老婆列表\n- [允许|禁止]自由恋爱\n- [允许|禁止]牛头人\n- 设置CD为xx小时  →(默认1小时)\n - 好感度列表\n" +

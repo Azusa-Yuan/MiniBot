@@ -48,7 +48,7 @@ var (
 
 // 查成分的
 func init() {
-	engine := zero.NewTemplate(&zero.MetaData{
+	engine := zero.NewTemplate(&zero.Metadata{
 		Name: "b站查成分查弹幕",
 		Help: "- >vup info [xxx]\n" +
 			"- >user info [xxx]\n" +
@@ -63,7 +63,7 @@ func init() {
 	_ = os.MkdirAll(cachePath, 0755)
 	vdb, err := initializeVup()
 	if err != nil {
-		log.Error().Err(err).Str("name", engine.MetaData.Name).Msg("")
+		log.Error().Err(err).Str("name", engine.Metadata.Name).Msg("")
 	}
 	engine.OnRegex(`^>user info\s?(.{1,25})$`, getPara).SetBlock(true).
 		Handle(func(ctx *zero.Ctx) {

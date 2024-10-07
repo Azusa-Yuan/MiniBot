@@ -57,7 +57,7 @@ func init() {
 
 	patternId := `\s*(\d{10})\s*`
 	reId := regexp.MustCompile(patternId)
-	engine := zero.NewTemplate(&zero.MetaData{
+	engine := zero.NewTemplate(&zero.Metadata{
 		Name: pluginName,
 		Help: help,
 	})

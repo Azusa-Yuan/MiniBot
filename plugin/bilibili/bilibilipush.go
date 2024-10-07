@@ -37,7 +37,7 @@ var (
 )
 
 func init() {
-	en := zero.NewTemplate(&zero.MetaData{
+	en := zero.NewTemplate(&zero.Metadata{
 		Name: "b站推送",
 		Help: "- 添加b站订阅[uid|name]\n" +
 			"- 取消b站订阅[uid|name]\n" +

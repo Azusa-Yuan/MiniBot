@@ -23,6 +23,12 @@ func GetBookInfos(service string) ([]Book, error) {
 	return bookInfos, err
 }
 
+func GetUserBookInfo(bookInfo *Book) (*Book, error) {
+	err := db.Where("bot_id = ? AND user_id = ? AND group_id = ? AND service = ?", bookInfo.BotID, bookInfo.UserID, bookInfo.GroupID, bookInfo.Service).
+		Find(&bookInfo).Error
+	return bookInfo, err
+}
+
 func CreatOrUpdateBookInfo(bookInfo *Book) error {
 	tx := db.Begin()
 

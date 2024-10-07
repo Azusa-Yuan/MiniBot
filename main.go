@@ -25,6 +25,7 @@ import (
 	_ "MiniBot/plugin/eqa"
 	_ "MiniBot/plugin/fortune"
 	_ "MiniBot/plugin/genai"
+	_ "MiniBot/plugin/github"
 	_ "MiniBot/plugin/like"
 	_ "MiniBot/plugin/meme"
 	_ "MiniBot/plugin/monitor"

@@ -48,7 +48,7 @@ func init() {
 		return
 	}
 
-	engine := zero.NewTemplate(&zero.MetaData{
+	engine := zero.NewTemplate(&zero.Metadata{
 		Name: pluginName,
 		Help: help,
 	})

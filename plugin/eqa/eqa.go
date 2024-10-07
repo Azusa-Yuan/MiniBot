@@ -28,7 +28,7 @@ var (
 )
 
 func init() {
-	metaData := zero.MetaData{
+	metaData := zero.Metadata{
 		Name: "eqa",
 		Help: `### 例子： 设置在默认的情况下
 ##### 设置一个问题：

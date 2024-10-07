@@ -16,7 +16,7 @@ var (
 )
 
 func init() { // 插件主体
-	zero.NewTemplate(&zero.MetaData{
+	zero.NewTemplate(&zero.Metadata{
 		Name: "摸鱼提醒",
 		Help: "- /启用 moyu\n" +
 			"- /禁用 moyu\n" +

@@ -11,7 +11,7 @@ import (
 )
 
 func init() {
-	engine := zero.NewTemplate(&zero.MetaData{
+	engine := zero.NewTemplate(&zero.Metadata{
 		Name: "睡眠小助手",
 		Help: "- 早安\n- 晚安",
 	})

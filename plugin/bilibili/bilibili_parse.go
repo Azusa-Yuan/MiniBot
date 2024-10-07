@@ -13,7 +13,6 @@ import (
 
 	bz "github.com/FloatTech/AnimeAPI/bilibili"
 	"github.com/FloatTech/floatbox/web"
-	"github.com/rs/zerolog/log"
 	"github.com/tidwall/gjson"
 )
 
@@ -32,7 +31,7 @@ var (
 
 // 插件主体
 func init() {
-	en := zero.NewTemplate(&zero.MetaData{
+	en := zero.NewTemplate(&zero.Metadata{
 		Name: "B站链接解析",
 	})
 
@@ -75,12 +74,9 @@ func bilibiliParseRule(ctx *zero.Ctx) bool {
 	// 解析小程序
 	for _, message := range ctx.Event.Message {
 		if message.Type == "json" {
-			log.Info().Str("name", "bilibili_parse").Msg(fmt.Sprint(message.Data))
 			data := message.Data["data"]
-			log.Info().Str("name", "bilibili_parse").Msg(data)
 			datajson := gjson.Parse(data)
 			url := datajson.Get("meta").Get("detail_1").Get("qqdocurl").String()
-			log.Info().Str("name", "bilibili_parse").Msg(url)
 			if matched := searchUrlRe.FindStringSubmatch(url); matched != nil {
 				ctx.State["regex_matched"] = matched
 				return true

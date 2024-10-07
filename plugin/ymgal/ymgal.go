@@ -11,7 +11,7 @@ import (
 )
 
 func init() {
-	engine := zero.NewTemplate(&zero.MetaData{
+	engine := zero.NewTemplate(&zero.Metadata{
 		Name: "月慕galgame相关",
 		Help: "- galCG 随机发一张galCG\n- gal表情包 随机发一张gal表情包\n- galCG[xxx]\n- gal表情包[xxx]\n- 更新gal",
 	})

@@ -39,7 +39,7 @@ var (
 )
 
 func init() {
-	metaData := &zero.MetaData{
+	metaData := &zero.Metadata{
 		Name: pluginName,
 		Help: "戳机器人，有几率发图发语音",
 	}

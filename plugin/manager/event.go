@@ -19,7 +19,7 @@ import (
 )
 
 func init() {
-	// metaData := &zero.MetaData{
+	// metaData := &zero.Metadata{
 	// 	Name: "",
 	// 	Help: ,
 	// }

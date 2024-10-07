@@ -30,7 +30,7 @@ func init() {
 		log.Error().Err(err).Str("name", pluginName)
 		return
 	}
-	zero.NewTemplate(&zero.MetaData{
+	zero.NewTemplate(&zero.Metadata{
 		Name: "合成emoji",
 		Help: "- [emoji][emoji]",
 	}).OnMessage(match).SetBlock(true).

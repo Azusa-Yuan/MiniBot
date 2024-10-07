@@ -34,13 +34,13 @@ type ControlManger struct {
 
 // Control is to control the plugins.
 type Control struct {
-	MetaDate *zero.MetaData
+	MetaDate *zero.Metadata
 	Cache    map[string]bool // map[gid]isdisable
 	Options  Options
 	sync.RWMutex
 }
 
-func NewControl(metaDate *zero.MetaData) *Control {
+func NewControl(metaDate *zero.Metadata) *Control {
 	control := &Control{
 		MetaDate: metaDate,
 		Cache:    make(map[string]bool, 16),
@@ -100,7 +100,7 @@ func (m *Control) String() string {
 	return m.MetaDate.Help
 }
 
-func (cm *ControlManger) NewControl(metaDate *zero.MetaData) *Control {
+func (cm *ControlManger) NewControl(metaDate *zero.Metadata) *Control {
 	control := NewControl(metaDate)
 	cm.Lock()
 	defer cm.Unlock()

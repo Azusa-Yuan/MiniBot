@@ -11,18 +11,18 @@ func unew() *Engine {
 	}
 }
 
-type MetaData struct {
+type Metadata struct {
 	Name  string
 	Help  string
 	Level uint
 }
 
-func NewTemplate(metaData *MetaData) (e *Engine) {
+func NewTemplate(metaData *Metadata) (e *Engine) {
 	if metaData.Name == "" {
 		log.Fatal().Msg("禁止注册没有命名的插件")
 	}
 	e = &Engine{
-		MetaData:    metaData,
+		Metadata:    metaData,
 		PreHandler:  []Rule{},
 		MidHandler:  []Rule{},
 		PostHandler: []Handler{},
@@ -40,7 +40,7 @@ var defaultEngine = unew()
 
 // Engine is the pre_handler, post_handler manager
 type Engine struct {
-	MetaData    *MetaData
+	Metadata    *Metadata
 	PreHandler  []Rule
 	MidHandler  []Rule
 	PostHandler []Handler
@@ -60,12 +60,12 @@ func (e *Engine) SetBlock(Block bool) *Engine {
 	return e
 }
 
-func (e *Engine) GetMetaDate(Block bool) *MetaData {
-	return e.MetaData
+func (e *Engine) GetMetaDate(Block bool) *Metadata {
+	return e.Metadata
 }
 
-func (e *Engine) SetMetaDate(MetaData *MetaData) {
-	e.MetaData = MetaData
+func (e *Engine) SetMetaDate(Metadata *Metadata) {
+	e.Metadata = Metadata
 }
 
 // UsePreHandler 向该 Engine 添加新 PreHandler(Rule),

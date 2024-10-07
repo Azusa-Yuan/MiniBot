@@ -53,7 +53,7 @@ func isAtriSleeping(*zero.Ctx) bool {
 }
 
 func init() { // 插件主体
-	metaData := zero.MetaData{
+	metaData := zero.Metadata{
 		Name: "atri",
 		Help: "本插件基于 ATRI ，为 Golang 移植版\n" +
 			"- ATRI醒醒\n- ATRI睡吧\n- 萝卜子\n- 喜欢 | 爱你 | 爱 | suki | daisuki | すき | 好き | 贴贴 | 老婆 | 亲一个 | mua\n" +

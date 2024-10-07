@@ -16,7 +16,7 @@ var (
 )
 
 func init() {
-	metaData := &zero.MetaData{
+	metaData := &zero.Metadata{
 		Name: pluginName,
 		Help: "点赞,艾特机器人发送 赞我 。非机器人好友有概率失败",
 	}

@@ -13,7 +13,7 @@ func Initialize() {
 	matcher := zero.Matcher{}
 	matchers := matcher.GetMatcherList()
 	for _, v := range matchers {
-		metaDate := v.Engine.MetaData
+		metaDate := v.Engine.Metadata
 		if metaDate != nil {
 			if metaDate.Name != "" {
 				if _, ok := enmap[metaDate.Name]; ok {

@@ -81,7 +81,7 @@ var (
 )
 
 // engine 级
-func newAuthHandler(metaDate *zero.MetaData) zero.Rule {
+func newAuthHandler(metaDate *zero.Metadata) zero.Rule {
 	c := plugin.CM.NewControl(metaDate)
 	return func(ctx *zero.Ctx) bool {
 		// 对超管无用

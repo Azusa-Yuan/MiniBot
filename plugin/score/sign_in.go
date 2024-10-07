@@ -47,7 +47,7 @@ var (
 	cachePath string
 	rankArray = [...]int{0, 10, 20, 50, 100, 200, 350, 550, 750, 1000, 1200}
 
-	metaData = &zero.MetaData{
+	metaData = &zero.Metadata{
 		Name: "sign in",
 		Help: "- 签到\n- 获得签到背景[@xxx] | 获得签到背景\n- \n- 查看等级排名\n- 查看我的钱包\n- ",
 	}

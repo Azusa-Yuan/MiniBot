@@ -28,7 +28,7 @@ func init() {
 		log.Error().Str("name", pluginName).Err(err).Msg("")
 		return
 	}
-	metaData := zero.MetaData{
+	metaData := zero.Metadata{
 		Name: pluginName,
 		Help: "发送 表情包列表 查看所有表情指令 \n发送 查看表情信息xx 查看表情详细参数",
 	}

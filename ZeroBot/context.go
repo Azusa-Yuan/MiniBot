@@ -30,10 +30,10 @@ func (ctx *Ctx) GetMatcherMetadata() MatcherMetadata {
 	meta := MatcherMetadata{
 		MatcherName: ctx.ma.Mark,
 	}
-	if ctx.ma.Engine.MetaData == nil {
+	if ctx.ma.Engine.Metadata == nil {
 		meta.PluginName = "default"
 	} else {
-		meta.PluginName = ctx.ma.Engine.MetaData.Name
+		meta.PluginName = ctx.ma.Engine.Metadata.Name
 	}
 	return meta
 }

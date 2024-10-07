@@ -11,7 +11,7 @@ import (
 )
 
 func init() {
-	engine := zero.NewTemplate(&zero.MetaData{
+	engine := zero.NewTemplate(&zero.Metadata{
 		Name: "dnf",
 		Help: `查询DNF金币或者矛盾价格  实例指令 比例跨二  矛盾跨二
 查看colg资讯 指令 colg资讯
