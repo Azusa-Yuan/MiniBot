@@ -46,8 +46,7 @@ var (
 	// 映射底图与 index
 	index = make(map[string]uint8)
 	// 签文
-	omikujis    []map[string]string
-	fontdata, _ = cache.GetDefaultFont()
+	omikujis []map[string]string
 )
 
 type fortune struct {
@@ -150,6 +149,7 @@ func init() {
 				return
 			}
 
+			fontdata, _ := cache.GetDefaultFont()
 			imgData, err := draw(background, fontdata, title, text)
 			if err != nil {
 				ctx.SendError(err)

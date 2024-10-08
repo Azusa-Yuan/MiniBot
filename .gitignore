@@ -12,3 +12,4 @@ log/MiniBot
 tmp.json
 data/*
 *.gz
+*.out
