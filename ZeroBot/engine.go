@@ -186,7 +186,7 @@ func OnRegex(regexPattern string, rules ...Rule) *Matcher {
 	return OnMessage(append([]Rule{RegexRule(regexPattern)}, rules...)...)
 }
 
-// OnRegex 正则触发器
+// OnRegex 正则触发器 设置ctx.State["regex_matched"]为匹配到字符串数组
 func (e *Engine) OnRegex(regexPattern string, rules ...Rule) *Matcher {
 	matcher := &Matcher{
 		Type:   Type("message"),

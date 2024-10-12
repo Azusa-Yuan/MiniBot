@@ -38,7 +38,7 @@ func GetHelp() ([]byte, error) {
 		number++
 	}
 	fontSize := 30.0
-	canvas := gg.NewContext(1500, int(230+fontSize*float64(number)))
+	canvas := gg.NewContext(1500, int(260+fontSize*float64(number)))
 	canvas.SetRGB(1, 1, 1) // 白色
 	canvas.Clear()
 	/***********获取字体，可以注销掉***********/

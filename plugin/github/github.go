@@ -11,6 +11,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"strconv"
 	"strings"
 	"sync"
 	"time"
@@ -31,9 +32,11 @@ func init() {
 		Name: pluginName,
 		Help: fmt.Sprintf(`订阅github commit动态, 当前查询间隔为%d小时
 指令如下:
-订阅github 作者/参数    如:订阅github Azusa-Yuan/MiniBot
-取消订阅github 序号     如:取消订阅github 0
-查看github订阅`, interval),
+- 订阅github 作者/参数    
+  如:订阅github Azusa-Yuan/MiniBot
+- 取消订阅github 序号     
+  如:取消订阅github 0
+- 查看github订阅`, interval),
 		Level: 2,
 	}
 	engine := zero.NewTemplate(metadata)
@@ -110,6 +113,44 @@ func init() {
 				}
 				ctx.SendChain(message.At(ctx.Event.UserID), message.Text(msg))
 			}
+		},
+	)
+
+	engine.OnRegex(`取消订阅github\s*(\d+)`).SetBlock(true).Handle(
+		func(ctx *zero.Ctx) {
+			gid := ctx.Event.GroupID
+			uid := ctx.Event.UserID
+			bid := ctx.Event.SelfID
+			if gid != 0 {
+				uid = 0
+			}
+			re := ctx.State["regex_matched"].([]string)
+			order, _ := strconv.Atoi(re[1])
+			bookInfo, err := book.GetUserBookInfo(&book.Book{
+				UserID:  uid,
+				GroupID: gid,
+				BotID:   bid,
+				Service: pluginName,
+			})
+			if err != nil {
+				ctx.SendError(err)
+				return
+			}
+			githubRepos := []string{}
+			json.Unmarshal(utils.StringToBytes(bookInfo.Value), &githubRepos)
+			if order >= len(githubRepos) {
+				ctx.SendChain(message.Text("超出上限"))
+				return
+			}
+			githubRepos = append(githubRepos[:order], githubRepos[order+1:]...)
+			infosBytes, _ := json.MarshalIndent(githubRepos, "", " ")
+			bookInfo.Value = utils.BytesToString(infosBytes)
+			err = db.Save(&bookInfo).Error
+			if err != nil {
+				ctx.SendError(err)
+				return
+			}
+			ctx.SendChain(message.Text("删除成功"))
 		},
 	)
 

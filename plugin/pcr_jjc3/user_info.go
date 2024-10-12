@@ -106,7 +106,7 @@ func (UIM *UserInfoManage) bind(id string, uid string, gid string, bid string, i
 	if ifAttention {
 		msg = "竞技场关注成功"
 	} else {
-		msg = "竞技场 bind 成功"
+		msg = "竞技场bind成功"
 	}
 
 	UIM.update = true
