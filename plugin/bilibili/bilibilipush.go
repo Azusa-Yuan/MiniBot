@@ -341,6 +341,7 @@ func sendDynamic() error {
 					bot, err := zero.GetBot(info.BotID)
 					if err != nil {
 						log.Error().Str("name", "b站推送").Err(err).Msg("")
+						continue
 					}
 					switch {
 					case info.GroupID > 0:
@@ -395,6 +396,7 @@ func sendLive() error {
 				bot, err := zero.GetBot(info.BotID)
 				if err != nil {
 					log.Error().Str("name", "b站推送").Err(err).Msg("")
+					continue
 				}
 				switch {
 				case info.GroupID > 0:
