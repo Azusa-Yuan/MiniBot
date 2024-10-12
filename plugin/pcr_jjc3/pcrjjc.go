@@ -166,7 +166,7 @@ func init() {
 			ctx.SendChain(message.At(ctx.Event.UserID), message.Text(msg))
 		})
 
-	engine.OnFullMatch("删除绑定").SetBlock(true).Handle(
+	engine.OnFullMatchGroup([]string{"删除绑定", "删除bind"}).SetBlock(true).Handle(
 		func(ctx *zero.Ctx) {
 			uid := strconv.FormatInt(ctx.Event.UserID, 10)
 			msg := userInfoManage.delBind(uid, 0)

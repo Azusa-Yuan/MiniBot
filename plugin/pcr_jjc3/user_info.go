@@ -66,10 +66,10 @@ func (UIM *UserInfoManage) bind(id string, uid string, gid string, bid string, i
 	userMap := UIM.UserInfoMap
 	if _, ok := userMap[uid]; !ok {
 		userMap[uid] = UserInfoUnit{
-			Id:   []string{},
-			Bid:  []string{},
-			Gid:  []string{},
-			Mode: []string{},
+			Id:   make([]string, 2),
+			Bid:  make([]string, 2),
+			Gid:  make([]string, 2),
+			Mode: make([]string, 2),
 		}
 	}
 
