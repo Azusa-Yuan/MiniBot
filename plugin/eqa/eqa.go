@@ -96,7 +96,7 @@ func init() {
 				gid = ctx.Event.GroupID
 			}
 			db := database.GetDefalutDB()
-			qa := eqa{Key: question, Value: utils.BytesToString(data), GID: gid}
+			qa := eqa{Key: question, Value: utils.BytesToString(data), GID: gid, MessageList: answer}
 			err = db.Create(&qa).Error
 			if err != nil {
 				ctx.SendError(err)
@@ -149,7 +149,7 @@ func init() {
 				if len(tmpMessageList) == 0 {
 					return
 				}
-				respQA := messageList[rand.IntN(len(tmpMessageList))]
+				respQA := tmpMessageList[rand.IntN(len(tmpMessageList))]
 				ctx.SendChain(respQA.MessageList...)
 			}
 		},
