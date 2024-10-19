@@ -229,7 +229,7 @@ func updateLocalPic() error {
 				continue
 			}
 			picType := typeDir.Name()
-			title := picType + titleSuffix
+			title := picType + "-" + titleSuffix
 			picsPath := filepath.Join(typePath, picType)
 			picList, err := os.ReadDir(picsPath)
 			if err != nil {
