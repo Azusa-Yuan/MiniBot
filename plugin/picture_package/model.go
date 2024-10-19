@@ -1,9 +1,12 @@
 package ymgal
 
 import (
+	"MiniBot/utils/path"
 	"fmt"
 	"math/rand/v2"
 	"net/url"
+	"os"
+	"path/filepath"
 	"regexp"
 	"strconv"
 	"strings"
@@ -11,6 +14,7 @@ import (
 	"time"
 
 	"github.com/antchfx/htmlquery"
+	"github.com/rs/zerolog/log"
 	"gorm.io/gorm"
 )
 
@@ -26,7 +30,7 @@ var mu sync.RWMutex
 type ymgal struct {
 	ID                 int64  `gorm:"column:id;primary_key" `
 	OtherId            int64  `gorm:"column:other_id;index" `
-	Title              string `gorm:"column:title" `
+	Title              string `gorm:"column:title;index" `
 	PictureType        string `gorm:"column:picture_type" `
 	PictureDescription string `gorm:"column:picture_description;type:varchar(1024)" `
 	PictureList        string `gorm:"column:picture_list;type:text" `
@@ -48,6 +52,24 @@ func (gdb *ymgaldb) insertOrUpdateYmgalByID(id int64, title, pictureType, pictur
 	}
 	old := &ymgal{}
 	err = db.Model(&ymgal{}).First(&old, "other_id = ? ", id).Error
+	if err == nil {
+		y.ID = old.ID
+	}
+
+	db.Save(&y)
+	return
+}
+
+func (gdb *ymgaldb) insertOrUpdateLocalPic(title, pictureType, pictureDescription, pictureList string) (err error) {
+	db := (*gorm.DB)(gdb)
+	y := ymgal{
+		Title:              title,
+		PictureType:        pictureType,
+		PictureDescription: pictureDescription,
+		PictureList:        pictureList,
+	}
+	old := &ymgal{}
+	err = db.Model(&ymgal{}).First(&old, "title = ? ", title).Error
 	if err == nil {
 		y.ID = old.ID
 	}
@@ -139,6 +161,7 @@ var (
 	commonPageNumberExpr = "//*[@id='pager-box']/div/a[@class='icon item pager-next']/preceding-sibling::a[1]/text()"
 	cgIDList             []string
 	emoticonIDList       []string
+	dataPath             = path.GetPluginDataPath()
 )
 
 func initPageNumber() (maxCgPageNumber, maxEmoticonPageNumber int, err error) {
@@ -180,6 +203,62 @@ func getPicID(pageNumber int, pictureType string) error {
 			cgIDList = append(cgIDList, picID)
 		} else if pictureType == emoticonType {
 			emoticonIDList = append(emoticonIDList, picID)
+		}
+	}
+	return nil
+}
+
+func updateLocalPic() error {
+	titleDirs, err := os.ReadDir(dataPath)
+	if err != nil {
+		return err
+	}
+	for _, titleDir := range titleDirs {
+		if !titleDir.IsDir() {
+			continue
+		}
+		titleSuffix := titleDir.Name()
+		typePath := filepath.Join(dataPath, titleSuffix)
+		typeDirs, err := os.ReadDir(typePath)
+		if err != nil {
+			log.Error().Str("name", pluginName).Err(err).Msg("")
+			continue
+		}
+		for _, typeDir := range typeDirs {
+			if !typeDir.IsDir() {
+				continue
+			}
+			picType := typeDir.Name()
+			title := picType + titleSuffix
+			picsPath := filepath.Join(typePath, picType)
+			picList, err := os.ReadDir(picsPath)
+			if err != nil {
+				log.Error().Str("name", pluginName).Err(err).Msg("")
+				continue
+			}
+			picListStr := ""
+			picListDesc := ""
+
+			for _, pic := range picList {
+				picPath := filepath.Join(picsPath, pic.Name())
+				if strings.HasSuffix(picPath, "txt") {
+					descBytes, err := os.ReadFile(picPath)
+					if err != nil {
+						log.Error().Str("name", pluginName).Err(err).Msg("")
+						continue
+					}
+					picListDesc += string(descBytes)
+					continue
+				}
+				if picListStr != "" {
+					picListStr += ","
+				}
+				picListStr += "file://" + picPath
+			}
+			err = gdb.insertOrUpdateLocalPic(title, picType, picListDesc, picListStr)
+			if err != nil {
+				log.Error().Str("name", pluginName).Err(err).Msg("")
+			}
 		}
 	}
 	return nil

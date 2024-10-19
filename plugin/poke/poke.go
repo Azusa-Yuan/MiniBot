@@ -44,6 +44,16 @@ func init() {
 		Help: "戳机器人，有几率发图发语音",
 	}
 	engine := zero.NewTemplate(metaData)
+	engine.OnKeywordGroup([]string{"色图", "涩图", "瑟图"}, zero.OnlyToMe).SetBlock(true).
+		Handle(func(ctx *zero.Ctx) {
+			tmpPath := filepath.Join(imagePath, zero.BotConfig.GetNickName(ctx.Event.SelfID)[0]+".zip")
+			imgBytes, err := randimage(tmpPath)
+			if err != nil {
+				ctx.SendError(err)
+				return
+			}
+			ctx.SendChain(message.ImageBytes(imgBytes))
+		})
 	engine.On("notice/notify/poke", zero.OnlyToMe).Handle(
 		func(ctx *zero.Ctx) {
 			r := rand.Float64()

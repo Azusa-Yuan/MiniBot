@@ -31,11 +31,11 @@ import (
 	_ "MiniBot/plugin/monitor"
 	_ "MiniBot/plugin/moyu"
 	_ "MiniBot/plugin/pcr_jjc3"
+	_ "MiniBot/plugin/picture_package"
 	_ "MiniBot/plugin/poke"
 	_ "MiniBot/plugin/qqwife"
 	_ "MiniBot/plugin/score"
 	_ "MiniBot/plugin/sleepmanage"
-	_ "MiniBot/plugin/ymgal"
 
 	// -----------------------以下为内置依赖，勿动------------------------ //
 	zero "ZeroBot"

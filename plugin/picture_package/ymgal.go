@@ -11,22 +11,16 @@ import (
 	"ZeroBot/message"
 )
 
+var pluginName = "图包相关"
+
 func init() {
 	engine := zero.NewTemplate(&zero.Metadata{
-		Name: "图包相关",
-		Help: `-随机xxx[CG|cg|表情包|表情] 暂时只有gal图包
-- galCG 随机发一张galCG\n- gal表情包 随机发一张gal表情包\n- galCG[xxx]\n- gal表情包[xxx]\n- 更新gal`,
+		Name: pluginName,
+		Help: `-随机xxx[CG|cg|表情包|表情] 暂时只有gal图包`,
 	})
 	db := database.GetDefalutDB()
 	db.AutoMigrate(&ymgal{})
 	gdb = (*ymgaldb)(db)
-
-	engine.OnKeywordGroup([]string{"色图", "涩图", "瑟图"}, zero.OnlyToMe).SetBlock(true).
-		Handle(func(ctx *zero.Ctx) {
-			ctx.Send("少女祈祷中......")
-			y := gdb.randPicByType(cgType)
-			sendYmgal(y, ctx)
-		})
 
 	typeMap := map[string]string{
 		"CG":  cgType,
@@ -49,6 +43,7 @@ func init() {
 			if picType == "" && key == "" {
 				return
 			}
+			ctx.Send("少女祈祷中......")
 			y := gdb.getRandPic(picType, key)
 			sendYmgal(y, ctx)
 		},
@@ -90,6 +85,18 @@ func init() {
 				return
 			}
 			ctx.Send("ymgal数据库已更新")
+		})
+
+	engine.OnFullMatch("更新本地图片", zero.SuperUserPermission).
+		SetBlock(true).SetNoTimeOut(true).Handle(
+		func(ctx *zero.Ctx) {
+			ctx.Send("少女祈祷中......")
+			err := updateLocalPic()
+			if err != nil {
+				ctx.SendError(err)
+				return
+			}
+			ctx.Send("本地图库关联数据库已更新")
 		})
 }
 
