@@ -113,7 +113,7 @@ func init() {
 			ctx.SendChain(message.Text("没有这个底图哦～"))
 		})
 
-	en.OnFullMatchGroup([]string{"运势", "抽签"}).SetBlock(true).
+	en.OnFullMatchGroup([]string{"运势", "抽签", "今日运势"}).SetBlock(true).
 		Handle(func(ctx *zero.Ctx) {
 
 			kind := "碧蓝航线"

@@ -22,7 +22,7 @@ import (
 )
 
 var (
-	messageMap = map[string][]eqa{}
+	answerMap  = map[string][]eqa{}
 	Lock       = sync.RWMutex{}
 	pluginName = "eqa"
 )
@@ -104,10 +104,10 @@ func init() {
 			}
 
 			Lock.Lock()
-			if messageList, ok := messageMap[question]; ok {
-				messageMap[question] = append(messageList, qa)
+			if answerList, ok := answerMap[question]; ok {
+				answerMap[question] = append(answerList, qa)
 			} else {
-				messageMap[question] = []eqa{qa}
+				answerMap[question] = []eqa{qa}
 			}
 			Lock.Unlock()
 
@@ -121,8 +121,8 @@ func init() {
 			q := ctx.State["args"].(string)
 			Lock.Lock()
 			defer Lock.Unlock()
-			if _, ok := messageMap[q]; ok {
-				delete(messageMap, q)
+			if _, ok := answerMap[q]; ok {
+				delete(answerMap, q)
 				db := database.GetDefalutDB()
 				db.Where("key = ?", q).Delete(&eqa{})
 				ctx.SendChain(message.Text("该问题已删除"))
@@ -139,17 +139,17 @@ func init() {
 			}
 			Lock.RLock()
 			defer Lock.RUnlock()
-			if messageList, ok := messageMap[ctx.MessageString()]; ok {
-				tmpMessageList := []eqa{}
-				for _, qa := range messageList {
+			if answerList, ok := answerMap[ctx.MessageString()]; ok {
+				tmpAnswerList := []eqa{}
+				for _, qa := range answerList {
 					if qa.GID == 0 || qa.GID == ctx.Event.GroupID {
-						tmpMessageList = append(tmpMessageList, qa)
+						tmpAnswerList = append(tmpAnswerList, qa)
 					}
 				}
-				if len(tmpMessageList) == 0 {
+				if len(tmpAnswerList) == 0 {
 					return
 				}
-				respQA := tmpMessageList[rand.IntN(len(tmpMessageList))]
+				respQA := tmpAnswerList[rand.IntN(len(tmpAnswerList))]
 				ctx.SendChain(respQA.MessageList...)
 			}
 		},
@@ -176,10 +176,10 @@ func initData() {
 			log.Error().Str("name", pluginName).Err(err).Msg("")
 		}
 
-		if messageList, ok := messageMap[qa.Key]; ok {
-			messageMap[qa.Key] = append(messageList, qa)
+		if answerList, ok := answerMap[qa.Key]; ok {
+			answerMap[qa.Key] = append(answerList, qa)
 		} else {
-			messageMap[qa.Key] = []eqa{qa}
+			answerMap[qa.Key] = []eqa{qa}
 		}
 	}
 }

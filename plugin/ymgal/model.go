@@ -6,6 +6,7 @@ import (
 	"net/url"
 	"regexp"
 	"strconv"
+	"strings"
 	"sync"
 	"time"
 
@@ -23,7 +24,8 @@ var mu sync.RWMutex
 
 // ymgal gal图片储存结构体
 type ymgal struct {
-	ID                 int64  `gorm:"column:id;index" `
+	ID                 int64  `gorm:"column:id;primary_key" `
+	OtherId            int64  `gorm:"column:other_id;index" `
 	Title              string `gorm:"column:title" `
 	PictureType        string `gorm:"column:picture_type" `
 	PictureDescription string `gorm:"column:picture_description;type:varchar(1024)" `
@@ -38,34 +40,29 @@ func (ymgal) TableName() string {
 func (gdb *ymgaldb) insertOrUpdateYmgalByID(id int64, title, pictureType, pictureDescription, pictureList string) (err error) {
 	db := (*gorm.DB)(gdb)
 	y := ymgal{
-		ID:                 id,
+		OtherId:            id,
 		Title:              title,
 		PictureType:        pictureType,
 		PictureDescription: pictureDescription,
 		PictureList:        pictureList,
 	}
-	if err = db.Model(&ymgal{}).First(&y, "id = ? ", id).Error; err != nil {
-		if err == gorm.ErrRecordNotFound {
-			err = db.Model(&ymgal{}).Create(&y).Error // newUser not user
-		}
-	} else {
-		err = db.Model(&ymgal{}).Where("id = ? ", id).Updates(map[string]any{
-			"title":               title,
-			"picture_type":        pictureType,
-			"picture_description": pictureDescription,
-			"picture_list":        pictureList,
-		}).Error
+	old := &ymgal{}
+	err = db.Model(&ymgal{}).First(&old, "other_id = ? ", id).Error
+	if err == nil {
+		y.ID = old.ID
 	}
+
+	db.Save(&y)
 	return
 }
 
 func (gdb *ymgaldb) getYmgalByID(id string) (y ymgal) {
 	db := (*gorm.DB)(gdb)
-	db.Model(&ymgal{}).Where("id = ?", id).Take(&y)
+	db.Model(&ymgal{}).Where("other_id = ?", id).Take(&y)
 	return
 }
 
-func (gdb *ymgaldb) randomYmgal(pictureType string) (y ymgal) {
+func (gdb *ymgaldb) randPicByType(pictureType string) (y ymgal) {
 	db := (*gorm.DB)(gdb)
 	var count int64
 	s := db.Model(&ymgal{}).Where("picture_type = ?", pictureType).Count(&count)
@@ -76,7 +73,23 @@ func (gdb *ymgaldb) randomYmgal(pictureType string) (y ymgal) {
 	return
 }
 
-func (gdb *ymgaldb) getYmgalByKey(pictureType, key string) (y ymgal) {
+func (gdb *ymgaldb) randPicByKey(key string) (y ymgal) {
+	db := (*gorm.DB)(gdb)
+	var count int64
+	var s *gorm.DB
+	if key != "" {
+		s = db.Model(&ymgal{}).Where("title like ? or picture_description like ?", "%"+key+"%", "%"+key+"%").Count(&count)
+	} else {
+		s = db.Model(&ymgal{}).Count(&count)
+	}
+	if count == 0 {
+		return
+	}
+	s.Offset(int(rand.Int64N(count))).Take(&y)
+	return
+}
+
+func (gdb *ymgaldb) randPicBytypeAndKey(pictureType string, key string) (y ymgal) {
 	db := (*gorm.DB)(gdb)
 	var count int64
 	s := db.Model(&ymgal{}).Where("picture_type = ? and (picture_description like ? or title like ?) ", pictureType, "%"+key+"%", "%"+key+"%").Count(&count)
@@ -87,10 +100,35 @@ func (gdb *ymgaldb) getYmgalByKey(pictureType, key string) (y ymgal) {
 	return
 }
 
+func (gdb *ymgaldb) getRandPic(pictureType, key string) (y ymgal) {
+	if pictureType == "" {
+		return gdb.randPicByKey(key)
+	} else if key == "" {
+		return gdb.randPicByType(pictureType)
+	}
+	return gdb.randPicBytypeAndKey(pictureType, key)
+}
+
+func (gdb *ymgaldb) getYmgalByKey(pictureType, key string) (y ymgal) {
+	db := (*gorm.DB)(gdb)
+	var count int64
+	var s *gorm.DB
+	if key != "" {
+		s = db.Model(&ymgal{}).Where("picture_type = ? and (picture_description like ? or title like ?) ", pictureType, "%"+key+"%", "%"+key+"%").Count(&count)
+	} else {
+		s = db.Model(&ymgal{}).Where("picture_type = ? and (picture_description like ? or title like ?) ", pictureType, "%"+key+"%", "%"+key+"%").Count(&count)
+	}
+	if count == 0 {
+		return
+	}
+	s.Offset(int(rand.Int64N(count))).Take(&y)
+	return
+}
+
 const (
 	webURL       = "https://www.ymgal.games"
-	cgType       = "Gal CG"
-	emoticonType = "其他"
+	cgType       = "cg"
+	emoticonType = "emoji"
 	webPicURL    = webURL + "/co/picset/"
 	reNumber     = `\d+`
 )
@@ -241,6 +279,9 @@ func storeEmoticonPic(picIDStr string) error {
 	}
 	title := htmlquery.FindOne(doc, "//meta[@name='name']").Attr[1].Val
 	pictureDescription := htmlquery.FindOne(doc, "//meta[@name='description']").Attr[1].Val
+	if !(strings.Contains(title, "表情包") || strings.Contains(pictureDescription, "表情包")) {
+		return nil
+	}
 	pictureNumberStr := htmlquery.FindOne(doc, "//div[@class='meta-info']/div[@class='meta-right']/span[2]/text()").Data
 	re := regexp.MustCompile(reNumber)
 	pictureNumber, err := strconv.Atoi(re.FindString(pictureNumberStr))

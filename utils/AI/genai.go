@@ -147,7 +147,7 @@ func (a *aiBot) SendMsgWithSession(key int64, msg string) (string, error) {
 	resp, err := session.chatSession.SendMessage(ctx, genai.Text(msg))
 	if err != nil {
 		log.Error().Str("name", utilsName).Err(err).Msg("")
-		if err.Error() == "blocked: candidate: FinishReasonSafety" {
+		if err.Error() == "blocked: candidate: FinishReasonSafety" || err.Error() == "blocked: prompt: BlockReasonOther" {
 			return "不可以说这种事情，达咩！", nil
 		}
 		return "", err
