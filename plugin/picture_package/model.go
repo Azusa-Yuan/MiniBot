@@ -131,22 +131,6 @@ func (gdb *ymgaldb) getRandPic(pictureType, key string) (y ymgal) {
 	return gdb.randPicBytypeAndKey(pictureType, key)
 }
 
-func (gdb *ymgaldb) getYmgalByKey(pictureType, key string) (y ymgal) {
-	db := (*gorm.DB)(gdb)
-	var count int64
-	var s *gorm.DB
-	if key != "" {
-		s = db.Model(&ymgal{}).Where("picture_type = ? and (picture_description like ? or title like ?) ", pictureType, "%"+key+"%", "%"+key+"%").Count(&count)
-	} else {
-		s = db.Model(&ymgal{}).Where("picture_type = ? and (picture_description like ? or title like ?) ", pictureType, "%"+key+"%", "%"+key+"%").Count(&count)
-	}
-	if count == 0 {
-		return
-	}
-	s.Offset(int(rand.Int64N(count))).Take(&y)
-	return
-}
-
 const (
 	webURL       = "https://www.ymgal.games"
 	cgType       = "cg"

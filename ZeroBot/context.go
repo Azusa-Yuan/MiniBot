@@ -8,6 +8,7 @@ import (
 	"ZeroBot/message"
 
 	"github.com/rs/zerolog/log"
+	"github.com/tidwall/gjson"
 )
 
 // Ctx represents the Context which hold the event.
@@ -98,7 +99,7 @@ func (ctx *Ctx) CheckSession() Rule {
 }
 
 // Send 快捷发送消息/合并转发
-func (ctx *Ctx) Send(msg interface{}) message.MessageID {
+func (ctx *Ctx) Send(msg interface{}) (message.MessageID, error) {
 	event := ctx.Event
 	m, ok := msg.(message.Message)
 	if !ok {
@@ -109,26 +110,44 @@ func (ctx *Ctx) Send(msg interface{}) message.MessageID {
 		}
 	}
 	if ok && len(m) > 0 && m[0].Type == "node" && event.DetailType != "guild" {
+		var resp gjson.Result
+		var err error
 		if event.GroupID != 0 {
-			return message.NewMessageIDFromInteger(ctx.SendGroupForwardMessage(event.GroupID, m).Get("message_id").Int())
+			resp, err = ctx.SendGroupForwardMessage(event.GroupID, m)
+
+		} else {
+			resp, err = ctx.SendPrivateForwardMessage(event.UserID, m)
 		}
-		return message.NewMessageIDFromInteger(ctx.SendPrivateForwardMessage(event.UserID, m).Get("message_id").Int())
+
+		if err != nil {
+			return message.MessageID{}, err
+		}
+		return message.NewMessageIDFromInteger(resp.Get("message_id").Int()), nil
 	}
 	if event.DetailType == "guild" {
-		return message.NewMessageIDFromString(ctx.SendGuildChannelMessage(event.GuildID, event.ChannelID, msg))
+		resp, err := ctx.SendGuildChannelMessage(event.GuildID, event.ChannelID, msg)
+		return message.NewMessageIDFromString(resp), err
 	}
+	var resp int64
+	var err error
 	if event.GroupID != 0 {
-		return message.NewMessageIDFromInteger(ctx.SendGroupMessage(event.GroupID, msg))
+		resp, err = ctx.SendGroupMessage(event.GroupID, msg)
+	} else {
+		resp, err = ctx.SendPrivateMessage(event.UserID, msg)
 	}
-	return message.NewMessageIDFromInteger(ctx.SendPrivateMessage(event.UserID, msg))
+
+	if err != nil {
+		return message.MessageID{}, err
+	}
+	return message.NewMessageIDFromInteger(resp), nil
 }
 
 // SendChain 快捷发送消息/合并转发-消息链
-func (ctx *Ctx) SendChain(msg ...message.MessageSegment) message.MessageID {
+func (ctx *Ctx) SendChain(msg ...message.MessageSegment) (message.MessageID, error) {
 	return ctx.Send((message.Message)(msg))
 }
 
-func (ctx *Ctx) SendError(err error, msgs ...message.MessageSegment) message.MessageID {
+func (ctx *Ctx) SendError(err error, msgs ...message.MessageSegment) (message.MessageID, error) {
 	ctx.Err = err
 	metadata := ctx.GetMatcherMetadata()
 	log.Error().CallerSkipFrame(1).Str("name", metadata.PluginName).Str("controller", metadata.MatcherName).Err(err).Msg("")

@@ -69,32 +69,38 @@ func (ctx *Ctx) CallAction(action string, params Params) (APIResponse, error) {
 
 // SendGroupMessage 发送群消息
 // https://github.com/botuniverse/onebot-11/blob/master/api/public.md#send_group_msg-%E5%8F%91%E9%80%81%E7%BE%A4%E6%B6%88%E6%81%AF
-func (ctx *Ctx) SendGroupMessage(groupID int64, message interface{}) int64 {
-	resp, _ := ctx.CallAction("send_group_msg", Params{ // 调用并保存返回值
+func (ctx *Ctx) SendGroupMessage(groupID int64, message interface{}) (int64, error) {
+	resp, err := ctx.CallAction("send_group_msg", Params{ // 调用并保存返回值
 		"group_id": groupID,
 		"message":  message,
 	})
+	if err != nil {
+		return 0, err
+	}
 	msgId := resp.Data.Get("message_id")
 	if msgId.Exists() {
 		log.Info().Str("name", "api").Msgf("[api] 发送群消息(%v): %v (id=%v)", groupID, formatMessage(message), msgId.Int())
-		return msgId.Int()
+		return msgId.Int(), nil
 	}
-	return 0 // 无法获取返回值
+	return 0, nil // 无法获取返回值
 }
 
 // SendPrivateMessage 发送私聊消息
 // https://github.com/botuniverse/onebot-11/blob/master/api/public.md#send_private_msg-%E5%8F%91%E9%80%81%E7%A7%81%E8%81%8A%E6%B6%88%E6%81%AF
-func (ctx *Ctx) SendPrivateMessage(userID int64, message interface{}) int64 {
-	resp, _ := ctx.CallAction("send_private_msg", Params{
+func (ctx *Ctx) SendPrivateMessage(userID int64, message interface{}) (int64, error) {
+	resp, err := ctx.CallAction("send_private_msg", Params{
 		"user_id": userID,
 		"message": message,
 	})
+	if err != nil {
+		return 0, err
+	}
 	msgId := resp.Data.Get("message_id")
 	if msgId.Exists() {
 		log.Info().Str("name", "api").Msgf("发送私聊消息(%v): %v (id=%v)", userID, formatMessage(message), msgId.Int())
-		return msgId.Int()
+		return msgId.Int(), nil
 	}
-	return 0 // 无法获取返回值
+	return 0, nil // 无法获取返回值
 }
 
 // DeleteMessage 撤回消息
@@ -485,22 +491,22 @@ func (ctx *Ctx) OCRImage(file string) (gjson.Result, error) {
 
 // SendGroupForwardMessage 发送合并转发(群)
 // https://github.com/Mrs4s/go-cqhttp/blob/master/docs/cqhttp.md#%E5%9B%BE%E7%89%87ocr
-func (ctx *Ctx) SendGroupForwardMessage(groupID int64, message message.Message) gjson.Result {
-	resp, _ := ctx.CallAction("send_group_forward_msg", Params{
+func (ctx *Ctx) SendGroupForwardMessage(groupID int64, message message.Message) (gjson.Result, error) {
+	resp, err := ctx.CallAction("send_group_forward_msg", Params{
 		"group_id": groupID,
 		"messages": message,
 	})
-	return resp.Data
+	return resp.Data, err
 }
 
 // SendPrivateForwardMessage 发送合并转发(私聊)
 // https://github.com/Mrs4s/go-cqhttp/blob/master/docs/cqhttp.md#%E5%9B%BE%E7%89%87ocr
-func (ctx *Ctx) SendPrivateForwardMessage(userID int64, message message.Message) gjson.Result {
-	resp, _ := ctx.CallAction("send_private_forward_msg", Params{
+func (ctx *Ctx) SendPrivateForwardMessage(userID int64, message message.Message) (gjson.Result, error) {
+	resp, err := ctx.CallAction("send_private_forward_msg", Params{
 		"user_id":  userID,
 		"messages": message,
 	})
-	return resp.Data
+	return resp.Data, err
 }
 
 // ForwardFriendSingleMessage 转发单条消息到好友
@@ -645,18 +651,21 @@ func (ctx *Ctx) GetWordSlices(content string) (gjson.Result, error) {
 }
 
 // SendGuildChannelMessage 发送频道消息
-func (ctx *Ctx) SendGuildChannelMessage(guildID, channelID string, message interface{}) string {
-	resp, _ := ctx.CallAction("send_guild_channel_msg", Params{
+func (ctx *Ctx) SendGuildChannelMessage(guildID, channelID string, message interface{}) (string, error) {
+	resp, err := ctx.CallAction("send_guild_channel_msg", Params{
 		"guild_id":   guildID,
 		"channel_id": channelID,
 		"message":    message,
 	})
+	if err != nil {
+		return "", err
+	}
 	msgId := resp.Data.Get("message_id")
 	if msgId.Exists() {
 		log.Info().Str("name", "api").Msgf("发送频道消息(%v-%v): %v (id=%v)", guildID, channelID, formatMessage(message), msgId.Int())
-		return msgId.String()
+		return msgId.String(), nil
 	}
-	return "0" // 无法获取返回值
+	return "0", nil // 无法获取返回值
 }
 
 // NickName 从 args/at 获取昵称，如果都没有则获取发送者的昵称

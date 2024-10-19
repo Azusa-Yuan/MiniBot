@@ -355,7 +355,7 @@ func initPic(picFile string, uid int64) (avatar []byte, err error) {
 
 // 使用"file:"发送图片失败后，改用base64发送
 func trySendImage(filePath string, ctx *zero.Ctx) {
-	if id := ctx.SendChain(message.Image("file:///" + filePath)); id.ID() != 0 {
+	if _, err := ctx.SendChain(message.Image("file:///" + filePath)); err != nil {
 		return
 	}
 	imgFile, err := os.Open(filePath)
@@ -375,7 +375,7 @@ func trySendImage(filePath string, ctx *zero.Ctx) {
 	}
 	encoder.Close()
 	drawedFileBase64 := encodedFileData.String()
-	if id := ctx.SendChain(message.Image(drawedFileBase64)); id.ID() == 0 {
+	if _, err := ctx.SendChain(message.Image(drawedFileBase64)); err != nil {
 		ctx.SendChain(message.Text("ERROR: 无法读取图片文件", err))
 		return
 	}
