@@ -3,6 +3,7 @@ package picturepackage
 
 import (
 	database "MiniBot/utils/db"
+	"MiniBot/utils/net_tools"
 	"fmt"
 	"io"
 	"math/rand/v2"
@@ -37,7 +38,7 @@ func init() {
 	engine := zero.NewTemplate(&zero.Metadata{
 		Name: pluginName,
 		Help: `-随机xxx[CG|cg|表情包|表情]
-		随机xxx[CG|cg|表情包|表情]`,
+随机xxx[CG|cg|表情包|表情]`,
 	})
 	db := database.GetDefalutDB()
 	db.AutoMigrate(&picturePackage{})
@@ -111,9 +112,19 @@ func sendYmgal(y picturePackage, ctx *zero.Ctx, key, picType string) {
 		}
 	}
 
+	// napcat 下载慢 不明原因
 	urlList := strings.Split(y.PictureList, ",")
 	url := urlList[rand.IntN(len(urlList))]
-	_, err := ctx.SendChain(message.Text(y.Title), message.Image(url))
+	var err error
+	var imgBytes []byte
+	if strings.HasPrefix(url, "http") {
+		imgBytes, err = net_tools.DownloadWithoutTLSVerify(url)
+		if err == nil {
+			_, err = ctx.SendChain(message.Text(y.Title), message.ImageBytes(imgBytes))
+		}
+	} else {
+		_, err = ctx.SendChain(message.Text(y.Title), message.Image(url))
+	}
 	if err != nil {
 		ctx.SendError(fmt.Errorf("该图发不出。。。"), message.Text(url))
 	}
