@@ -20,7 +20,8 @@ import (
 )
 
 const (
-	pluginName = "图包相关"
+	pluginName  = "图包相关"
+	loliconSize = "regular"
 )
 
 var (
@@ -92,19 +93,17 @@ func sendYmgal(y picturePackage, ctx *zero.Ctx, key, picType string) {
 	if y.PictureList == "" {
 		if picType != emoticonType {
 			jsonData, _ := json.Marshal(map[string]any{
-				"size": "regular",
+				"size": loliconSize,
 				"tag":  key,
 			})
-			fmt.Println(string(jsonData))
 			resp, err := http.DefaultClient.Post("https://api.lolicon.app/setu/v2", "application/json", bytes.NewBuffer(jsonData))
 			if err == nil && resp.StatusCode == http.StatusOK {
 				respData, err := io.ReadAll(resp.Body)
-				fmt.Println(string(respData))
 				if err == nil {
 					dataArray := gjson.ParseBytes(respData).Get("data").Array()
 					if len(dataArray) != 0 {
 						imgData := dataArray[0]
-						url := imgData.Get("urls").Get("original").String()
+						url := imgData.Get("urls").Get(loliconSize).String()
 						y.PictureList = url
 						y.Title = imgData.Get("title").String() + "/" + imgData.Get("author").String()
 						y.Title = zero.BotConfig.NickName[0] + "暂时没有这样的图呢。" + "所以给你发这张:" + y.Title
