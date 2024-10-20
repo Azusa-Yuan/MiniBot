@@ -216,13 +216,18 @@ func deepWalk(fsys fs.FS, path, desc string) error {
 			continue
 		}
 
-		if picListStr != "" {
-			picListStr += ","
+		if strings.HasSuffix(name, ".jpg") || strings.HasSuffix(name, ".jpeg") ||
+			strings.HasSuffix(name, ".png") || strings.HasSuffix(name, ".gif") || strings.HasSuffix(name, ".webp") {
+			if picListStr != "" {
+				picListStr += ","
+			}
+			picListStr += "file://" + filepath.Join(dataPath, curPath)
 		}
-		picListStr += "file://" + filepath.Join(dataPath, curPath)
 	}
 
-	err = gdb.insertOrUpdateLocalPic(path, picType, desc, picListStr)
+	if picListStr != "" {
+		err = gdb.insertOrUpdateLocalPic(path, picType, desc, picListStr)
+	}
 	if err != nil {
 		log.Error().Str("name", pluginName).Err(err).Msg("")
 	}
