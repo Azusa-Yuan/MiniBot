@@ -91,16 +91,15 @@ func init() {
 func sendYmgal(y picturePackage, ctx *zero.Ctx, key, picType string) {
 	if y.PictureList == "" {
 		if picType != emoticonType {
-			jsonData, err := json.Marshal(map[string]any{
+			jsonData, _ := json.Marshal(map[string]any{
 				"size": "regular",
 				"tag":  key,
 			})
-			if err != nil {
-				panic(err)
-			}
+			fmt.Println(string(jsonData))
 			resp, err := http.DefaultClient.Post("https://api.lolicon.app/setu/v2", "application/json", bytes.NewBuffer(jsonData))
 			if err == nil && resp.StatusCode == http.StatusOK {
 				respData, err := io.ReadAll(resp.Body)
+				fmt.Println(string(respData))
 				if err == nil {
 					dataArray := gjson.ParseBytes(respData).Get("data").Array()
 					if len(dataArray) != 0 {

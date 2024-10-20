@@ -27,10 +27,10 @@ func TestPage(t *testing.T) {
 }
 
 func TestLolicon(t *testing.T) {
-
+	key := "刻晴"
 	jsonData, err := json.Marshal(map[string]any{
 		"size": "regular",
-		"tag":  "刻晴",
+		"tag":  key,
 	})
 	if err != nil {
 		panic(err)
