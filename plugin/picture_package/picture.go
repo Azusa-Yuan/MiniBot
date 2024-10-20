@@ -3,6 +3,7 @@ package picturepackage
 
 import (
 	database "MiniBot/utils/db"
+	"fmt"
 	"io"
 	"math/rand/v2"
 	"net/http"
@@ -28,8 +29,9 @@ var (
 		"表情":    emoticonType,
 		"emoji": emoticonType,
 	}
-	reTypeStr = `(CG|cg|表情包|表情|emoji)`
-	reType    = regexp.MustCompile(reTypeStr)
+	reTypeStr = `(CG|cg|表情包|表情|emoji)
+随机xxx[CG|cg|表情包|表情]`
+	reType = regexp.MustCompile(reTypeStr)
 )
 
 func init() {
@@ -98,7 +100,7 @@ func sendYmgal(y picturePackage, ctx *zero.Ctx, key, picType string) {
 						url := imgData.Get("urls").Get("original").String()
 						y.PictureList = url
 						y.Title = imgData.Get("title").String() + "/" + imgData.Get("author").String()
-						y.Title = zero.BotConfig.NickName[0] + "暂时没有这样的图呢。" + "所以给你发这张" + y.Title
+						y.Title = zero.BotConfig.NickName[0] + "暂时没有这样的图呢。" + "所以给你发这张:" + y.Title
 					}
 				}
 			}
@@ -113,6 +115,6 @@ func sendYmgal(y picturePackage, ctx *zero.Ctx, key, picType string) {
 	url := urlList[rand.IntN(len(urlList))]
 	_, err := ctx.SendChain(message.Text(y.Title), message.Image(url))
 	if err != nil {
-		ctx.SendError(nil, message.Text("该图发不出..."+url))
+		ctx.SendError(fmt.Errorf("该图发不出。。。"), message.Text(url))
 	}
 }

@@ -13,9 +13,10 @@ func init() {
 				ctx.SendError(err)
 				return
 			}
+			msg := ctx.ReceptionToSend()
 			for _, groupInfo := range rawGroupList.Array() {
 				gid := groupInfo.Get("group_id").Int()
-				ctx.SendGroupMessage(gid, ctx.ReceptionToSend())
+				ctx.SendGroupMessage(gid, msg)
 				time.Sleep(5 * time.Second)
 			}
 		},
