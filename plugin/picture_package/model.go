@@ -52,7 +52,7 @@ func (gdb *ymgaldb) insertOrUpdateYmgalByID(id int64, title, pictureType, pictur
 		y.ID = old.ID
 	}
 
-	db.Save(&y)
+	err = db.Save(&y).Error
 	return
 }
 
@@ -70,7 +70,7 @@ func (gdb *ymgaldb) insertOrUpdateLocalPic(title, pictureType, pictureDescriptio
 		y.ID = old.ID
 	}
 
-	db.Save(&y)
+	err = db.Save(&y).Error
 	return
 }
 
