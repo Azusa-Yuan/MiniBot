@@ -60,7 +60,7 @@ func init() {
 				return
 			}
 			y := gdb.getRandPic(picType, key)
-			sendYmgal(y, ctx, key, picType)
+			sendPicture(y, ctx, key, picType)
 		},
 	)
 
@@ -89,7 +89,7 @@ func init() {
 		})
 }
 
-func sendYmgal(y picturePackage, ctx *zero.Ctx, key, picType string) {
+func sendPicture(y picturePackage, ctx *zero.Ctx, key, picType string) {
 	if y.PictureList == "" {
 		if picType != emoticonType {
 			jsonData, _ := json.Marshal(map[string]any{
