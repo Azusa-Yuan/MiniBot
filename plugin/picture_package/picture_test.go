@@ -26,8 +26,8 @@ func TestPage(t *testing.T) {
 }
 
 func TestLolicon(t *testing.T) {
-	encodedTag := url.QueryEscape("刻晴")
-	resp, err := http.DefaultClient.Get("https://api.lolicon.app/setu/v2?tag=" + encodedTag)
+	encodedTag := url.QueryEscape("size=regular&tag=刻晴")
+	resp, err := http.DefaultClient.Get("https://api.lolicon.app/setu/v2?" + encodedTag)
 	log.Error().Err(err).Msg("")
 	if err == nil && resp.StatusCode == http.StatusOK {
 		respData, err := io.ReadAll(resp.Body)
