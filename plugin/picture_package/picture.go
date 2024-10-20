@@ -6,13 +6,13 @@ import (
 	"io"
 	"math/rand/v2"
 	"net/http"
+	"net/url"
 	"regexp"
 	"strings"
 
 	zero "ZeroBot"
 	"ZeroBot/message"
 
-	"github.com/rs/zerolog/log"
 	"github.com/tidwall/gjson"
 )
 
@@ -87,18 +87,16 @@ func init() {
 func sendYmgal(y picturePackage, ctx *zero.Ctx, key, picType string) {
 	if y.PictureList == "" {
 		if picType != emoticonType {
-			resp, err := http.DefaultClient.Get("https://api.lolicon.app/setu/v2?tag=" + key)
-			log.Error().Err(err).Msg("")
+			encodedTag := url.QueryEscape(key)
+			resp, err := http.DefaultClient.Get("https://api.lolicon.app/setu/v2?tag=" + encodedTag)
 			if err == nil && resp.StatusCode == http.StatusOK {
 				respData, err := io.ReadAll(resp.Body)
-				log.Error().Err(err).Msg("")
 				if err == nil {
 					dataArray := gjson.ParseBytes(respData).Get("data").Array()
 					if len(dataArray) != 0 {
 						imgData := dataArray[0]
 						url := imgData.Get("urls").Get("original").String()
 						y.PictureList = url
-						log.Info().Msg(y.PictureList)
 						y.Title = imgData.Get("title").String() + "/" + imgData.Get("author").String()
 						y.Title = zero.BotConfig.NickName[0] + "暂时没有这样的图呢。" + "所以给你发这张" + y.Title
 					}
