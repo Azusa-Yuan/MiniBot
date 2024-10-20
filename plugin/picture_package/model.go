@@ -357,8 +357,7 @@ func storeEmoticonPic(picIDStr string) error {
 	}
 	pictureList := ""
 	for i := 1; i <= pictureNumber; i++ {
-		htmlNode := htmlquery.FindOne(doc, fmt.Sprintf("//*[@id='main-picset-warp']/div/div[2]/div/div[@class='swiper-wrapper']/div[%d]", i))
-		if len(htmlNode.Attr) < 2 {
+		htmlNode := htmlquery.FindOne(doc, fmt.Sprintf("//*[@id='main-picset-warp']/div/div[@class='stream-list']/div[%d]/img", i))
 			log.Info().Str("name", pluginName).Msg("can not get " + webPicURL + picIDStr)
 			continue
 		}
