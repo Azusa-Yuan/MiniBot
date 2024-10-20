@@ -48,7 +48,7 @@ var (
 	rankArray = [...]int{0, 10, 20, 50, 100, 200, 350, 550, 750, 1000, 1200}
 
 	metaData = &zero.Metadata{
-		Name: "sign in",
+		Name: "签到",
 		Help: "- 签到\n- 获得签到背景[@xxx] | 获得签到背景\n- \n- 查看等级排名\n- 查看我的钱包\n- ",
 	}
 	engine = zero.NewTemplate(metaData)
@@ -355,7 +355,7 @@ func initPic(picFile string, uid int64) (avatar []byte, err error) {
 
 // 使用"file:"发送图片失败后，改用base64发送
 func trySendImage(filePath string, ctx *zero.Ctx) {
-	if _, err := ctx.SendChain(message.Image("file:///" + filePath)); err != nil {
+	if _, err := ctx.SendChain(message.Image("file:///" + filePath)); err == nil {
 		return
 	}
 	imgFile, err := os.Open(filePath)
