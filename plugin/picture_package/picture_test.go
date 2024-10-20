@@ -1,4 +1,4 @@
-package ymgal
+package picturepackage
 
 import (
 	"fmt"

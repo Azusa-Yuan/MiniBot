@@ -1,8 +1,9 @@
-package ymgal
+package picturepackage
 
 import (
 	"MiniBot/utils/path"
 	"fmt"
+	"io/fs"
 	"math/rand/v2"
 	"net/url"
 	"os"
@@ -26,8 +27,8 @@ type ymgaldb gorm.DB
 
 var mu sync.RWMutex
 
-// ymgal gal图片储存结构体
-type ymgal struct {
+// picturePackage gal图片储存结构体
+type picturePackage struct {
 	ID                 int64  `gorm:"column:id;primary_key" `
 	OtherId            int64  `gorm:"column:other_id;index" `
 	Title              string `gorm:"column:title;index" `
@@ -36,22 +37,17 @@ type ymgal struct {
 	PictureList        string `gorm:"column:picture_list;type:text" `
 }
 
-// TableName ...
-func (ymgal) TableName() string {
-	return "ymgal"
-}
-
 func (gdb *ymgaldb) insertOrUpdateYmgalByID(id int64, title, pictureType, pictureDescription, pictureList string) (err error) {
 	db := (*gorm.DB)(gdb)
-	y := ymgal{
+	y := picturePackage{
 		OtherId:            id,
 		Title:              title,
 		PictureType:        pictureType,
 		PictureDescription: pictureDescription,
 		PictureList:        pictureList,
 	}
-	old := &ymgal{}
-	err = db.Model(&ymgal{}).First(&old, "other_id = ? ", id).Error
+	old := &picturePackage{}
+	err = db.Model(&picturePackage{}).First(&old, "other_id = ? ", id).Error
 	if err == nil {
 		y.ID = old.ID
 	}
@@ -62,14 +58,14 @@ func (gdb *ymgaldb) insertOrUpdateYmgalByID(id int64, title, pictureType, pictur
 
 func (gdb *ymgaldb) insertOrUpdateLocalPic(title, pictureType, pictureDescription, pictureList string) (err error) {
 	db := (*gorm.DB)(gdb)
-	y := ymgal{
+	y := picturePackage{
 		Title:              title,
 		PictureType:        pictureType,
 		PictureDescription: pictureDescription,
 		PictureList:        pictureList,
 	}
-	old := &ymgal{}
-	err = db.Model(&ymgal{}).First(&old, "title = ? ", title).Error
+	old := &picturePackage{}
+	err = db.Model(&picturePackage{}).First(&old, "title = ? ", title).Error
 	if err == nil {
 		y.ID = old.ID
 	}
@@ -78,16 +74,16 @@ func (gdb *ymgaldb) insertOrUpdateLocalPic(title, pictureType, pictureDescriptio
 	return
 }
 
-func (gdb *ymgaldb) getYmgalByID(id string) (y ymgal) {
+func (gdb *ymgaldb) getYmgalByID(id string) (y picturePackage) {
 	db := (*gorm.DB)(gdb)
-	db.Model(&ymgal{}).Where("other_id = ?", id).Take(&y)
+	db.Model(&picturePackage{}).Where("other_id = ?", id).Take(&y)
 	return
 }
 
-func (gdb *ymgaldb) randPicByType(pictureType string) (y ymgal) {
+func (gdb *ymgaldb) randPicByType(pictureType string) (y picturePackage) {
 	db := (*gorm.DB)(gdb)
 	var count int64
-	s := db.Model(&ymgal{}).Where("picture_type = ?", pictureType).Count(&count)
+	s := db.Model(&picturePackage{}).Where("picture_type = ?", pictureType).Count(&count)
 	if count == 0 {
 		return
 	}
@@ -95,14 +91,14 @@ func (gdb *ymgaldb) randPicByType(pictureType string) (y ymgal) {
 	return
 }
 
-func (gdb *ymgaldb) randPicByKey(key string) (y ymgal) {
+func (gdb *ymgaldb) randPicByKey(key string) (y picturePackage) {
 	db := (*gorm.DB)(gdb)
 	var count int64
 	var s *gorm.DB
 	if key != "" {
-		s = db.Model(&ymgal{}).Where("title like ? or picture_description like ?", "%"+key+"%", "%"+key+"%").Count(&count)
+		s = db.Model(&picturePackage{}).Where("title like ? or picture_description like ?", "%"+key+"%", "%"+key+"%").Count(&count)
 	} else {
-		s = db.Model(&ymgal{}).Count(&count)
+		s = db.Model(&picturePackage{}).Count(&count)
 	}
 	if count == 0 {
 		return
@@ -111,10 +107,10 @@ func (gdb *ymgaldb) randPicByKey(key string) (y ymgal) {
 	return
 }
 
-func (gdb *ymgaldb) randPicBytypeAndKey(pictureType string, key string) (y ymgal) {
+func (gdb *ymgaldb) randPicBytypeAndKey(pictureType string, key string) (y picturePackage) {
 	db := (*gorm.DB)(gdb)
 	var count int64
-	s := db.Model(&ymgal{}).Where("picture_type = ? and (picture_description like ? or title like ?) ", pictureType, "%"+key+"%", "%"+key+"%").Count(&count)
+	s := db.Model(&picturePackage{}).Where("picture_type = ? and (picture_description like ? or title like ?) ", pictureType, "%"+key+"%", "%"+key+"%").Count(&count)
 	if count == 0 {
 		return
 	}
@@ -122,7 +118,7 @@ func (gdb *ymgaldb) randPicBytypeAndKey(pictureType string, key string) (y ymgal
 	return
 }
 
-func (gdb *ymgaldb) getRandPic(pictureType, key string) (y ymgal) {
+func (gdb *ymgaldb) getRandPic(pictureType, key string) (y picturePackage) {
 	if pictureType == "" {
 		return gdb.randPicByKey(key)
 	} else if key == "" {
@@ -132,7 +128,7 @@ func (gdb *ymgaldb) getRandPic(pictureType, key string) (y ymgal) {
 }
 
 const (
-	webURL       = "https://www.ymgal.games"
+	webURL       = "https://www.picturePackage.games"
 	cgType       = "cg"
 	emoticonType = "emoji"
 	webPicURL    = webURL + "/co/picset/"
@@ -192,59 +188,58 @@ func getPicID(pageNumber int, pictureType string) error {
 	return nil
 }
 
-func updateLocalPic() error {
-	titleDirs, err := os.ReadDir(dataPath)
+func deepWalk(fsys fs.FS, path, desc string) error {
+	dirEntries, err := fs.ReadDir(fsys, path)
 	if err != nil {
 		return err
 	}
-	for _, titleDir := range titleDirs {
-		if !titleDir.IsDir() {
+
+	picListStr := ""
+	dirList := []string{}
+	picType := typeMap[(strings.Split(path, "/")[0])]
+	for _, dirEntry := range dirEntries {
+		name := dirEntry.Name()
+		curPath := filepath.Join(path, name)
+
+		if dirEntry.IsDir() {
+			dirList = append(dirList, curPath)
 			continue
 		}
-		titleSuffix := titleDir.Name()
-		typePath := filepath.Join(dataPath, titleSuffix)
-		typeDirs, err := os.ReadDir(typePath)
+
+		if strings.HasSuffix(name, "txt") {
+			descBytes, err := fs.ReadFile(fsys, curPath)
+			if err != nil {
+				log.Error().Str("name", pluginName).Err(err).Msg("")
+				continue
+			}
+			desc += string(descBytes)
+			continue
+		}
+
+		if picListStr != "" {
+			picListStr += ","
+		}
+		picListStr += "file://" + filepath.Join(dataPath, curPath)
+	}
+
+	err = gdb.insertOrUpdateLocalPic(path, picType, desc, picListStr)
+	if err != nil {
+		log.Error().Str("name", pluginName).Err(err).Msg("")
+	}
+
+	for _, dirPath := range dirList {
+		err = deepWalk(fsys, dirPath, desc)
 		if err != nil {
 			log.Error().Str("name", pluginName).Err(err).Msg("")
-			continue
-		}
-		for _, typeDir := range typeDirs {
-			if !typeDir.IsDir() {
-				continue
-			}
-			picType := typeDir.Name()
-			title := picType + "-" + titleSuffix
-			picsPath := filepath.Join(typePath, picType)
-			picList, err := os.ReadDir(picsPath)
-			if err != nil {
-				log.Error().Str("name", pluginName).Err(err).Msg("")
-				continue
-			}
-			picListStr := ""
-			picListDesc := ""
-
-			for _, pic := range picList {
-				picPath := filepath.Join(picsPath, pic.Name())
-				if strings.HasSuffix(picPath, "txt") {
-					descBytes, err := os.ReadFile(picPath)
-					if err != nil {
-						log.Error().Str("name", pluginName).Err(err).Msg("")
-						continue
-					}
-					picListDesc += string(descBytes)
-					continue
-				}
-				if picListStr != "" {
-					picListStr += ","
-				}
-				picListStr += "file://" + picPath
-			}
-			err = gdb.insertOrUpdateLocalPic(title, picType, picListDesc, picListStr)
-			if err != nil {
-				log.Error().Str("name", pluginName).Err(err).Msg("")
-			}
 		}
 	}
+
+	return nil
+}
+
+func updateLocalPic() error {
+	root := os.DirFS(dataPath)
+	deepWalk(root, ".", "")
 	return nil
 }
 

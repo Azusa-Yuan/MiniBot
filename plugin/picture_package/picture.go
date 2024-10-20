@@ -1,5 +1,5 @@
-// Package ymgal 月幕galgame
-package ymgal
+// 部分参考 Package picturePackage 月幕galgame
+package picturepackage
 
 import (
 	database "MiniBot/utils/db"
@@ -11,7 +11,21 @@ import (
 	"ZeroBot/message"
 )
 
-var pluginName = "图包相关"
+const (
+	pluginName = "图包相关"
+)
+
+var (
+	typeMap = map[string]string{
+		"CG":    cgType,
+		"cg":    cgType,
+		"表情包":   emoticonType,
+		"表情":    emoticonType,
+		"emoji": emoticonType,
+	}
+	reTypeStr = `(CG|cg|表情包|表情|emoji)`
+	reType    = regexp.MustCompile(reTypeStr)
+)
 
 func init() {
 	engine := zero.NewTemplate(&zero.Metadata{
@@ -19,17 +33,9 @@ func init() {
 		Help: `-随机xxx[CG|cg|表情包|表情]`,
 	})
 	db := database.GetDefalutDB()
-	db.AutoMigrate(&ymgal{})
+	db.AutoMigrate(&picturePackage{})
 	gdb = (*ymgaldb)(db)
 
-	typeMap := map[string]string{
-		"CG":  cgType,
-		"cg":  cgType,
-		"表情包": emoticonType,
-		"表情":  emoticonType,
-	}
-	reTypeStr := `(CG|cg|表情包|表情)`
-	reType := regexp.MustCompile(reTypeStr)
 	engine.OnPrefixGroup([]string{"来点", "随机"}).SecondPriority().SetBlock(true).Handle(
 		func(ctx *zero.Ctx) {
 			param := ctx.State["args"].(string)
@@ -43,7 +49,6 @@ func init() {
 			if picType == "" && key == "" {
 				return
 			}
-			ctx.Send("少女祈祷中......")
 			y := gdb.getRandPic(picType, key)
 			sendYmgal(y, ctx)
 		},
@@ -74,7 +79,7 @@ func init() {
 		})
 }
 
-func sendYmgal(y ymgal, ctx *zero.Ctx) {
+func sendYmgal(y picturePackage, ctx *zero.Ctx) {
 	if y.PictureList == "" {
 		ctx.SendChain(message.Text(zero.BotConfig.NickName[0] + "暂时没有这样的图呢"))
 		return
