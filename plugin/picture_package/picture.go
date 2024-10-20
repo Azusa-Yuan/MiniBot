@@ -54,7 +54,7 @@ func init() {
 				return
 			}
 			y := gdb.getRandPic(picType, key)
-			sendYmgal(y, ctx, key)
+			sendYmgal(y, ctx, key, picType)
 		},
 	)
 
@@ -83,9 +83,9 @@ func init() {
 		})
 }
 
-func sendYmgal(y picturePackage, ctx *zero.Ctx, key string) {
+func sendYmgal(y picturePackage, ctx *zero.Ctx, key, picType string) {
 	if y.PictureList == "" {
-		if key != emoticonType {
+		if picType != emoticonType {
 			resp, err := http.DefaultClient.Get("https://api.lolicon.app/setu/v2?tag=" + key)
 			if err == nil && resp.StatusCode == http.StatusOK {
 				respData, err := io.ReadAll(resp.Body)
