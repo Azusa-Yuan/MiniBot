@@ -189,6 +189,10 @@ func getPicID(pageNumber int, pictureType string) error {
 }
 
 func deepWalk(fsys fs.FS, path, desc string) error {
+	if strings.Contains(path, "18") {
+		return nil
+	}
+
 	dirEntries, err := fs.ReadDir(fsys, path)
 	if err != nil {
 		return err
@@ -319,7 +323,7 @@ func storeYmgalPic(picIDStr, pictureType string) (err error) {
 	pictureList := ""
 	for i := 1; i <= pictureNumber; i++ {
 		htmlNode := htmlquery.FindOne(doc, fmt.Sprintf("//*[@id='main-picset-warp']/div/div[2]/div/div[@class='swiper-wrapper']/div[%d]", i))
-		if len(htmlNode.Attr) < 2 {
+		if htmlNode == nil || len(htmlNode.Attr) < 2 {
 			log.Info().Str("name", pluginName).Msg("can not get " + webPicURL + picIDStr)
 			continue
 		}
@@ -358,7 +362,7 @@ func storeEmoticonPic(picIDStr string) error {
 	pictureList := ""
 	for i := 1; i <= pictureNumber; i++ {
 		htmlNode := htmlquery.FindOne(doc, fmt.Sprintf("//*[@id='main-picset-warp']/div/div[@class='stream-list']/div[%d]/img", i))
-		if len(htmlNode.Attr) < 2 {
+		if htmlNode == nil || len(htmlNode.Attr) < 2 {
 			log.Info().Str("name", pluginName).Msg("can not get " + webPicURL + picIDStr)
 			continue
 		}
