@@ -273,7 +273,7 @@ func updatePic() error {
 		mu.RUnlock()
 		if y.PictureList == "" {
 			mu.Lock()
-			err = storeCgPic(cgIDList[i])
+			err = storeYmgalPic(cgIDList[i], cgType)
 			mu.Unlock()
 			if err != nil {
 				return err
@@ -299,12 +299,11 @@ func updatePic() error {
 	return nil
 }
 
-func storeCgPic(picIDStr string) (err error) {
+func storeYmgalPic(picIDStr, pictureType string) (err error) {
 	picID, err := strconv.ParseInt(picIDStr, 10, 64)
 	if err != nil {
 		return
 	}
-	pictureType := cgType
 	doc, err := htmlquery.LoadURL(webPicURL + picIDStr)
 	if err != nil {
 		return
@@ -319,8 +318,13 @@ func storeCgPic(picIDStr string) (err error) {
 	}
 	pictureList := ""
 	for i := 1; i <= pictureNumber; i++ {
-		picURL := htmlquery.FindOne(doc, fmt.Sprintf("//*[@id='main-picset-warp']/div/div[2]/div/div[@class='swiper-wrapper']/div[%d]", i)).Attr[1].Val
-		if i == 1 {
+		htmlNode := htmlquery.FindOne(doc, fmt.Sprintf("//*[@id='main-picset-warp']/div/div[2]/div/div[@class='swiper-wrapper']/div[%d]", i))
+		if len(htmlNode.Attr) < 2 {
+			log.Info().Str("name", pluginName).Msg("can not get " + webPicURL + picIDStr)
+			continue
+		}
+		picURL := htmlNode.Attr[1].Val
+		if pictureList == "" {
 			pictureList += picURL
 		} else {
 			pictureList += "," + picURL
@@ -353,8 +357,13 @@ func storeEmoticonPic(picIDStr string) error {
 	}
 	pictureList := ""
 	for i := 1; i <= pictureNumber; i++ {
-		picURL := htmlquery.FindOne(doc, fmt.Sprintf("//*[@id='main-picset-warp']/div/div[@class='stream-list']/div[%d]/img", i)).Attr[1].Val
-		if i == 1 {
+		htmlNode := htmlquery.FindOne(doc, fmt.Sprintf("//*[@id='main-picset-warp']/div/div[2]/div/div[@class='swiper-wrapper']/div[%d]", i))
+		if len(htmlNode.Attr) < 2 {
+			log.Info().Str("name", pluginName).Msg("can not get " + webPicURL + picIDStr)
+			continue
+		}
+		picURL := htmlNode.Attr[1].Val
+		if pictureList == "" {
 			pictureList += picURL
 		} else {
 			pictureList += "," + picURL
