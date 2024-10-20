@@ -105,8 +105,8 @@ func sendYmgal(y picturePackage, ctx *zero.Ctx, key, picType string) {
 		}
 		if y.PictureList == "" {
 			ctx.SendChain(message.Text(zero.BotConfig.NickName[0] + "暂时没有这样的图呢"))
+			return
 		}
-		return
 	}
 
 	urlList := strings.Split(y.PictureList, ",")
