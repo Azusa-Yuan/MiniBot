@@ -4,11 +4,12 @@ package picturepackage
 import (
 	database "MiniBot/utils/db"
 	"MiniBot/utils/net_tools"
+	"bytes"
+	"encoding/json"
 	"fmt"
 	"io"
 	"math/rand/v2"
 	"net/http"
-	"net/url"
 	"regexp"
 	"strings"
 
@@ -90,8 +91,14 @@ func init() {
 func sendYmgal(y picturePackage, ctx *zero.Ctx, key, picType string) {
 	if y.PictureList == "" {
 		if picType != emoticonType {
-			encodedTag := url.QueryEscape("size=regular&tag=" + key)
-			resp, err := http.DefaultClient.Get("https://api.lolicon.app/setu/v2?" + encodedTag)
+			jsonData, err := json.Marshal(map[string]any{
+				"size": "regular",
+				"tag":  key,
+			})
+			if err != nil {
+				panic(err)
+			}
+			resp, err := http.DefaultClient.Post("https://api.lolicon.app/setu/v2", "application/json", bytes.NewBuffer(jsonData))
 			if err == nil && resp.StatusCode == http.StatusOK {
 				respData, err := io.ReadAll(resp.Body)
 				if err == nil {

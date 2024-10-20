@@ -1,10 +1,11 @@
 package picturepackage
 
 import (
+	"bytes"
+	"encoding/json"
 	"fmt"
 	"io"
 	"net/http"
-	"net/url"
 	"testing"
 	"time"
 
@@ -26,8 +27,15 @@ func TestPage(t *testing.T) {
 }
 
 func TestLolicon(t *testing.T) {
-	encodedTag := url.QueryEscape("size=regular&tag=刻晴")
-	resp, err := http.DefaultClient.Get("https://api.lolicon.app/setu/v2?" + encodedTag)
+
+	jsonData, err := json.Marshal(map[string]any{
+		"size": "regular",
+		"tag":  "刻晴",
+	})
+	if err != nil {
+		panic(err)
+	}
+	resp, err := http.DefaultClient.Post("https://api.lolicon.app/setu/v2", "application/json", bytes.NewBuffer(jsonData))
 	log.Error().Err(err).Msg("")
 	if err == nil && resp.StatusCode == http.StatusOK {
 		respData, err := io.ReadAll(resp.Body)
