@@ -89,6 +89,6 @@ func sendYmgal(y picturePackage, ctx *zero.Ctx) {
 	url := urlList[rand.IntN(len(urlList))]
 	_, err := ctx.SendChain(message.Text(y.Title), message.Image(url))
 	if err != nil {
-		ctx.SendChain(message.Text("该图发不出..."))
+		ctx.SendError(nil, message.Text("该图发不出..."+url))
 	}
 }
