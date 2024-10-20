@@ -128,7 +128,7 @@ func (gdb *ymgaldb) getRandPic(pictureType, key string) (y picturePackage) {
 }
 
 const (
-	webURL       = "https://www.picturePackage.games"
+	webURL       = "https://www.ymgal.games"
 	cgType       = "cg"
 	emoticonType = "emoji"
 	webPicURL    = webURL + "/co/picset/"
