@@ -29,15 +29,15 @@ var (
 		"表情":    emoticonType,
 		"emoji": emoticonType,
 	}
-	reTypeStr = `(CG|cg|表情包|表情|emoji)
-随机xxx[CG|cg|表情包|表情]`
-	reType = regexp.MustCompile(reTypeStr)
+	reTypeStr = `(CG|cg|表情包|表情|emoji)`
+	reType    = regexp.MustCompile(reTypeStr)
 )
 
 func init() {
 	engine := zero.NewTemplate(&zero.Metadata{
 		Name: pluginName,
-		Help: `-随机xxx[CG|cg|表情包|表情]`,
+		Help: `-随机xxx[CG|cg|表情包|表情]
+		随机xxx[CG|cg|表情包|表情]`,
 	})
 	db := database.GetDefalutDB()
 	db.AutoMigrate(&picturePackage{})
