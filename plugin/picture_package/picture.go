@@ -91,7 +91,7 @@ func sendYmgal(y picturePackage, ctx *zero.Ctx, key, picType string) {
 	if y.PictureList == "" {
 		if picType != emoticonType {
 			encodedTag := url.QueryEscape(key)
-			resp, err := http.DefaultClient.Get("https://api.lolicon.app/setu/v2?tag=" + encodedTag)
+			resp, err := http.DefaultClient.Get("https://api.lolicon.app/setu/v2?size=regular&tag=" + encodedTag)
 			if err == nil && resp.StatusCode == http.StatusOK {
 				respData, err := io.ReadAll(resp.Body)
 				if err == nil {
