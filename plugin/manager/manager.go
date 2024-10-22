@@ -19,7 +19,7 @@ var (
 	// 封禁uid的set
 	blockCache = make(map[string]bool)
 	// 沉默的gid的set
-	db         = database.DbConfig.GetDb("lulumu")
+	db         = database.GetDefalutDB()
 	LevelCache = make(map[string]uint)
 )
 
@@ -60,25 +60,25 @@ func (manager *Manager) SetLevel(key string, level uint) {
 	db.Where(PermissionLevel{Key: key}).Assign(keyLevel).FirstOrCreate(&keyLevel)
 }
 
-func (manager *Manager) DoBlock(key string) {
+func (manager *Manager) DoBlock(key string) error {
 	manager.Lock()
 	defer manager.Unlock()
 	if _, ok := blockCache[key]; ok {
-		return
+		return nil
 	}
 	blockCache[key] = true
-	db.Create(&BanUser{Key: key})
+	return db.Create(&BanUser{Key: key}).Error
 }
 
 // DoUnblock 解封
-func (manager *Manager) DoUnblock(key string) {
+func (manager *Manager) DoUnblock(key string) error {
 	manager.Lock()
 	defer manager.Unlock()
 	if _, ok := blockCache[key]; !ok {
-		return
+		return nil
 	}
 	delete(blockCache, key)
-	db.Where("key = ?", key).Delete(&BanUser{})
+	return db.Where("key = ?", key).Delete(&BanUser{}).Error
 }
 
 // IsBlocked 是否封禁

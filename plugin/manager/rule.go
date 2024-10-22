@@ -18,15 +18,6 @@ import (
 	"golang.org/x/time/rate"
 )
 
-const (
-	// StorageFolder 插件控制数据目录
-	StorageFolder = "data/control/"
-	// Md5File ...
-	Md5File = StorageFolder + "stor.spb"
-	dbfile  = StorageFolder + "plugins.db"
-	lnfile  = StorageFolder + "lnperpg.txt"
-)
-
 type Limiter struct {
 	rl          *rate.Limiter
 	expiredTime time.Time
@@ -80,8 +71,28 @@ var (
 	}
 )
 
+func AuthMiddleware(ctx *zero.Ctx) {
+	if zero.SuperUserPermission(ctx) {
+		return
+	}
+	bid := ctx.Event.SelfID
+	gid := ctx.Event.GroupID
+	uid := ctx.Event.UserID
+	uidGobal := strconv.FormatInt(uid, 10)
+	uidKey := bidWithuid(bid, uid)
+	gidKey := bidWithgid(bid, gid)
+	bidKey := strconv.FormatInt(bid, 10)
+
+	// 对群，全局个人，bot级个人，机器人，所有机器人的权限情况 可以理解为这个为全插件级,排除默认插件
+	if managers.IsBlocked(gidKey) || managers.IsBlocked(uidGobal) || managers.IsBlocked(uidKey) || managers.IsBlocked(bidKey) || managers.IsBlocked("0") {
+		ctx.Stop()
+		return
+	}
+}
+
 // engine 级
 func newAuthHandler(metaDate *zero.Metadata) zero.Rule {
+	zero.GolbaleMiddleware.Use(AuthMiddleware)
 	c := plugin.CM.NewControl(metaDate)
 	return func(ctx *zero.Ctx) bool {
 		// 对超管无用
@@ -92,16 +103,9 @@ func newAuthHandler(metaDate *zero.Metadata) zero.Rule {
 		bid := ctx.Event.SelfID
 		gid := ctx.Event.GroupID
 		uid := ctx.Event.UserID
-		uidGobal := strconv.FormatInt(uid, 10)
 		uidKey := bidWithuid(bid, uid)
 		gidKey := bidWithgid(bid, gid)
 		bidKey := strconv.FormatInt(bid, 10)
-
-		// 对群，全局个人，bot级个人，机器人，所有机器人的权限情况 可以理解为这个为全插件级,排除默认插件
-		if managers.IsBlocked(gidKey) || managers.IsBlocked(uidGobal) || managers.IsBlocked(uidKey) || managers.IsBlocked(bidKey) || managers.IsBlocked("0") {
-			ctx.Stop()
-			return false
-		}
 
 		controlLevel := c.MetaDate.Level
 		if controlLevel > 0 {
@@ -252,6 +256,7 @@ func init() {
 
 	})
 
+	// 禁用服务
 	zero.OnCommandGroup([]string{
 		"全局启用", "allenable", "全局禁用", "alldisable",
 	}, zero.OnlyToMe, zero.SuperUserPermission).SetBlock(true).SecondPriority().Handle(func(ctx *zero.Ctx) {
@@ -298,13 +303,18 @@ func init() {
 		args := strings.Split(model.Args, " ")
 		bid := ctx.Event.SelfID
 		if len(args) >= 1 {
-			msg := "**报告**"
+			msg := "**报告 bot级权限管理**"
 			if strings.Contains(model.Command, "解") || strings.Contains(model.Command, "un") {
 				for _, usr := range args {
 					uid, err := strconv.ParseInt(usr, 10, 64)
 					uidKey := bidWithuid(bid, uid)
 					if err == nil {
-						managers.DoUnblock(uidKey)
+						err = managers.DoUnblock(uidKey)
+						if err == nil {
+							msg += "\n已解封用户" + usr
+						} else {
+							msg += "\n解封用户" + usr + "失败" + err.Error()
+						}
 					}
 				}
 			} else {
@@ -312,7 +322,12 @@ func init() {
 					uid, err := strconv.ParseInt(usr, 10, 64)
 					uidKey := bidWithuid(bid, uid)
 					if err == nil {
-						managers.DoBlock(uidKey)
+						err = managers.DoBlock(uidKey)
+						if err == nil {
+							msg += "\n已封禁用户" + usr
+						} else {
+							msg += "\n封禁用户" + usr + "失败" + err.Error()
+						}
 					}
 				}
 			}
