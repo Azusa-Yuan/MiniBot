@@ -635,6 +635,11 @@ func init() {
 
 			target := userInfo.Target
 
+			_, err = qqwife.UpdateFavorability(uid, target, -5)
+			if err != nil {
+				ctx.SendError(err)
+			}
+
 			favor, err := qqwife.GetFavorability(uid, target)
 			if err != nil {
 				ctx.SendChain(message.Text("[ERROR]:", err))
@@ -647,11 +652,6 @@ func init() {
 			if rand.IntN(101) > 110-favor {
 				ctx.SendChain(message.Text(sendtext[3][rand.IntN(len(sendtext[3]))]))
 				return
-			}
-
-			_, err = qqwife.UpdateFavorability(uid, target, -5)
-			if err != nil {
-				ctx.SendError(err)
 			}
 
 			err = qqwife.DelMarriageInfo(gid, uid)

@@ -34,9 +34,10 @@ func (LM *LimiterManger) GetLimiter(key int64) *Limiter {
 	return LM.limiterMap[key]
 }
 
+// 令牌桶
 func (LM *LimiterManger) NewLimiter(key int64) *Limiter {
 	limiter := &Limiter{
-		rl:          rate.NewLimiter(3, 5),
+		rl:          rate.NewLimiter(1, 3),
 		expiredTime: time.Now().Add(24 * time.Hour),
 	}
 	LM.Lock()
@@ -136,7 +137,8 @@ func judgeMalicious(ctx *zero.Ctx) {
 		limiter := LM.GetOrNewLimiter(uid)
 		if !limiter.rl.Allow() {
 			managers.DoBlock(uidGobal)
-			log.Info().Str("name", pluginName).Msgf("[manager] 封禁恶意用户uid%d", uid)
+			log.Info().Str("name", pluginName).Msgf("封禁恶意用户uid%d", uid)
+			ctx.SendPrivateMessage(zero.BotConfig.GetSuperUser(ctx.Event.SelfID)[0], fmt.Sprintf("封禁恶意用户uid%d", uid))
 		}
 
 		// 每10000次触发，删除
@@ -300,7 +302,7 @@ func init() {
 	}, zero.SuperUserPermission, zero.OnlyToMe).SetBlock(true).SecondPriority().Handle(func(ctx *zero.Ctx) {
 		model := extension.CommandModel{}
 		_ = ctx.Parse(&model)
-		args := strings.Split(model.Args, " ")
+		args := strings.Fields(model.Args)
 		bid := ctx.Event.SelfID
 		if len(args) >= 1 {
 			msg := "**报告 bot级权限管理**"

@@ -2,7 +2,6 @@ package qqwife
 
 import (
 	"fmt"
-	"strconv"
 
 	zero "ZeroBot"
 
@@ -205,17 +204,9 @@ func checkMatchmaker(ctx *zero.Ctx) bool {
 	gid := ctx.Event.GroupID
 	uid := ctx.Event.UserID
 
-	gayOne, err := strconv.ParseInt(ctx.State["regex_matched"].([]string)[1], 10, 64)
+	gayOne := atInfos[0].QQ
+	gayZero := atInfos[1].QQ
 
-	if err != nil {
-		ctx.SendChain(message.Text("额，攻方好像不存在？"))
-		return false
-	}
-	gayZero, err := strconv.ParseInt(ctx.State["regex_matched"].([]string)[2], 10, 64)
-	if err != nil {
-		ctx.SendChain(message.Text("额，受方好像不存在？"))
-		return false
-	}
 	selfId := ctx.Event.SelfID
 	// 判断是否机器人自身
 	if selfId == gayOne || selfId == gayZero {
@@ -230,7 +221,7 @@ func checkMatchmaker(ctx *zero.Ctx) bool {
 		return false
 	}
 	// 判断是否需要重置
-	err = qqwife.IfToday()
+	err := qqwife.IfToday()
 	if err != nil {
 		ctx.SendChain(message.Text("[ERROR]:", err))
 		return false
