@@ -17,7 +17,7 @@ func init() {
 		Name: name,
 		Help: help,
 	})
-	engine.OnFullMatchGroup([]string{"原图", "表情提取"}).Handle(
+	engine.OnPrefixGroup([]string{"原图", "表情提取"}).Handle(
 		func(ctx *zero.Ctx) {
 			if ctx.Event.Message[0].Type != "reply" {
 				return
