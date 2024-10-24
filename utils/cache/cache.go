@@ -98,6 +98,23 @@ func GetAvatar(uid int64) ([]byte, error) {
 	return respBytes, nil
 }
 
+func GetAvatarWithoutCache(uid int64) ([]byte, error) {
+	uidStr := strconv.FormatInt(uid, 10)
+
+	url := "https://q4.qlogo.cn/g?b=qq&nk=" + uidStr + "&s=640"
+	respBytes, err := net_tools.Download(url)
+	if err != nil {
+		url = "https://q4.qlogo.cn/g?b=qq&nk=" + uidStr + "&s=100"
+		respBytes, err = net_tools.Download(url)
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	err = redisClient.Set(context.TODO(), uidStr+"avatar", respBytes, 48*time.Hour).Err()
+	return respBytes, err
+}
+
 func GetRedisCli() *redis.Client {
 	return redisClient
 }
