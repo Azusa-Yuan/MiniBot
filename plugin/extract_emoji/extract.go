@@ -3,7 +3,6 @@ package extractemoji
 import (
 	zero "ZeroBot"
 	"ZeroBot/message"
-	"strings"
 )
 
 var (
@@ -27,11 +26,7 @@ func init() {
 			for _, segment := range replyMsg.Elements {
 				if segment.Type == "image" {
 					url := segment.Data["url"]
-					if strings.HasSuffix(url, "gif") {
-						ctx.SendChain(message.Text("gif要在网页保存啦\n" + url))
-					} else {
-						ctx.SendChain(message.Image(url))
-					}
+					ctx.SendChain(message.Image(url), message.Text(url))
 					ctx.Stop()
 				}
 			}
