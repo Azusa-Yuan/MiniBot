@@ -32,6 +32,7 @@ import (
 	_ "MiniBot/plugin/moyu"
 
 	// _ "MiniBot/plugin/music"
+	_ "MiniBot/plugin/extract_emoji"
 	_ "MiniBot/plugin/pcr_jjc3"
 	_ "MiniBot/plugin/picture_package"
 	_ "MiniBot/plugin/poke"
