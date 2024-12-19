@@ -70,7 +70,7 @@ func init() {
 		log.Fatal().Str("name", utilsName).Err(err).Msg("")
 	}
 
-	model := client.GenerativeModel("gemini-1.5-flash")
+	model := client.GenerativeModel("gemini-2.0-flash-exp")
 
 	model.SafetySettings = []*genai.SafetySetting{
 		{
