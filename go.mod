@@ -20,6 +20,7 @@ require (
 
 require (
 	github.com/Andrew-M-C/go.emoji v1.1.3
+	github.com/FloatTech/AnimeAPI v1.7.1-0.20241106152938-2a63f2f5f8ce
 	github.com/FloatTech/floatbox v0.0.0-20241106130736-5aea0a935024
 	github.com/FloatTech/gg v1.1.3
 	github.com/FloatTech/imgfactory v0.2.2-0.20230315152233-49741fc994f9
@@ -60,7 +61,6 @@ require (
 	cloud.google.com/go/auth/oauth2adapt v0.2.4 // indirect
 	cloud.google.com/go/compute/metadata v0.5.0 // indirect
 	cloud.google.com/go/longrunning v0.5.7 // indirect
-	github.com/FloatTech/AnimeAPI v1.7.1-0.20241106152938-2a63f2f5f8ce // indirect
 	github.com/FloatTech/ttl v0.0.0-20240716161252-965925764562 // indirect
 	github.com/RomiChan/syncx v0.0.0-20240418144900-b7402ffdebc7 // indirect
 	github.com/RomiChan/websocket v1.4.3-0.20220227141055-9b2c6168c9c5 // indirect
