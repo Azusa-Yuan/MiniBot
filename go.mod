@@ -20,8 +20,7 @@ require (
 
 require (
 	github.com/Andrew-M-C/go.emoji v1.1.3
-	github.com/FloatTech/AnimeAPI v1.7.1-0.20241014163126-6979a83dd88f
-	github.com/FloatTech/floatbox v0.0.0-20240505082030-226ec6713e14
+	github.com/FloatTech/floatbox v0.0.0-20241106130736-5aea0a935024
 	github.com/FloatTech/gg v1.1.3
 	github.com/FloatTech/imgfactory v0.2.2-0.20230315152233-49741fc994f9
 	github.com/FloatTech/rendercard v0.0.10-0.20230223064326-45d29fa4ede9
@@ -61,7 +60,8 @@ require (
 	cloud.google.com/go/auth/oauth2adapt v0.2.4 // indirect
 	cloud.google.com/go/compute/metadata v0.5.0 // indirect
 	cloud.google.com/go/longrunning v0.5.7 // indirect
-	github.com/FloatTech/ttl v0.0.0-20230307105452-d6f7b2b647d1 // indirect
+	github.com/FloatTech/AnimeAPI v1.7.1-0.20241106152938-2a63f2f5f8ce // indirect
+	github.com/FloatTech/ttl v0.0.0-20240716161252-965925764562 // indirect
 	github.com/RomiChan/syncx v0.0.0-20240418144900-b7402ffdebc7 // indirect
 	github.com/RomiChan/websocket v1.4.3-0.20220227141055-9b2c6168c9c5 // indirect
 	github.com/andybalholm/cascadia v1.3.2 // indirect
@@ -84,7 +84,6 @@ require (
 	github.com/fumiama/go-simple-protobuf v0.2.0 // indirect
 	github.com/fumiama/gofastTEA v0.0.10 // indirect
 	github.com/fumiama/imgsz v0.0.2 // indirect
-	github.com/fumiama/terasu v0.0.0-20240710095334-67a8daa3a979 // indirect
 	github.com/gabriel-vasile/mimetype v1.4.3 // indirect
 	github.com/gin-contrib/sse v0.1.0 // indirect
 	github.com/go-logr/logr v1.4.2 // indirect
@@ -133,7 +132,7 @@ require (
 	github.com/twitchyliquid64/golang-asm v0.15.1 // indirect
 	github.com/ugorji/go/codec v1.2.12 // indirect
 	github.com/vmihailenco/tagparser/v2 v2.0.0 // indirect
-	github.com/wdvxdr1123/ZeroBot v1.7.5-0.20240505070304-562ffeb33dcd // indirect
+	github.com/wdvxdr1123/ZeroBot v1.8.0 // indirect
 	go.opencensus.io v0.24.0 // indirect
 	go.opentelemetry.io/contrib/instrumentation/google.golang.org/grpc/otelgrpc v0.51.0 // indirect
 	go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp v0.51.0 // indirect
@@ -145,7 +144,7 @@ require (
 	golang.org/x/image v0.21.0 // indirect
 	golang.org/x/net v0.28.0 // indirect
 	golang.org/x/oauth2 v0.22.0 // indirect
-	golang.org/x/sys v0.24.0 // indirect
+	golang.org/x/sys v0.26.0 // indirect
 	golang.org/x/text v0.19.0 // indirect
 	google.golang.org/genproto/googleapis/api v0.0.0-20240725223205-93522f1f2a9f // indirect
 	google.golang.org/genproto/googleapis/rpc v0.0.0-20240814211410-ddb44dafa142 // indirect
@@ -155,3 +154,5 @@ require (
 )
 
 replace ZeroBot => ./ZeroBot
+
+replace github.com/FloatTech/floatbox => github.com/Azusa-Yuan/floatbox v0.0.0-20241222050847-ce51df9708f7
