@@ -12,6 +12,7 @@ import (
 	"sync"
 	"time"
 
+	"MiniBot/service/wallet"
 	"MiniBot/utils/cache"
 	"MiniBot/utils/text"
 
@@ -84,8 +85,8 @@ func drawScore16(a *scdata) (image.Image, error) {
 		return nil, err
 	}
 	canvas.DrawStringAnchored(hourWord, 350, 280, 0, 0)
-	canvas.DrawStringAnchored("ATRI币 + "+strconv.Itoa(a.inc), 350, 350, 0, 0)
-	canvas.DrawStringAnchored("当前ATRI币："+strconv.Itoa(a.score), 350, 400, 0, 0)
+	canvas.DrawStringAnchored(wallet.GetWalletName()+" + "+strconv.Itoa(a.inc), 350, 350, 0, 0)
+	canvas.DrawStringAnchored("当前"+wallet.GetWalletName()+"："+strconv.Itoa(a.score), 350, 400, 0, 0)
 	canvas.DrawStringAnchored("LEVEL: "+strconv.Itoa(getrank(a.level)), 350, 450, 0, 0)
 	// draw Info(Time,etc.)
 	getTime := time.Now().Format("2006-01-02 15:04:05")
@@ -160,8 +161,8 @@ func drawScore15(a *scdata) (image.Image, error) {
 	if err = canvas.LoadFontFace(text.FontFile, float64(back.Bounds().Size().X)*0.04); err != nil {
 		return nil, err
 	}
-	canvas.DrawString(a.nickname+fmt.Sprintf(" ATRI币+%d", a.inc), float64(back.Bounds().Size().X)*0.1, float64(back.Bounds().Size().Y)*1.3)
-	canvas.DrawString("当前ATRI币:"+strconv.FormatInt(int64(a.score), 10), float64(back.Bounds().Size().X)*0.1, float64(back.Bounds().Size().Y)*1.4)
+	canvas.DrawString(a.nickname+fmt.Sprintf(" "+wallet.GetWalletName()+"%d", a.inc), float64(back.Bounds().Size().X)*0.1, float64(back.Bounds().Size().Y)*1.3)
+	canvas.DrawString("当前"+wallet.GetWalletName()+":"+strconv.FormatInt(int64(a.score), 10), float64(back.Bounds().Size().X)*0.1, float64(back.Bounds().Size().Y)*1.4)
 	canvas.DrawString("LEVEL:"+strconv.FormatInt(int64(a.rank), 10), float64(back.Bounds().Size().X)*0.1, float64(back.Bounds().Size().Y)*1.5)
 	canvas.DrawRectangle(float64(back.Bounds().Size().X)*0.1, float64(back.Bounds().Size().Y)*1.55, float64(back.Bounds().Size().X)*0.6, float64(back.Bounds().Size().Y)*0.1)
 	canvas.SetRGB255(150, 150, 150)
@@ -246,8 +247,8 @@ func drawScore17(a *scdata) (image.Image, error) {
 	if err = canvas.ParseFontFace(data, 20); err != nil {
 		return nil, err
 	}
-	canvas.DrawStringAnchored("ATRI币 + "+strconv.Itoa(a.inc), 40, float64(imgDY-90), 0, 0)
-	canvas.DrawStringAnchored("当前ATRI币："+strconv.Itoa(a.score), 40, float64(imgDY-60), 0, 0)
+	canvas.DrawStringAnchored(wallet.GetWalletName()+" + "+strconv.Itoa(a.inc), 40, float64(imgDY-90), 0, 0)
+	canvas.DrawStringAnchored("当前"+wallet.GetWalletName()+"："+strconv.Itoa(a.score), 40, float64(imgDY-60), 0, 0)
 	canvas.DrawStringAnchored("LEVEL: "+strconv.Itoa(getrank(a.level)), 40, float64(imgDY-30), 0, 0)
 
 	// Draw Info(Time, etc.)
@@ -468,7 +469,7 @@ func customtext(a *scdata, fontdata []byte, cw, ch, aw float64, textcolor color.
 		return
 	}
 
-	canvas.DrawStringAnchored("ATRI币 + "+strconv.Itoa(a.inc), ((cw-scw)-(cw/3-scw/2))/8, (ch-sch)/2+sch/4+tempfh, 0, 0.5)
+	canvas.DrawStringAnchored(wallet.GetWalletName()+" + "+strconv.Itoa(a.inc), ((cw-scw)-(cw/3-scw/2))/8, (ch-sch)/2+sch/4+tempfh, 0, 0.5)
 	canvas.DrawStringAnchored("EXP + 1", ((cw-scw)-(cw/3-scw/2))/8, (ch-sch)/2+sch/4+tempfh+canvas.FontHeight(), 0, 1)
 
 	err = canvas.ParseFontFace(fontdata, (ch-sch)/2/4)
@@ -476,7 +477,7 @@ func customtext(a *scdata, fontdata []byte, cw, ch, aw float64, textcolor color.
 		return
 	}
 
-	canvas.DrawStringAnchored("你有 "+strconv.Itoa(a.score)+" 枚ATRI币", ((cw-scw)-(cw/3-scw/2))/8, (ch-sch)/2+sch/4*3, 0, 0.5)
+	canvas.DrawStringAnchored("你有 "+strconv.Itoa(a.score)+" 枚"+wallet.GetWalletName(), ((cw-scw)-(cw/3-scw/2))/8, (ch-sch)/2+sch/4*3, 0, 0.5)
 
 	img = canvas.Image()
 	return

@@ -1,6 +1,6 @@
 module MiniBot
 
-go 1.22
+go 1.23
 
 require (
 	ZeroBot v1.7.4-20241001
@@ -19,7 +19,7 @@ require (
 )
 
 require (
-	github.com/Andrew-M-C/go.emoji v1.1.2
+	github.com/Andrew-M-C/go.emoji v1.1.3
 	github.com/FloatTech/AnimeAPI v1.7.1-0.20241014163126-6979a83dd88f
 	github.com/FloatTech/floatbox v0.0.0-20240505082030-226ec6713e14
 	github.com/FloatTech/gg v1.1.3

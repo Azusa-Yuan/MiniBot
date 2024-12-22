@@ -92,7 +92,7 @@ type Event struct {
 // Message 消息
 type Message struct {
 	Elements    message.Message
-	MessageId   message.MessageID
+	MessageID   message.MessageID
 	Sender      *User
 	MessageType string
 }

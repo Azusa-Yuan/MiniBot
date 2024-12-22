@@ -11,6 +11,8 @@ import (
 	"gorm.io/gorm"
 )
 
+var walletName = "Atri币"
+
 // Storage 货币系统
 type Storage struct {
 	sync.RWMutex
@@ -31,6 +33,21 @@ var (
 
 func init() {
 	sdb.db.AutoMigrate(&Wallet{})
+}
+
+// GetWalletName 获取货币名称
+func GetWalletName() string {
+	return walletName
+}
+
+// 多bot实例根据bot名字生成不同的货币名称
+func GetWalletNameByCtx(ctx *zero.Ctx) string {
+	return zero.BotConfig.GetNickName(ctx.Event.SelfID)[0] + "币"
+}
+
+// SetWalletName 设置货币名称
+func SetWalletName(name string) {
+	walletName = name
 }
 
 // GetWalletOf 获取钱包数据

@@ -127,7 +127,7 @@ func (ctx *Ctx) GetMessage(messageID interface{}) Message {
 	rspData := resp.Data
 	m := Message{
 		Elements:    message.ParseMessage(utils.StringToBytes(rspData.Get("message").Raw)),
-		MessageId:   message.NewMessageIDFromInteger(rspData.Get("message_id").Int()),
+		MessageID:   message.NewMessageIDFromInteger(rspData.Get("message_id").Int()),
 		MessageType: rspData.Get("message_type").String(),
 		Sender:      &User{},
 	}
@@ -263,7 +263,7 @@ func (ctx *Ctx) SetGroupName(groupID int64, groupName string) error {
 
 // SetThisGroupName 设置本群名
 // https://github.com/botuniverse/onebot-11/blob/master/api/public.md#set_group_name-%E8%AE%BE%E7%BD%AE%E7%BE%A4%E5%90%8D
-func (ctx *Ctx) SetThisGroupName(groupID int64, groupName string) error {
+func (ctx *Ctx) SetThisGroupName(groupName string) error {
 	return ctx.SetGroupName(ctx.Event.GroupID, groupName)
 }
 
@@ -740,9 +740,9 @@ func (ctx *Ctx) GetThisGroupFilesByFolder(folderID string) (gjson.Result, error)
 	return ctx.GetGroupFilesByFolder(ctx.Event.GroupID, folderID)
 }
 
-// GetGroupFileUrl 获取群文件资源链接
+// GetGroupFileURL  获取群文件资源链接
 // https://github.com/Mrs4s/go-cqhttp/blob/master/docs/cqhttp.md#%E8%8E%B7%E5%8F%96%E7%BE%A4%E6%96%87%E4%BB%B6%E8%B5%84%E6%BA%90%E9%93%BE%E6%8E%A5
-func (ctx *Ctx) GetGroupFileUrl(groupID, busid int64, fileID string) (string, error) {
+func (ctx *Ctx) GetGroupFileURL(groupID, busid int64, fileID string) (string, error) {
 	resp, err := ctx.CallAction("get_group_file_url", Params{
 		"group_id": groupID,
 		"file_id":  fileID,
@@ -751,10 +751,10 @@ func (ctx *Ctx) GetGroupFileUrl(groupID, busid int64, fileID string) (string, er
 	return resp.Data.Get("url").Str, err
 }
 
-// GetThisGroupFileUrl 获取本群文件资源链接
+// GetThisGroupFileURL 获取本群文件资源链接
 // https://github.com/Mrs4s/go-cqhttp/blob/master/docs/cqhttp.md#%E8%8E%B7%E5%8F%96%E7%BE%A4%E6%96%87%E4%BB%B6%E8%B5%84%E6%BA%90%E9%93%BE%E6%8E%A5
-func (ctx *Ctx) GetThisGroupFileUrl(busid int64, fileID string) (string, error) {
-	return ctx.GetGroupFileUrl(ctx.Event.GroupID, busid, fileID)
+func (ctx *Ctx) GetThisGroupFileURL(busid int64, fileID string) (string, error) {
+	return ctx.GetGroupFileURL(ctx.Event.GroupID, busid, fileID)
 }
 
 // UploadGroupFile 上传群文件
