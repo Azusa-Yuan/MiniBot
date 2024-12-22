@@ -1,0 +1,12 @@
+db_type:
+  pgsql: true
+  sqlite: true
+  mysql: true
+db:
+  # lulumu:
+  #   dsn: "host=127.0.0.1 user=postgres password=a123456 dbname=lulumu port=5432 sslmode=disable TimeZone=Asia/Shanghai"
+  #   type: "pgsql"
+  lulumu:
+    dsn: "root:a123456@tcp(127.0.0.1:3306)/lulumu?charset=utf8mb4&parseTime=True&loc=Local"
+    type: "mysql"
+defalut: lulumu

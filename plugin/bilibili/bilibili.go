@@ -57,6 +57,7 @@ func init() {
 			"- 设置b站cookie b_ut=7;buvid3=0;i-wanna-go-back=-1;innersign=0;\n" +
 			"- 更新vup\n" +
 			"Tips: (412就是拦截的意思,建议私聊把cookie设全)\n",
+		Level: 2,
 	})
 	cachePath := filepath.Join(minipath.GetPluginDataPath(), "cache/")
 	_ = os.RemoveAll(cachePath)

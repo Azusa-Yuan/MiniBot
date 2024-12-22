@@ -12,8 +12,9 @@ func unew() *Engine {
 }
 
 type Metadata struct {
-	Name  string
-	Help  string
+	Name string
+	Help string
+	// 权限等级
 	Level uint
 }
 

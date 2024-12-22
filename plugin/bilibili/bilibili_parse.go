@@ -32,7 +32,8 @@ var (
 // 插件主体
 func init() {
 	en := zero.NewTemplate(&zero.Metadata{
-		Name: "B站链接解析",
+		Name:  "B站链接解析",
+		Level: 2,
 	})
 
 	en.OnMessage(bilibiliParseRule).SetBlock(true).

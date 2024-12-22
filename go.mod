@@ -5,7 +5,6 @@ go 1.23
 require (
 	ZeroBot v1.7.4-20241001
 	gopkg.in/yaml.v2 v2.4.0
-	gorm.io/driver/postgres v1.5.9
 	gorm.io/gorm v1.25.11
 )
 
@@ -26,7 +25,7 @@ require (
 	github.com/FloatTech/imgfactory v0.2.2-0.20230315152233-49741fc994f9
 	github.com/FloatTech/rendercard v0.0.10-0.20230223064326-45d29fa4ede9
 	github.com/FloatTech/zbputils v1.7.1
-	github.com/PuerkitoBio/goquery v1.9.2
+	github.com/PuerkitoBio/goquery v1.10.0
 	github.com/antchfx/htmlquery v1.3.3
 	github.com/chromedp/chromedp v0.10.0
 	github.com/disintegration/imaging v1.6.2
@@ -52,6 +51,7 @@ require (
 	golang.org/x/time v0.6.0
 	google.golang.org/api v0.194.0
 	gorm.io/driver/mysql v1.5.7
+	gorm.io/driver/postgres v1.5.11
 )
 
 require (
@@ -140,9 +140,9 @@ require (
 	go.opentelemetry.io/otel/metric v1.26.0 // indirect
 	go.opentelemetry.io/otel/trace v1.26.0 // indirect
 	golang.org/x/arch v0.8.0 // indirect
-	golang.org/x/crypto v0.26.0 // indirect
+	golang.org/x/crypto v0.27.0 // indirect
 	golang.org/x/image v0.21.0 // indirect
-	golang.org/x/net v0.28.0 // indirect
+	golang.org/x/net v0.29.0 // indirect
 	golang.org/x/oauth2 v0.22.0 // indirect
 	golang.org/x/sys v0.26.0 // indirect
 	golang.org/x/text v0.19.0 // indirect
