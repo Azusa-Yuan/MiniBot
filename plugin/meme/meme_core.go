@@ -27,7 +27,7 @@ var (
 	helpData     []byte
 )
 
-const width = 2000
+const width = 2400
 
 func GetHelp() ([]byte, error) {
 
@@ -40,7 +40,7 @@ func GetHelp() ([]byte, error) {
 		number++
 	}
 	fontSize := 40.0
-	canvas := gg.NewContext(width, int(450+2.2*fontSize*float64(number)))
+	canvas := gg.NewContext(width, int(450+2.4*fontSize*float64(number)))
 	canvas.SetRGB(1, 1, 1) // 白色
 	canvas.Clear()
 	/***********获取字体，可以注销掉***********/
