@@ -23,7 +23,7 @@ var (
 	emojiMap     = map[string]string{}
 	emojiInfoMap = map[string]*EmojiInfo{}
 	cmdList      = []string{}
-	colnum       = 3
+	colnum       = 4
 	helpData     []byte
 )
 
@@ -37,7 +37,7 @@ func GetHelp() ([]byte, error) {
 	if len(cmdList)%colnum > 0 {
 		number++
 	}
-	fontSize := 30.0
+	fontSize := 45.0
 	canvas := gg.NewContext(1500, int(240+1.4*fontSize*float64(number)))
 	canvas.SetRGB(1, 1, 1) // 白色
 	canvas.Clear()
@@ -49,7 +49,7 @@ func GetHelp() ([]byte, error) {
 	/***********设置字体颜色为黑色***********/
 	canvas.SetRGB(0, 0, 0)
 	/***********设置字体大小,并获取字体高度用来定位***********/
-	if err = canvas.ParseFontFace(data, fontSize*2); err != nil {
+	if err = canvas.ParseFontFace(data, fontSize*1.2); err != nil {
 		return nil, err
 	}
 	sl, h := canvas.MeasureString("表情包列表")
