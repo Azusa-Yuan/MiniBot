@@ -27,6 +27,8 @@ var (
 	helpData     []byte
 )
 
+const width = 2000
+
 func GetHelp() ([]byte, error) {
 
 	if len(helpData) > 0 {
@@ -38,7 +40,7 @@ func GetHelp() ([]byte, error) {
 		number++
 	}
 	fontSize := 45.0
-	canvas := gg.NewContext(1500, int(240+1.4*fontSize*float64(number)))
+	canvas := gg.NewContext(width, int(240+1.4*fontSize*float64(number)))
 	canvas.SetRGB(1, 1, 1) // 白色
 	canvas.Clear()
 	/***********获取字体，可以注销掉***********/
@@ -49,14 +51,14 @@ func GetHelp() ([]byte, error) {
 	/***********设置字体颜色为黑色***********/
 	canvas.SetRGB(0, 0, 0)
 	/***********设置字体大小,并获取字体高度用来定位***********/
-	if err = canvas.ParseFontFace(data, fontSize*1.2); err != nil {
+	if err = canvas.ParseFontFace(data, fontSize*2); err != nil {
 		return nil, err
 	}
 	sl, h := canvas.MeasureString("表情包列表")
 	/***********绘制标题***********/
-	canvas.DrawString("表情包列表", (1500-sl)/2, 140-1.2*h) // 放置在中间位置
+	canvas.DrawString("表情包列表", (width-sl)/2, 140-1.2*h) // 放置在中间位置
 	/***********设置字体大小,并获取字体高度用来定位***********/
-	if err = canvas.ParseFontFace(data, 1.4*fontSize); err != nil {
+	if err = canvas.ParseFontFace(data, 1.5*fontSize); err != nil {
 		return nil, err
 	}
 
@@ -65,7 +67,7 @@ func GetHelp() ([]byte, error) {
 	for i := 0; i < len(cmdList); i += colnum {
 
 		for j := i; j < min(len(cmdList), i+colnum); j++ {
-			canvas.DrawString(cmdList[j], float64(j%colnum*1500/colnum), 180+fontSize*float64(i)-h)
+			canvas.DrawString(cmdList[j], float64(j%colnum*width/colnum), 180+fontSize*float64(i)-h)
 		}
 
 	}
