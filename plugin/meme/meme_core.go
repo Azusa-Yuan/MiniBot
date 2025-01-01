@@ -39,8 +39,8 @@ func GetHelp() ([]byte, error) {
 	if len(cmdList)%colnum > 0 {
 		number++
 	}
-	fontSize := 45.0
-	canvas := gg.NewContext(width, int(300+1.4*fontSize*float64(number)))
+	fontSize := 40.0
+	canvas := gg.NewContext(width, int(350+1.4*fontSize*float64(number)))
 	canvas.SetRGB(1, 1, 1) // 白色
 	canvas.Clear()
 	/***********获取字体，可以注销掉***********/
@@ -51,14 +51,14 @@ func GetHelp() ([]byte, error) {
 	/***********设置字体颜色为黑色***********/
 	canvas.SetRGB(0, 0, 0)
 	/***********设置字体大小,并获取字体高度用来定位***********/
-	if err = canvas.ParseFontFace(data, fontSize*1.5); err != nil {
+	if err = canvas.ParseFontFace(data, fontSize*1.8); err != nil {
 		return nil, err
 	}
 	sl, h := canvas.MeasureString("表情包列表")
 	/***********绘制标题***********/
 	canvas.DrawString("表情包列表", (width-sl)/2, 140-1.2*h) // 放置在中间位置
 	/***********设置字体大小,并获取字体高度用来定位***********/
-	if err = canvas.ParseFontFace(data, 1.2*fontSize); err != nil {
+	if err = canvas.ParseFontFace(data, 1.5*fontSize); err != nil {
 		return nil, err
 	}
 
