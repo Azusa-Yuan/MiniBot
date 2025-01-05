@@ -165,9 +165,10 @@ func init() {
 
 	engine.OnPrefix("获得签到背景", zero.OnlyGroup).SetBlock(true).
 		Handle(func(ctx *zero.Ctx) {
+			atInfos := ctx.GetAtInfos()
 			uid := ctx.Event.UserID
-			if len(ctx.Event.Message) > 1 && ctx.Event.Message[1].Type == "at" {
-				uid, _ = strconv.ParseInt(ctx.Event.Message[1].Data["qq"], 10, 64)
+			if len(atInfos) == 1 {
+				uid = atInfos[0].QQ
 			}
 			uid = transform.BidWithidInt64Custom(ctx.Event.SelfID, uid)
 			picFile := filepath.Join(cachePath, strconv.FormatInt(uid, 10)+time.Now().Format("20060102")+".png")
