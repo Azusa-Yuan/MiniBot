@@ -27,7 +27,7 @@ func GetHelp() ([]byte, error) {
 	if len(helpData) > 0 {
 		return helpData, nil
 	}
-	resp, err := client.Post(baseUrl+"/render_list", "application/json", nil)
+	resp, err := client.Post(baseUrl+"render_list", "application/json", nil)
 	if err != nil {
 		return nil, err
 	}
