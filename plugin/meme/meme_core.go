@@ -7,7 +7,7 @@ import (
 	"io"
 	"mime/multipart"
 	"net/http"
-	"path/filepath"
+	"net/url"
 	"strings"
 	"sync"
 
@@ -28,7 +28,8 @@ func GetHelp() ([]byte, error) {
 	if len(helpData) > 0 {
 		return helpData, nil
 	}
-	resp, err := client.Post(filepath.Join(baseUrl, "render_list"), "application/json", nil)
+	u, _ := url.JoinPath(baseUrl, "render_list")
+	resp, err := client.Post(u, "application/json", nil)
 	if err != nil {
 		return nil, err
 	}
@@ -49,7 +50,8 @@ func GetHelp() ([]byte, error) {
 }
 
 func GetList() ([]string, error) {
-	resp, err := client.Get(filepath.Join(baseUrl, "keys"))
+	u, _ := url.JoinPath(baseUrl, "keys")
+	resp, err := client.Get(u)
 	if err != nil {
 		return nil, err
 	}
@@ -67,7 +69,8 @@ func GetList() ([]string, error) {
 
 func GetEmojiInfo(key string) (EmojiInfo, error) {
 	emojiInfo := EmojiInfo{}
-	resp, err := client.Get(filepath.Join(baseUrl, "key", "info"))
+	u, _ := url.JoinPath(baseUrl, "key", "info")
+	resp, err := client.Get(u)
 	if err != nil {
 		return emojiInfo, err
 	}
@@ -126,9 +129,9 @@ func CreateEmoji(emojiPath string, images [][]byte, texts []string, args string)
 	}
 
 	// 创建请求
-	url := baseUrl + filepath.Join(baseUrl, emojiPath)
-	log.Info().Str("name", pluginName).Msgf("creat emoji:%s", url)
-	req, err := http.NewRequest("POST", url, &requestBody)
+	u, _ := url.JoinPath(baseUrl, emojiPath)
+	log.Info().Str("name", pluginName).Msgf("creat emoji:%s", u)
+	req, err := http.NewRequest("POST", u, &requestBody)
 	if err != nil {
 		return nil, err
 	}
