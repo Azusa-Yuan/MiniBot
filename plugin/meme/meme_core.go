@@ -261,9 +261,16 @@ func QueryEmojiInfo(key string) string {
 	resText := ""
 	resText += fmt.Sprintf("\n表情名:%s", info.Key)
 	resText += fmt.Sprintf("\n关键词:%s", strings.Join(info.Keywords, "/"))
-
-	resText += fmt.Sprintf("\n最小文本数目:%d, 最大文本数目:%d", info.ParamsType.MinTexts, info.ParamsType.MaxTexts)
-	resText += fmt.Sprintf("\n最小图片数目:%d, 最大图片数目:%d", info.ParamsType.MinImages, info.ParamsType.MaxImages)
+	if info.ParamsType.MinTexts != info.ParamsType.MaxTexts {
+		resText += fmt.Sprintf("\n需要文本数目:%d-%d", info.ParamsType.MinTexts, info.ParamsType.MaxTexts)
+	} else {
+		resText += fmt.Sprintf("\n需要文本数目:%d", info.ParamsType.MinTexts)
+	}
+	if info.ParamsType.MinImages != info.ParamsType.MaxImages {
+		resText += fmt.Sprintf("\n需要图片数目:%d-%d", info.ParamsType.MinImages, info.ParamsType.MaxImages)
+	} else {
+		resText += fmt.Sprintf("\n需要图片数目:%d", info.ParamsType.MinImages)
+	}
 	resText += "\n可选参数如下:"
 	parserOptions := info.ParamsType.ArgsType.ParserOptions
 	for _, parserOption := range parserOptions {
