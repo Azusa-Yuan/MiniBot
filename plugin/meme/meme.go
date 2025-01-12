@@ -20,6 +20,9 @@ var (
 	pluginName = "表情包制作"
 	pattern    = `--(\S+)\s+(\S+)`
 	reArgs     = regexp.MustCompile(pattern)
+	help       = `触发方式：“关键词 + 图片/文字”
+发送 “表情详情 + 关键词” 查看表情参数和预览
+目前支持的表情列表：`
 )
 
 func init() {
@@ -30,7 +33,7 @@ func init() {
 	}
 	metaData := zero.Metadata{
 		Name: pluginName,
-		Help: "发送 表情包列表 查看所有表情指令 \n发送 查看表情信息xx 查看表情详细参数",
+		Help: "发送 表情包列表 查看所有表情指令 \n发送 表情详情 xx 查看表情详细参数",
 	}
 	engine := zero.NewTemplate(&metaData)
 	engine.OnFullMatchGroup([]string{"表情包列表", "头像表情包"}).SetBlock(true).Handle(
@@ -40,7 +43,7 @@ func init() {
 				ctx.SendError(err)
 				return
 			}
-			ctx.SendChain(message.At(ctx.Event.UserID), message.ImageBytes(data))
+			ctx.SendChain(message.Text(help), message.ImageBytes(data))
 		},
 	)
 
@@ -51,7 +54,7 @@ func init() {
 	})
 	engine.OnPrefixGroup(keys).Handle(dealmeme)
 
-	engine.OnPrefix("查看表情信息").SetBlock(true).Handle(
+	engine.OnPrefix("表情详情").SetBlock(true).Handle(
 		func(ctx *zero.Ctx) {
 			key := strings.TrimSpace(ctx.State["args"].(string))
 			ctx.SendChain(message.At(ctx.Event.UserID), message.Text(QueryEmojiInfo(key)))
