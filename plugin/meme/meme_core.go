@@ -1,18 +1,15 @@
 package meme
 
 import (
-	"MiniBot/utils/cache"
 	"bytes"
 	"encoding/json"
 	"fmt"
-	"image/jpeg"
 	"io"
 	"mime/multipart"
 	"net/http"
 	"strings"
 	"sync"
 
-	"github.com/FloatTech/gg"
 	"github.com/rs/zerolog/log"
 	"github.com/tidwall/gjson"
 )
@@ -23,61 +20,29 @@ var (
 	emojiMap     = map[string]string{}
 	emojiInfoMap = map[string]*EmojiInfo{}
 	cmdList      = []string{}
-	colnum       = 4
 	helpData     []byte
 )
 
-const width = 2400
-
 func GetHelp() ([]byte, error) {
-
 	if len(helpData) > 0 {
 		return helpData, nil
 	}
-
-	number := len(cmdList) / colnum
-	if len(cmdList)%colnum > 0 {
-		number++
-	}
-	fontSize := 40.0
-	canvas := gg.NewContext(width, int(450+2.4*fontSize*float64(number)))
-	canvas.SetRGB(1, 1, 1) // 白色
-	canvas.Clear()
-	/***********获取字体，可以注销掉***********/
-	data, err := cache.GetDefaultFont()
-	if err != nil {
-		return nil, err
-	}
-	/***********设置字体颜色为黑色***********/
-	canvas.SetRGB(0, 0, 0)
-	/***********设置字体大小,并获取字体高度用来定位***********/
-	if err = canvas.ParseFontFace(data, fontSize*1.8); err != nil {
-		return nil, err
-	}
-	sl, h := canvas.MeasureString("表情包列表")
-	/***********绘制标题***********/
-	canvas.DrawString("表情包列表", (width-sl)/2, 140-1.2*h) // 放置在中间位置
-	/***********设置字体大小,并获取字体高度用来定位***********/
-	if err = canvas.ParseFontFace(data, 1.5*fontSize); err != nil {
-		return nil, err
-	}
-
-	_, h = canvas.MeasureString("焯")
-	// 打印数据
-	for i := 0; i < len(cmdList); i += colnum {
-
-		for j := i; j < min(len(cmdList), i+colnum); j++ {
-			canvas.DrawString(cmdList[j], float64(j%colnum*width/colnum), 180+fontSize*float64(i)-h)
-		}
-
-	}
-	buffer := bytes.NewBuffer(make([]byte, 0, 1024*1024*4))
-	err = jpeg.Encode(buffer, canvas.Image(), &jpeg.Options{Quality: 70})
+	resp, err := client.Post(baseUrl+"/memes/render_list", "application/json", nil)
 	if err != nil {
 		return nil, err
 	}
 
-	data = buffer.Bytes()
+	// 接收数据
+	data, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return nil, err
+	}
+
+	// 检查响应
+	if resp.StatusCode != http.StatusOK {
+		return nil, fmt.Errorf("create image: %s, %s", resp.Status, string(data))
+	}
+
 	helpData = data
 	return data, nil
 }
