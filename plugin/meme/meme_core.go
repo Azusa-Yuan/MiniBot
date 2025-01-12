@@ -69,7 +69,7 @@ func GetList() ([]string, error) {
 
 func GetEmojiInfo(key string) (EmojiInfo, error) {
 	emojiInfo := EmojiInfo{}
-	u, _ := url.JoinPath(baseUrl, "key", "info")
+	u, _ := url.JoinPath(baseUrl, key, "info")
 	resp, err := client.Get(u)
 	if err != nil {
 		return emojiInfo, err
