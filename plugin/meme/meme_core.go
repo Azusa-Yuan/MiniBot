@@ -258,9 +258,12 @@ func QueryEmojiInfo(key string) string {
 	if info == nil {
 		return "没有该表情的信息"
 	}
-	resText := key + "帮助如下:"
-	resText += fmt.Sprintf("\n 最小文本信息个数:%d, 最大文本信息个数:%d", info.ParamsType.MinTexts, info.ParamsType.MaxTexts)
-	resText += fmt.Sprintf("\n 最小图片张数:%d, 最大图片张数:%d", info.ParamsType.MinImages, info.ParamsType.MaxImages)
+	resText := ""
+	resText += fmt.Sprintf("\n表情名:%s", info.Key)
+	resText += fmt.Sprintf("\n关键词:%s", strings.Join(info.Keywords, "/"))
+
+	resText += fmt.Sprintf("\n最小文本数目:%d, 最大文本数目:%d", info.ParamsType.MinTexts, info.ParamsType.MaxTexts)
+	resText += fmt.Sprintf("\n最小图片数目:%d, 最大图片数目:%d", info.ParamsType.MinImages, info.ParamsType.MaxImages)
 	resText += "\n可选参数如下:"
 	parserOptions := info.ParamsType.ArgsType.ParserOptions
 	for _, parserOption := range parserOptions {
