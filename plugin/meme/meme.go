@@ -6,7 +6,6 @@ import (
 	zero "ZeroBot"
 	"ZeroBot/message"
 	"encoding/json"
-	"fmt"
 	"regexp"
 	"slices"
 	"strconv"
@@ -150,19 +149,19 @@ func dealmeme(ctx *zero.Ctx) {
 
 	images, err := dealImgStr(imgStrs...)
 	if err != nil {
-		ctx.SendChain(message.Text(fmt.Sprint("[meme]", err)))
+		ctx.SendError(err)
 		return
 	}
 
 	argsBytes, err := json.Marshal(args)
 	if err != nil {
-		ctx.SendChain(message.Text(fmt.Sprint("[meme]", err)))
+		ctx.SendError(err)
 		return
 	}
 
 	emojiData, err := CreateEmoji(path, images, texts, string(argsBytes))
 	if err != nil {
-		ctx.SendChain(message.Text(fmt.Sprint("[meme]", err)))
+		ctx.SendError(err)
 		return
 	}
 	ctx.SendChain(message.At(ctx.Event.UserID), message.ImageBytes(emojiData))

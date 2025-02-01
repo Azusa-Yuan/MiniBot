@@ -12,11 +12,14 @@ import (
 	"strings"
 
 	"github.com/google/generative-ai-go/genai"
+	"github.com/rs/zerolog/log"
 )
+
+const pluginName = "genai"
 
 func init() {
 	metaData := zero.Metadata{
-		Name: "genai",
+		Name: pluginName,
 		Help: `基于Google大模型Gemini的ai对话插件,快和露露姆进行ai对话
 指令:
 重置会话:可以重置当前ai会话的上下文,默认上下文的时长为2小时
@@ -32,12 +35,24 @@ func init() {
 				key = transform.BidWithgidInt64(ctx)
 			}
 
-			parts := []genai.Part{}
-			msg := ctx.ExtractPlainText()
-			msg = strings.TrimSpace(msg)
-			if msg != "" {
-				parts = append(parts, genai.Text(msg))
+			msg := ctx.CardOrNickName(ctx.Event.UserID) + ":"
+			for _, segment := range ctx.Event.Message {
+				if segment.Type == "text" {
+					msg += segment.Data["text"]
+				}
+				if segment.Type == "at" {
+					qqStr := segment.Data["qq"]
+					qq, err := strconv.ParseInt(qqStr, 10, 64)
+					if err == nil {
+						msg += ctx.CardOrNickName(qq)
+					} else {
+						log.Error().Str("name", pluginName).Err(err).Msg("")
+					}
+				}
 			}
+			ctx.GetAtInfos()
+			parts := []genai.Part{}
+			parts = append(parts, genai.Text(msg))
 
 			// 获取图片
 			imgStrs := []string{}
