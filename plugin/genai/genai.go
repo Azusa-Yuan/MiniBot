@@ -35,7 +35,7 @@ func init() {
 				key = transform.BidWithgidInt64(ctx)
 			}
 
-			msg := "群友" + ctx.CardOrNickName(ctx.Event.UserID) + "说："
+			msg := "群友" + "\"" + ctx.CardOrNickName(ctx.Event.UserID) + "\"" + "说："
 			for _, segment := range ctx.Event.Message {
 				if segment.Type == "text" {
 					msg += segment.Data["text"]
