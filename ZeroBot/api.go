@@ -682,13 +682,16 @@ func (ctx *Ctx) NickName() (name string) {
 
 // CardOrNickName 从 uid 获取群名片，如果没有则获取昵称
 func (ctx *Ctx) CardOrNickName(uid int64) (name string) {
-	infoData, _ := ctx.GetGroupMemberInfo(ctx.Event.GroupID, uid, false)
-	name = infoData.Get("card").String()
-	if name == "" {
-		name = infoData.Get("nickname").String()
+	if ctx.Event.GroupID != 0 {
+		infoData, _ := ctx.GetGroupMemberInfo(ctx.Event.GroupID, uid, false)
+		name = infoData.Get("card").String()
+		if name == "" {
+			name = infoData.Get("nickname").String()
+		}
 	}
+
 	if name == "" {
-		infoData, _ = ctx.GetStrangerInfo(uid, false)
+		infoData, _ := ctx.GetStrangerInfo(uid, false)
 		name = infoData.Get("nickname").String()
 	}
 	return

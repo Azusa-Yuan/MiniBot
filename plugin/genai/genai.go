@@ -50,7 +50,7 @@ func init() {
 					}
 				}
 			}
-			ctx.GetAtInfos()
+
 			parts := []genai.Part{}
 			parts = append(parts, genai.Text(msg))
 
