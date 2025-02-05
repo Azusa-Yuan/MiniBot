@@ -37,7 +37,6 @@ var (
 		chromedp.Flag("no-sandbox", true),
 		chromedp.Flag("disable-dev-shm-usage", true),
 		chromedp.Flag("remote-debugging-port", "9222"),
-		chromedp.ProxyServer("http://127.0.0.1:10809"),
 	)
 
 	allocCtx, cancel1 = chromedp.NewExecAllocator(context.Background(), opts...)
