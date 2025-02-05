@@ -2,6 +2,7 @@ package zero
 
 import (
 	"strconv"
+	"strings"
 	"unicode"
 
 	"github.com/rs/zerolog/log"
@@ -47,11 +48,14 @@ func (ctx *Ctx) GetAtInfos() []AtInfo {
 			continue
 		}
 		if segment.Type == "text" {
-			qq := IsQQ(segment.Data["text"])
-			if qq > 0 {
-				atInfos = append(atInfos, AtInfo{
-					QQ: qq,
-				})
+			texts := strings.Fields(segment.Data["text"])
+			for _, text := range texts {
+				qq := IsQQ(text)
+				if qq > 0 {
+					atInfos = append(atInfos, AtInfo{
+						QQ: qq,
+					})
+				}
 			}
 		}
 	}

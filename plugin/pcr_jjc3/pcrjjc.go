@@ -166,8 +166,17 @@ func init() {
 			ctx.SendChain(message.At(ctx.Event.UserID), message.Text(msg))
 		})
 
-	engine.OnFullMatchGroup([]string{"删除绑定", "删除bind"}).SetBlock(true).Handle(
+	engine.OnPrefixGroup([]string{"删除绑定", "删除bind"}).SetBlock(true).Handle(
 		func(ctx *zero.Ctx) {
+			atInfos := ctx.GetAtInfos()
+			if zero.SuperUserPermission(ctx) && len(atInfos) > 0 {
+				for _, atInfo := range atInfos {
+					uid := strconv.FormatInt(atInfo.QQ, 10)
+					msg := userInfoManage.delBind(uid, 0)
+					ctx.SendChain(message.At(ctx.Event.UserID), message.Text(msg))
+				}
+				return
+			}
 			uid := strconv.FormatInt(ctx.Event.UserID, 10)
 			msg := userInfoManage.delBind(uid, 0)
 			ctx.SendChain(message.At(ctx.Event.UserID), message.Text(msg))
