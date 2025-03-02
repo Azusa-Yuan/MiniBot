@@ -183,7 +183,7 @@ func init() {
 				}
 				ctx.SendPrivateMessage(zero.BotConfig.SuperUsers[0],
 					fmt.Sprintf("%d 试图将bot拉进群聊 %d", ctx.Event.OperatorID, ctx.Event.GroupID))
-				ctx.SendChain(message.Text("不要随意加露露姆进群！"))
+				ctx.SendChain(message.Text(fmt.Sprintf("不要随意加%s进群！", zero.BotConfig.GetNickName(ctx.Event.SelfID)[0])))
 				ctx.SetThisGroupLeave(false)
 			}
 		})

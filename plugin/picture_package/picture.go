@@ -106,13 +106,13 @@ func sendPicture(y picturePackage, ctx *zero.Ctx, key, picType string) {
 						url := imgData.Get("urls").Get(loliconSize).String()
 						y.PictureList = url
 						y.Title = imgData.Get("title").String() + "/" + imgData.Get("author").String()
-						y.Title = zero.BotConfig.NickName[0] + "暂时没有这样的图呢。" + "所以给你发这张:" + y.Title
+						y.Title = zero.BotConfig.GetNickName(ctx.Event.SelfID)[0] + "暂时没有这样的图呢。" + "所以给你发这张:" + y.Title
 					}
 				}
 			}
 		}
 		if y.PictureList == "" {
-			ctx.SendChain(message.Text(zero.BotConfig.NickName[0] + "暂时没有这样的图呢"))
+			ctx.SendChain(message.Text(zero.BotConfig.GetNickName(ctx.Event.SelfID)[0] + "暂时没有这样的图呢"))
 			return
 		}
 	}

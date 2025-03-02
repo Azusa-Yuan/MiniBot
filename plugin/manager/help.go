@@ -49,7 +49,7 @@ func init() {
 			// 取最大值
 			level := slices.Max(levels)
 			if managers.IsBlocked(uidKey) || managers.IsBlocked(gidKey) {
-				resp := fmt.Sprintf(zero.BotConfig.NickName[0], "睡着了")
+				resp := fmt.Sprintf(zero.BotConfig.GetNickName(ctx.Event.SelfID)[0], "睡着了")
 				ctx.SendChain(message.Text(resp))
 				return
 			}

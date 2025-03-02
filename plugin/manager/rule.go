@@ -167,14 +167,14 @@ func init() {
 			} else {
 				managers.DoUnblock(gidKey)
 			}
-			msg = zero.BotConfig.NickName[0] + "将开始在此工作啦~"
+			msg = zero.BotConfig.GetNickName(ctx.Event.SelfID)[0] + "将开始在此工作啦~"
 		case "沉默", "silence":
 			if gid == 0 {
 				managers.DoBlock(uidKey)
 			} else {
 				managers.DoBlock(gidKey)
 			}
-			msg = zero.BotConfig.NickName[0] + "将开始休息啦~"
+			msg = zero.BotConfig.GetNickName(ctx.Event.SelfID)[0] + "将开始休息啦~"
 		default:
 			msg = "ERROR: bad command"
 		}
@@ -192,10 +192,10 @@ func init() {
 
 		case strings.Contains(cmd, "响应") || strings.Contains(cmd, "response"):
 			managers.DoUnblock(bidKey)
-			msg = message.Text(zero.BotConfig.NickName[0], "将开始在全部位置工作啦~")
+			msg = message.Text(zero.BotConfig.GetNickName(ctx.Event.SelfID)[0], "将开始在全部位置工作啦~")
 		case strings.Contains(cmd, "沉默") || strings.Contains(cmd, "silence"):
 			managers.DoBlock(bidKey)
-			msg = message.Text(zero.BotConfig.NickName[0], "将开始休息啦~")
+			msg = message.Text(zero.BotConfig.GetNickName(ctx.Event.SelfID)[0], "将开始休息啦~")
 		default:
 			msg = message.Text("ERROR: bad command\"", cmd, "\"")
 		}
