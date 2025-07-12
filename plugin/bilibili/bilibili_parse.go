@@ -124,7 +124,7 @@ func handleDynamic(ctx *zero.Ctx) {
 func handleArticle(ctx *zero.Ctx) {
 	card, err := bz.GetArticleInfo(ctx.State["regex_matched"].([]string)[1])
 	if err != nil {
-		ctx.SendChain(message.Text("ERROR: ", err))
+		ctx.SendError(err)
 		return
 	}
 	ctx.SendChain(articleCard2msg(card, ctx.State["regex_matched"].([]string)[1])...)
@@ -133,7 +133,7 @@ func handleArticle(ctx *zero.Ctx) {
 func handleLive(ctx *zero.Ctx) {
 	card, err := bz.GetLiveRoomInfo(ctx.State["regex_matched"].([]string)[1])
 	if err != nil {
-		ctx.SendChain(message.Text("ERROR: ", err))
+		ctx.SendError(err)
 		return
 	}
 	ctx.SendChain(liveCard2msg(card)...)

@@ -19,7 +19,7 @@ require (
 
 require (
 	github.com/Andrew-M-C/go.emoji v1.1.3
-	github.com/FloatTech/AnimeAPI v1.7.1-0.20250112071824-df647215d106
+	github.com/FloatTech/AnimeAPI v1.7.1-0.20250530055006-50f5c7587c5b
 	github.com/FloatTech/floatbox v0.0.0-20241106130736-5aea0a935024
 	github.com/FloatTech/gg v1.1.3
 	github.com/FloatTech/imgfactory v0.2.2-0.20230315152233-49741fc994f9
