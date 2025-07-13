@@ -13,6 +13,7 @@ import (
 
 	bz "github.com/FloatTech/AnimeAPI/bilibili"
 	"github.com/FloatTech/floatbox/web"
+	"github.com/rs/zerolog/log"
 	"github.com/tidwall/gjson"
 )
 
@@ -131,7 +132,11 @@ func handleArticle(ctx *zero.Ctx) {
 }
 
 func handleLive(ctx *zero.Ctx) {
-	card, err := bz.GetLiveRoomInfo(ctx.State["regex_matched"].([]string)[1])
+	cookie, err := cfg.Load()
+	if err != nil {
+		log.Warn().Str("name", pluginName).Msg("获取cookie失败,可能无法获取直播间信息")
+	}
+	card, err := bz.GetLiveRoomInfo(ctx.State["regex_matched"].([]string)[1], cookie)
 	if err != nil {
 		ctx.SendError(err)
 		return

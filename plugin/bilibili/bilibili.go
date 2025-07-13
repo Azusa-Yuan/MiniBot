@@ -43,7 +43,8 @@ var (
 		7: "直播中止",
 		8: "直播继续",
 	}
-	cfg = bz.NewCookieConfig(filepath.Join(minipath.GetPluginDataPath(), "config.json"))
+	cfg        = bz.NewCookieConfig(filepath.Join(minipath.GetPluginDataPath(), "config.json"))
+	pluginName = "bilibili"
 )
 
 // 查成分的

@@ -169,4 +169,4 @@ replace ZeroBot => ./ZeroBot
 
 replace github.com/FloatTech/floatbox => github.com/Azusa-Yuan/floatbox v0.0.0-20241222050847-ce51df9708f7
 
-replace github.com/FloatTech/AnimeAPI => github.com/Azusa-Yuan/AnimeAPI v0.0.0-20250713040116-334d825f1643
+replace github.com/FloatTech/AnimeAPI => github.com/Azusa-Yuan/AnimeAPI v0.0.0-20250713054958-ee20b7e7ca95

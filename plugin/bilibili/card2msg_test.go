@@ -55,7 +55,7 @@ func TestGetVideoSummary(t *testing.T) {
 }
 
 func TestLiveRoomInfo(t *testing.T) {
-	card, err := bz.GetLiveRoomInfo("83171")
+	card, err := bz.GetLiveRoomInfo("83171", "")
 	if err != nil {
 		t.Fatal(err)
 	}
