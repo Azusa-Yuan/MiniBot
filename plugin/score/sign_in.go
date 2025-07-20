@@ -32,6 +32,7 @@ import (
 	"MiniBot/utils/text"
 
 	"github.com/FloatTech/imgfactory"
+	"github.com/rs/zerolog/log"
 	"golang.org/x/image/webp"
 
 	"github.com/golang/freetype"
@@ -349,12 +350,12 @@ func initPic(picFile string, uid int64) (avatar []byte, err error) {
 		if err == nil {
 			img, err := webp.Decode(bytes.NewReader(data))
 			if err == nil {
-				return data, err
-			}
-			buf := bytes.NewBuffer(nil)
-			err = png.Encode(buf, img)
-			if err == nil {
-				data = buf.Bytes()
+				log.Info().Str("name", pluginName).Msg("webp to png")
+				buf := bytes.NewBuffer([]byte{})
+				err = png.Encode(buf, img)
+				if err == nil {
+					data = buf.Bytes()
+				}
 			}
 		}
 	}
