@@ -7,6 +7,8 @@ import (
 	"gorm.io/gorm"
 )
 
+var pluginName = "score"
+
 // sdb 得分数据库
 var sdb *scoredb
 

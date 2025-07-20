@@ -6,10 +6,12 @@ import (
 	"MiniBot/utils/net_tools"
 	"MiniBot/utils/path"
 	"MiniBot/utils/transform"
+	"bytes"
 	"context"
 	"encoding/base64"
 	"errors"
 	"fmt"
+	"image/png"
 	"io"
 	"io/fs"
 	"math"
@@ -30,13 +32,14 @@ import (
 	"MiniBot/utils/text"
 
 	"github.com/FloatTech/imgfactory"
+	"golang.org/x/image/webp"
 
 	"github.com/golang/freetype"
 	"github.com/wcharczuk/go-chart/v2"
 )
 
 const (
-	backgroundURL = "https://iw233.cn/api.php?sort=pc"
+	backgroundURL = "https://pic.re/image"
 	referer       = "https://weibo.com/"
 	signinMax     = 1
 	// SCOREMAX 分数上限定为1200
@@ -85,7 +88,7 @@ func init() {
 		today := time.Now().Format("20060102")
 		// 签到图片
 		drawedFile := strconv.FormatInt(uid, 10) + today + "signin.png"
-		picFile := filepath.Join(cachePath, strconv.FormatInt(uid, 10)+today+".png")
+		picFile := filepath.Join(cachePath, strconv.FormatInt(uid, 10)+today)
 		// 获取签到时间
 		si := sdb.GetSignInByUID(uid)
 		siUpdateTimeStr := si.UpdatedAt.Format("20060102")
@@ -145,18 +148,14 @@ func init() {
 		}
 		drawimage, err := styles[k](alldata)
 		if err != nil {
-			ctx.SendChain(message.Text("ERROR: ", err))
+			ctx.SendError(err)
 			return
 		}
 		// done.
 		data, err := imgfactory.ToBytes(drawimage)
 		_, err = cache.GetRedisCli().Set(context.TODO(), drawedFile, data, 24*time.Hour).Result()
 		if err != nil {
-			if err != nil {
-				ctx.SendChain(message.Text("ERROR: ", err))
-				return
-			}
-			ctx.SendChain(message.ImageBytes(data))
+			ctx.SendError(err)
 			return
 		}
 		ctx.SendChain(message.ImageBytes(data))
@@ -336,6 +335,7 @@ func initPic(picFile string, uid int64) (avatar []byte, err error) {
 			return
 		}
 		if len(files) <= 0 {
+			err = errors.New("no files")
 			return
 		}
 		randomIndex := rand.IntN(len(files))
@@ -345,6 +345,18 @@ func initPic(picFile string, uid int64) (avatar []byte, err error) {
 	} else {
 		data, err = io.ReadAll(response.Body)
 		response.Body.Close()
+		// 如果图片是webp格式，则转换为png
+		if err == nil {
+			img, err := webp.Decode(bytes.NewReader(data))
+			if err == nil {
+				return data, err
+			}
+			buf := bytes.NewBuffer(nil)
+			err = png.Encode(buf, img)
+			if err == nil {
+				data = buf.Bytes()
+			}
+		}
 	}
 
 	if err != nil {

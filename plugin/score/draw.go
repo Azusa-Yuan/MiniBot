@@ -17,6 +17,7 @@ import (
 	"MiniBot/utils/text"
 
 	"github.com/FloatTech/imgfactory"
+	"github.com/rs/zerolog/log"
 
 	"github.com/FloatTech/gg"
 	"github.com/FloatTech/rendercard"
@@ -130,10 +131,12 @@ func drawScore15(a *scdata) (image.Image, error) {
 	a.uid = 0
 	_, err := initPic(a.picfile, a.uid)
 	if err != nil {
+		log.Error().Str("name", pluginName).Err(err).Msg("initPic error")
 		return nil, err
 	}
 	back, err := gg.LoadImage(a.picfile)
 	if err != nil {
+		log.Error().Str("name", pluginName).Err(err).Msg("gg.LoadImage error")
 		return nil, err
 	}
 	// 避免图片过大，最大 1280*720
@@ -146,9 +149,11 @@ func drawScore15(a *scdata) (image.Image, error) {
 	hourWord := getHourWord(time.Now())
 	data, err := cache.GetDefaultFont()
 	if err != nil {
+		log.Error().Str("name", pluginName).Err(err).Msg("cache.GetDefaultFont error")
 		return nil, err
 	}
 	if err = canvas.ParseFontFace(data, float64(back.Bounds().Size().X)*0.1); err != nil {
+		log.Error().Str("name", pluginName).Err(err).Msg("canvas.ParseFontFace error")
 		return nil, err
 	}
 	canvas.SetRGB(0, 0, 0)
@@ -156,9 +161,11 @@ func drawScore15(a *scdata) (image.Image, error) {
 	canvas.DrawString(monthWord, float64(back.Bounds().Size().X)*0.6, float64(back.Bounds().Size().Y)*1.2)
 	_, err = os.ReadFile(text.FontFile)
 	if err != nil {
+		log.Error().Str("name", pluginName).Err(err).Msg("os.ReadFile error")
 		return nil, err
 	}
 	if err = canvas.LoadFontFace(text.FontFile, float64(back.Bounds().Size().X)*0.04); err != nil {
+		log.Error().Str("name", pluginName).Err(err).Msg("canvas.LoadFontFace error")
 		return nil, err
 	}
 	canvas.DrawString(a.nickname+fmt.Sprintf(" "+wallet.GetWalletName()+"%d", a.inc), float64(back.Bounds().Size().X)*0.1, float64(back.Bounds().Size().Y)*1.3)
