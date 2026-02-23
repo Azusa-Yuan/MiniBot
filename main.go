@@ -37,6 +37,7 @@ import (
 	_ "MiniBot/plugin/picture_package"
 	_ "MiniBot/plugin/poke"
 	_ "MiniBot/plugin/qqwife"
+	_ "MiniBot/plugin/roulette"
 	_ "MiniBot/plugin/score"
 	_ "MiniBot/plugin/sleepmanage"
 
