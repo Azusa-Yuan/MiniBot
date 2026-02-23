@@ -14,7 +14,7 @@ import (
 	zero "ZeroBot"
 	"ZeroBot/message"
 
-	"github.com/google/generative-ai-go/genai"
+	"google.golang.org/genai"
 	"github.com/rs/zerolog/log"
 )
 
@@ -157,8 +157,8 @@ func init() {
 				}
 				msg += ",请你为他写一份简短的欢迎词,下面是他的头像"
 				parts := []genai.Part{}
-				parts = append(parts, genai.Text(msg))
-				parts = append(parts, genai.ImageData(format, imgBytes))
+				parts = append(parts, genai.Part{Text: msg})
+				parts = append(parts, genai.Part{InlineData: &genai.Blob{Data: imgBytes, MIMEType: "image/" + format}})
 				key := transform.BidWithuidInt64(ctx)
 				resp, err := ai.AIBot.SendPartsWithSession(key, parts...)
 				if err != nil {

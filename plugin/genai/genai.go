@@ -11,8 +11,8 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/google/generative-ai-go/genai"
 	"github.com/rs/zerolog/log"
+	"google.golang.org/genai"
 )
 
 const pluginName = "genai"
@@ -35,7 +35,10 @@ func init() {
 				key = transform.BidWithgidInt64(ctx)
 			}
 
-			msg := "群友" + "\"" + ctx.CardOrNickName(ctx.Event.UserID) + "\"" + "说："
+			msg := ""
+			if ctx.Event.GroupID != 0 {
+				msg = "群友" + "\"" + ctx.CardOrNickName(ctx.Event.UserID) + "\"" + "说："
+			}
 			for _, segment := range ctx.Event.Message {
 				if segment.Type == "text" {
 					msg += segment.Data["text"]
@@ -52,7 +55,7 @@ func init() {
 			}
 
 			parts := []genai.Part{}
-			parts = append(parts, genai.Text(msg))
+			parts = append(parts, genai.Part{Text: msg})
 
 			// 获取图片
 			imgStrs := []string{}
@@ -72,10 +75,11 @@ func init() {
 			}
 
 			for i := 0; i < len(imgTypes); i++ {
-				if imgTypes[i] == "jpg" {
-					imgTypes[i] = "jpeg"
+				mime := imgTypes[i]
+				if mime == "jpg" {
+					mime = "jpeg"
 				}
-				parts = append(parts, genai.ImageData(imgTypes[i], imgBytes[i]))
+				parts = append(parts, genai.Part{InlineData: &genai.Blob{Data: imgBytes[i], MIMEType: "image/" + mime}})
 			}
 
 			if len(parts) == 0 {

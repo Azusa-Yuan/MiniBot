@@ -10,9 +10,8 @@ import (
 	"sync"
 	"time"
 
-	"github.com/google/generative-ai-go/genai"
 	"github.com/rs/zerolog/log"
-	"google.golang.org/api/option"
+	"google.golang.org/genai"
 	"gopkg.in/yaml.v2"
 )
 
@@ -25,11 +24,13 @@ var (
 
 type session struct {
 	timestamp   time.Time
-	chatSession *genai.ChatSession
+	chatSession *genai.Chat
 }
 
 type aiBot struct {
-	model      *genai.GenerativeModel
+	client     *genai.Client
+	modelName  string
+	config     *genai.GenerateContentConfig
 	sessionMap map[int64]*session
 	sync.RWMutex
 }
@@ -57,34 +58,32 @@ func init() {
 
 	ctx := context.Background()
 
-	key := config.Key
-	// proxyURL := "http://192.168.241.1:10811"
-	// transport := &http.Transport{
-	// 	Proxy: http.ProxyURL(proxyURL),
-	// }
-	// httpClient := &http.Client{
-	// 	Transport: transport,
-	// }
-	client, err := genai.NewClient(ctx, option.WithAPIKey(key))
+	client, err := genai.NewClient(ctx, &genai.ClientConfig{
+		APIKey:  config.Key,
+		Backend: genai.BackendGeminiAPI,
+	})
 	if err != nil {
 		log.Fatal().Str("name", utilsName).Err(err).Msg("")
 	}
 
-	model := client.GenerativeModel("gemini-2.0-flash-exp")
-
-	model.SafetySettings = []*genai.SafetySetting{
-		{
-			Category:  genai.HarmCategoryHarassment,
-			Threshold: genai.HarmBlockOnlyHigh,
-		},
-		{
-			Category:  genai.HarmCategoryHateSpeech,
-			Threshold: genai.HarmBlockOnlyHigh,
+	modelName := "gemini-2.5-flash"
+	cfg := &genai.GenerateContentConfig{
+		SafetySettings: []*genai.SafetySetting{
+			{
+				Category:  genai.HarmCategoryHarassment,
+				Threshold: genai.HarmBlockThresholdBlockOnlyHigh,
+			},
+			{
+				Category:  genai.HarmCategoryHateSpeech,
+				Threshold: genai.HarmBlockThresholdBlockOnlyHigh,
+			},
 		},
 	}
 
 	bot := &aiBot{
-		model:      model,
+		client:     client,
+		modelName:  modelName,
+		config:     cfg,
 		sessionMap: map[int64]*session{},
 	}
 
@@ -96,12 +95,14 @@ func init() {
 			bot.CleanSession()
 		}
 	}()
-
 }
 
 func (a *aiBot) SendMsg(msg string) (string, error) {
 	ctx := context.Background()
-	resp, err := a.model.GenerateContent(ctx, genai.Text(msg))
+	contents := []*genai.Content{
+		{Parts: []*genai.Part{{Text: msg}}},
+	}
+	resp, err := a.client.Models.GenerateContent(ctx, a.modelName, contents, a.config)
 	if err != nil {
 		log.Error().Str("name", utilsName).Err(err).Msg("")
 		return "", err
@@ -109,23 +110,14 @@ func (a *aiBot) SendMsg(msg string) (string, error) {
 	return getResponseString(resp), nil
 }
 
-// func printResponse(resp *genai.GenerateContentResponse) {
-// 	for _, cand := range resp.Candidates {
-// 		if cand.Content != nil {
-// 			for _, part := range cand.Content.Parts {
-// 				fmt.Println(part)
-// 			}
-// 		}
-// 	}
-// 	fmt.Println("---")
-// }
-
 func getResponseString(resp *genai.GenerateContentResponse) string {
 	res := ""
 	for _, cand := range resp.Candidates {
 		if cand.Content != nil {
 			for _, part := range cand.Content.Parts {
-				res += fmt.Sprint(part)
+				if part != nil {
+					res += part.Text
+				}
 			}
 		}
 	}
@@ -139,12 +131,11 @@ func (a *aiBot) SendMsgWithSession(key int64, msg string) (string, error) {
 	session := a.sessionMap[key]
 	a.RUnlock()
 
-	// 不存在会话
 	if session == nil {
 		return "", fmt.Errorf("not session")
 	}
 
-	resp, err := session.chatSession.SendMessage(ctx, genai.Text(msg))
+	resp, err := session.chatSession.SendMessage(ctx, genai.Part{Text: msg})
 	if err != nil {
 		log.Error().Str("name", utilsName).Err(err).Msg("")
 		if err.Error() == "blocked: candidate: FinishReasonSafety" || err.Error() == "blocked: prompt: BlockReasonOther" {
@@ -162,7 +153,6 @@ func (a *aiBot) SendPartsWithSession(key int64, parts ...genai.Part) (string, er
 	session := a.sessionMap[key]
 	a.RUnlock()
 
-	// 不存在会话
 	if session == nil {
 		return "", fmt.Errorf("not session")
 	}
@@ -182,12 +172,21 @@ func (a *aiBot) CreateSession(key int64, systemInstruction string) *session {
 	a.Lock()
 	defer a.Unlock()
 
-	a.model.SystemInstruction = &genai.Content{
-		Parts: []genai.Part{genai.Text(systemInstruction)},
+	cfg := &genai.GenerateContentConfig{
+		SafetySettings: a.config.SafetySettings,
+		SystemInstruction: &genai.Content{
+			Parts: []*genai.Part{{Text: systemInstruction}},
+		},
+	}
+
+	chatSession, err := a.client.Chats.Create(context.Background(), a.modelName, cfg, nil)
+	if err != nil {
+		log.Error().Str("name", utilsName).Err(err).Msg("")
+		return nil
 	}
 
 	newSession := &session{
-		chatSession: a.model.StartChat(),
+		chatSession: chatSession,
 		timestamp:   time.Now(),
 	}
 
